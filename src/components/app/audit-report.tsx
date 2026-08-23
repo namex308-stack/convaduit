@@ -77,6 +77,7 @@ import {
 import {
   buildGrowthRoadmap,
   ROADMAP_HORIZON_ORDER,
+  type GrowthRoadmap,
   type GrowthRoadmapTask,
   type RoadmapDifficulty,
   type RoadmapHorizon,
@@ -724,6 +725,21 @@ function roadmapStorageKey(auditId: string): string {
   return `storepulse:growth-roadmap:${auditId}`;
 }
 
+function flatPreviewTaskIds(
+  roadmap: GrowthRoadmap,
+  maxTasks: number | undefined
+): Set<string> | null {
+  if (maxTasks == null) return null;
+  const ids: string[] = [];
+  for (const horizon of ROADMAP_HORIZON_ORDER) {
+    for (const task of roadmap[horizon]) {
+      ids.push(task.id);
+      if (ids.length >= maxTasks) return new Set(ids);
+    }
+  }
+  return new Set(ids);
+}
+
 function GrowthRoadmapSection({
   audit,
   maxTasks,
@@ -766,17 +782,7 @@ function GrowthRoadmapSection({
     });
   };
 
-  const flatPreviewIds = React.useMemo(() => {
-    if (maxTasks == null) return null;
-    const ids: string[] = [];
-    for (const horizon of ROADMAP_HORIZON_ORDER) {
-      for (const task of roadmap[horizon]) {
-        ids.push(task.id);
-        if (ids.length >= maxTasks) return new Set(ids);
-      }
-    }
-    return new Set(ids);
-  }, [roadmap, maxTasks]);
+  const flatPreviewIds = flatPreviewTaskIds(roadmap, maxTasks);
 
   return (
     <motion.div
