@@ -26,6 +26,7 @@ import type { Json } from "@/lib/db/database.types";
 import { recordGeoScoreHistory } from "@/lib/db/geo-history-repository";
 import { emitAlertsForCompletedAudit } from "@/lib/alerts/emit";
 import { syncGrowthTasksFromAudit } from "@/lib/growth-tasks/emit";
+import { getGeminiModelId } from "@/lib/gemini";
 
 export type { AuditHistoryItem } from "@/lib/audits/types";
 
@@ -365,7 +366,7 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
       analysis_version: AUDIT_ANALYSIS_VERSION,
       completed_at: new Date().toISOString(),
       model: process.env.GEMINI_API_KEY
-        ? process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash"
+        ? getGeminiModelId()
         : "demo",
     })
     .eq("id", auditId);

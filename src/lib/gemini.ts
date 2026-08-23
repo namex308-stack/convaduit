@@ -37,10 +37,72 @@ import {
 } from "@/lib/audit/score-modules";
 import { arabicTextRatio, normalizeAppLocale, type AppLocale } from "@/lib/locale";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
+import { withRetry } from "@/lib/automation/retry";
+import type { GenerateContentResult as GeminiSdkGenerateContentResult } from "@google/generative-ai";
 
 export type { AnalyzerName, AnalyzerJsonResult, NormalizedPage };
 export type { GeneratedContent };
 export type { PillarScoreModuleResult };
+
+/** Interactive Gemini calls — one retry max so the UI is not kept waiting. */
+const GEMINI_INTERACTIVE_RETRY_POLICY = {
+  maxAttempts: 2,
+  jitter: false,
+} as const;
+
+const RETRYABLE_GEMINI_TRANSPORT_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_SOCKET",
+  "ABORT_ERR",
+]);
+
+/** Retry only transient transport failures — not JSON/schema/Arabic validation issues. */
+export function isRetryableGeminiTransportError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const code = (error as NodeJS.ErrnoException).code;
+  if (code && RETRYABLE_GEMINI_TRANSPORT_CODES.has(code)) return true;
+
+  const msg = error.message.toLowerCase();
+  return (
+    msg.includes("fetch failed") ||
+    msg.includes("network error") ||
+    msg.includes("network request failed") ||
+    msg.includes("socket hang up") ||
+    msg.includes("econnreset") ||
+    msg.includes("etimedout") ||
+    msg.includes("timeout") ||
+    msg.includes("503") ||
+    msg.includes("429") ||
+    msg.includes("unavailable") ||
+    msg.includes("temporarily unavailable")
+  );
+}
+
+type GeminiGenerateContentModel = {
+  generateContent(prompt: string): Promise<GeminiSdkGenerateContentResult>;
+};
+
+async function generateGeminiModelContent(
+  model: GeminiGenerateContentModel,
+  prompt: string,
+  label: string
+): Promise<GeminiSdkGenerateContentResult> {
+  return withRetry(() => model.generateContent(prompt), {
+    policy: GEMINI_INTERACTIVE_RETRY_POLICY,
+    shouldRetry: isRetryableGeminiTransportError,
+    onAttemptFailure: ({ attempt, error }) => {
+      console.warn(
+        `[gemini] ${label} transport attempt ${attempt} failed:`,
+        error instanceof Error ? error.message : error
+      );
+    },
+  });
+}
 
 let _client: GoogleGenerativeAI | null = null;
 
@@ -189,7 +251,7 @@ export async function runBatchedPillarAnalysis(
   const prompt = buildBatchedPillarPrompt(page, competitor, onboarding, locale);
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await generateGeminiModelContent(model, prompt, "batched pillar analysis");
     const text = stripCodeFences(result.response.text());
     const parsed = JSON.parse(text) as unknown;
     let sanitized = sanitizeBatchedPillarAnalysis(parsed);
@@ -303,7 +365,7 @@ Return JSON:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await generateGeminiModelContent(model, prompt, "generateContent");
     let rawText = "";
     try {
       rawText = result.response.text();

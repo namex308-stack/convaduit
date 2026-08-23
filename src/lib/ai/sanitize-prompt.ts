@@ -14,16 +14,43 @@ export function sanitizePromptText(input: unknown, maxLen = 500): string {
     .slice(0, maxLen);
 }
 
+/** Flexible separator between injection phrase tokens (spaces, punctuation, dashes). */
+const INJECTION_SEP = String.raw`(?:[\s\-_.,:;!?…]+)`;
+
+const USER_CONTEXT_INJECTION_PATTERNS: RegExp[] = [
+  // English: ignore / disregard / forget … previous|prior|above … instructions|prompts
+  new RegExp(
+    String.raw`\b(ignore|disregard|forget)${INJECTION_SEP}(?:all${INJECTION_SEP})?(?:previous|prior|above)${INJECTION_SEP}(?:instructions?|prompts?)\b`,
+    "gi"
+  ),
+  // English: reveal / show … system … prompt|instructions
+  new RegExp(
+    String.raw`\b(reveal|show|expose|disclose|leak)${INJECTION_SEP}(?:the${INJECTION_SEP})?(?:system|hidden)${INJECTION_SEP}(?:prompts?|instructions?)\b`,
+    "gi"
+  ),
+  // Arabic: ignore (all) (previous) instructions
+  new RegExp(
+    String.raw`تجاهل${INJECTION_SEP}(?:كل${INJECTION_SEP})?(?:التعليمات${INJECTION_SEP})?السابقة`,
+    "gu"
+  ),
+  // Arabic: reveal system prompt
+  new RegExp(
+    String.raw`(?:أظهر|اعرض|اكشف)${INJECTION_SEP}(?:عن${INJECTION_SEP})?موجه${INJECTION_SEP}النظام`,
+    "gu"
+  ),
+  // Role / channel hijacks
+  /\b(system|assistant)\s*:/gi,
+];
+
+const CODE_FENCE_PATTERN = /```[\s\S]*?```/g;
+
 /** Neutralize common instruction-injection patterns in user-provided fields. */
 export function sanitizeUserContextField(input: unknown, maxLen = 200): string {
   let s = sanitizePromptText(input, maxLen);
-  // Neutralize role/instruction hijacks without deleting legitimate product copy.
-  s = s.replace(
-    /\b(ignore|disregard|forget)\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?)\b/gi,
-    "[filtered]"
-  );
-  s = s.replace(/\b(system|assistant)\s*:/gi, "[filtered]:");
-  s = s.replace(/```[\s\S]*?```/g, "[code omitted]");
+  for (const pattern of USER_CONTEXT_INJECTION_PATTERNS) {
+    s = s.replace(pattern, "[filtered]");
+  }
+  s = s.replace(CODE_FENCE_PATTERN, "[code omitted]");
   return s.slice(0, maxLen);
 }
 

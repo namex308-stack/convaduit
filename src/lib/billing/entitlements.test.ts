@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   aiGeneratorLockedMessage,
   apiLockedMessage,
@@ -19,6 +19,144 @@ import {
 } from "@/lib/billing/entitlements";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
 import type { PlanLimits } from "@/lib/dashboard/types";
+
+const integration = vi.hoisted(() => {
+  const WORKSPACE_ID = "ws-free";
+  type StoreRow = {
+    id: string;
+    workspace_id: string;
+    primary_url: string;
+    created_at: string;
+  };
+
+  const LEGIT_STORE: StoreRow = {
+    id: "store-1",
+    workspace_id: WORKSPACE_ID,
+    primary_url: "https://legit.example.com",
+    created_at: "2026-01-01T00:00:00.000Z",
+  };
+  const BYPASS_STORE: StoreRow = {
+    id: "store-2",
+    workspace_id: WORKSPACE_ID,
+    primary_url: "https://bypass.example.com",
+    created_at: "2026-01-02T00:00:00.000Z",
+  };
+
+  let storeRows: StoreRow[] = [LEGIT_STORE, BYPASS_STORE];
+
+  function queryStores(workspaceId: string): StoreRow[] {
+    return storeRows
+      .filter((row) => row.workspace_id === workspaceId)
+      .sort(
+        (a, b) =>
+          a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)
+      );
+  }
+
+  function createSupabaseMock() {
+    return {
+      from: (table: string) => {
+        if (table !== "stores") {
+          throw new Error(`Unexpected table in integration mock: ${table}`);
+        }
+        let workspaceId = "";
+        const builder = {
+          select: () => builder,
+          eq: (_column: string, value: string) => {
+            workspaceId = value;
+            return builder;
+          },
+          order: () => builder,
+          update: () => ({
+            eq: async () => ({ data: null, error: null }),
+          }),
+          insert: () => ({
+            select: () => ({
+              single: async () => ({ data: { id: "unused" }, error: null }),
+            }),
+          }),
+          then(
+            onFulfilled: (value: { data: StoreRow[] }) => unknown,
+            onRejected?: (reason: unknown) => unknown
+          ) {
+            return Promise.resolve({ data: queryStores(workspaceId) }).then(
+              onFulfilled,
+              onRejected
+            );
+          },
+        };
+        return builder;
+      },
+    };
+  }
+
+  const getSupabaseAdmin = vi.fn(() => createSupabaseMock());
+  const requireApiUser = vi.fn();
+  const getOnboardingState = vi.fn();
+  const ensurePersonalWorkspace = vi.fn();
+  const getPlanForUser = vi.fn();
+  const checkRateLimit = vi.fn();
+
+  return {
+    WORKSPACE_ID,
+    LEGIT_STORE,
+    BYPASS_STORE,
+    resetStores: () => {
+      storeRows = [LEGIT_STORE, BYPASS_STORE];
+    },
+    getSupabaseAdmin,
+    requireApiUser,
+    getOnboardingState,
+    ensurePersonalWorkspace,
+    getPlanForUser,
+    checkRateLimit,
+  };
+});
+
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/supabase", () => ({
+  getSupabaseAdmin: () => integration.getSupabaseAdmin(),
+}));
+vi.mock("@/lib/auth/require-api-user", () => ({
+  requireApiUser: (...args: unknown[]) => integration.requireApiUser(...args),
+}));
+vi.mock("@/lib/db/onboarding-repository", () => ({
+  getOnboardingState: (...args: unknown[]) => integration.getOnboardingState(...args),
+  toAnalyzerOnboarding: () => null,
+}));
+vi.mock("@/lib/db/workspace-stats", () => ({
+  getPlanForUser: (...args: unknown[]) => integration.getPlanForUser(...args),
+  getCurrentUsagePeriod: () => ({
+    start: "2026-08-01T00:00:00.000Z",
+    end: "2026-08-31T23:59:59.999Z",
+  }),
+}));
+vi.mock("@/lib/redis", () => ({
+  checkRateLimit: (...args: unknown[]) => integration.checkRateLimit(...args),
+}));
+vi.mock("@/lib/url-safety", () => ({
+  assertSafePublicHttpUrl: vi.fn(async (raw: string) => ({
+    ok: true as const,
+    href: raw,
+  })),
+}));
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: vi.fn((fn: () => void) => fn()),
+  };
+});
+vi.mock("@/lib/db/audit-repository", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/db/audit-repository")>();
+  return {
+    ...actual,
+    ensurePersonalWorkspace: (...args: unknown[]) =>
+      integration.ensurePersonalWorkspace(...args),
+    createAuditRecord: vi.fn(),
+    tryConsumeUsageQuota: vi.fn(),
+  };
+});
 
 const freePlan: PlanLimits = {
   planId: "free",
@@ -367,5 +505,87 @@ describe("storeLimitReachedBody", () => {
     expect(body.limit).toBe(1);
     expect(body.error).toBe(storeLimitReachedMessage("مجاني", 1, 1));
     expect(body.error).toContain("1/1");
+  });
+});
+
+describe("Free plan bypass store + /api/audit integration", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    integration.resetStores();
+    vi.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    vi.stubEnv("NODE_ENV", "production");
+    integration.requireApiUser.mockResolvedValue({
+      ok: true,
+      user: { id: "user-free" },
+    });
+    integration.ensurePersonalWorkspace.mockResolvedValue(integration.WORKSPACE_ID);
+    integration.getPlanForUser.mockResolvedValue(freePlan);
+    integration.checkRateLimit.mockResolvedValue({
+      success: true,
+      remaining: 2,
+      limit: 3,
+    });
+    integration.getOnboardingState.mockResolvedValue({
+      completed: true,
+      resumePath: "/onboarding/done",
+      storeUrl: integration.LEGIT_STORE.primary_url,
+      businessName: "Legit Shop",
+      platform: "shopify",
+      country: "EG",
+      primaryLanguage: "ar",
+      storeVerifiedAt: null,
+      competitorUrl: null,
+      homepageTitle: null,
+    });
+  });
+
+  it("rejects ensureWorkspaceStore for a bypass-inserted store via decideStoreEnsure", async () => {
+    const { ensureWorkspaceStore } = await import("@/lib/db/audit-repository");
+
+    const result = await ensureWorkspaceStore({
+      workspaceId: integration.WORKSPACE_ID,
+      storeUrl: integration.BYPASS_STORE.primary_url,
+      storesLimit: PLAN_LIMITS.free.storesLimit,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      code: "STORE_LIMIT_REACHED",
+      used: 2,
+      limit: 1,
+    });
+    expect(integration.getSupabaseAdmin).toHaveBeenCalled();
+  });
+
+  it("POST /api/audit returns 403 STORE_LIMIT_REACHED when bypass store row exists", async () => {
+    const { NextRequest } = await import("next/server");
+    const { POST } = await import("@/app/api/audit/route");
+    const { createAuditRecord, tryConsumeUsageQuota } = await import(
+      "@/lib/db/audit-repository"
+    );
+
+    const res = await POST(
+      new NextRequest("http://localhost/api/audit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          storeUrl: integration.BYPASS_STORE.primary_url,
+        }),
+      })
+    );
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      code: ENTITLEMENT_CODES.STORE_LIMIT_REACHED,
+      plan: "free",
+      used: 2,
+      limit: 1,
+    });
+    expect(createAuditRecord).not.toHaveBeenCalled();
+    expect(tryConsumeUsageQuota).not.toHaveBeenCalled();
   });
 });
