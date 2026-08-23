@@ -1,9 +1,7 @@
 import "server-only";
 
-import {
-  getAuditByIdForUser,
-  listAuditsForUser,
-} from "@/lib/db/audit-repository";
+import { listAuditsForUser } from "@/lib/db/audit-repository";
+import { getEntitledAuditReportForUser } from "@/lib/billing/audit-report-access";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { composeStoreHealth } from "@/lib/store-health/compose";
 import type { StoreHealthPayload } from "@/lib/store-health/types";
@@ -26,7 +24,8 @@ export async function getStoreHealthForUser(
   }
 
   const [stored, crawlDurationMs] = await Promise.all([
-    getAuditByIdForUser(latest.id, userId),
+    // Free plan must not receive full recommendation detail via this API either.
+    getEntitledAuditReportForUser(latest.id, userId),
     getCrawlDurationMs(latest.id),
   ]);
 

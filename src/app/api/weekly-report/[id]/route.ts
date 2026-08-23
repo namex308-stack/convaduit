@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireApiUser } from "@/lib/auth/require-api-user";
 import { getWeeklyReportForUser } from "@/lib/db/weekly-report-repository";
+import { getPlanForUser } from "@/lib/db/workspace-stats";
+import {
+  featureLockedBody,
+  isPlanFeatureEnabled,
+} from "@/lib/billing/entitlements";
 
 const ParamsSchema = z.object({
   id: z.string().uuid(),
@@ -13,6 +18,13 @@ export async function GET(
 ) {
   const auth = await requireApiUser();
   if (!auth.ok) return auth.response;
+
+  const plan = await getPlanForUser(auth.user.id);
+  if (!isPlanFeatureEnabled(plan, "weeklyMonitoring")) {
+    return NextResponse.json(featureLockedBody("weeklyMonitoring", plan.planId), {
+      status: 403,
+    });
+  }
 
   const raw = await ctx.params;
   const parsed = ParamsSchema.safeParse(raw);

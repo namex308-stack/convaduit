@@ -5,10 +5,22 @@ import {
   markAllAlertsReadForUser,
 } from "@/lib/db/alerts-repository";
 import type { AlertsOverview } from "@/lib/alerts/types";
+import { getPlanForUser } from "@/lib/db/workspace-stats";
+import {
+  featureLockedBody,
+  isPlanFeatureEnabled,
+} from "@/lib/billing/entitlements";
 
 export async function GET() {
   const auth = await requireApiUser();
   if (!auth.ok) return auth.response;
+
+  const plan = await getPlanForUser(auth.user.id);
+  if (!isPlanFeatureEnabled(plan, "automatedAlerts")) {
+    return NextResponse.json(featureLockedBody("automatedAlerts", plan.planId), {
+      status: 403,
+    });
+  }
 
   const alerts = await listAlertsForUser(auth.user.id, 60);
   const unreadCount = alerts.filter((a) => !a.isRead).length;
@@ -30,6 +42,13 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const auth = await requireApiUser();
   if (!auth.ok) return auth.response;
+
+  const plan = await getPlanForUser(auth.user.id);
+  if (!isPlanFeatureEnabled(plan, "automatedAlerts")) {
+    return NextResponse.json(featureLockedBody("automatedAlerts", plan.planId), {
+      status: 403,
+    });
+  }
 
   let body: { action?: string } = {};
   try {

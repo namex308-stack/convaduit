@@ -8,6 +8,7 @@ import {
   sumComponentScores,
   type GeoComponentScores,
 } from "@/lib/audit/citation-score";
+import { resolveFindingEvidence } from "@/lib/audit/evidence";
 import {
   detectStructuredContent,
   type StructuredContentSignals,
@@ -15,13 +16,15 @@ import {
 import type { AnalyzerJsonResult } from "@/lib/db/types";
 import type { NormalizedPage } from "@/lib/db/types";
 import type {
+  EvidenceStatus,
+  FindingEvidence,
   GeoAnalysisResult,
   GeoFinding,
   GeoFindingStatus,
   Recommendation,
 } from "@/lib/types";
 
-export type { GeoFinding, GeoFindingStatus };
+export type { EvidenceStatus, FindingEvidence, GeoFinding, GeoFindingStatus };
 
 export interface GeoAnalysis extends GeoAnalysisResult {
   recommendations: Recommendation[];
@@ -60,7 +63,7 @@ export function analyzeGeo(page: NormalizedPage | null | undefined): GeoAnalysis
     const signals = detectStructuredContent(page);
     const componentScores = scoreAllGeoComponents(signals);
     const score = sumComponentScores(componentScores);
-    const findings = buildFindings(signals, componentScores);
+    const findings = buildFindings(signals, componentScores, page);
     const recommendations = buildRecommendations(signals, findings);
     const summary = buildSummary(score, signals, findings);
     const readability = deriveReadability(score, signals);
@@ -75,7 +78,7 @@ export function analyzeGeo(page: NormalizedPage | null | undefined): GeoAnalysis
       readability,
     };
   } catch {
-    return emptyGeoAnalysis();
+    return emptyGeoAnalysis(page);
   }
 }
 
@@ -109,9 +112,13 @@ export function geoAnalysisToAnalyzerResult(geo: GeoAnalysis): AnalyzerJsonResul
   };
 }
 
-function emptyGeoAnalysis(): GeoAnalysis {
+function emptyGeoAnalysis(page?: NormalizedPage | null): GeoAnalysis {
   const signals = detectStructuredContent(null);
   const componentScores = scoreAllGeoComponents(signals);
+  const { evidenceStatus, evidence } = resolveFindingEvidence({
+    findingStatus: "fail",
+    page: page ?? null,
+  });
   return {
     score: 0,
     summary: "تعذّر تقييم ظهور الصفحة في محركات AI؛ اعتُبرت الإشارات مفقودة.",
@@ -121,6 +128,8 @@ function emptyGeoAnalysis(): GeoAnalysis {
         status: "fail",
         label: "التحليل غير متاح",
         detail: "تعذّر تقييم الصفحة بأمان. أعد تشغيل التحليل بعد إصلاح مشكلة الزحف.",
+        evidenceStatus,
+        evidence,
       },
     ],
     recommendations: [],
@@ -169,22 +178,28 @@ function deriveReadability(
 
 function buildFindings(
   signals: StructuredContentSignals,
-  components: GeoComponentScores
+  components: GeoComponentScores,
+  page: NormalizedPage | null | undefined
 ): GeoFinding[] {
   const findings: GeoFinding[] = [];
 
+  const faqStatus: GeoFindingStatus =
+    signals.hasFaq || signals.hasFaqSchema
+      ? signals.faqCount >= 3 || signals.hasFaqSchema
+        ? "pass"
+        : "warn"
+      : "fail";
   findings.push(
     finding(
       "faq",
-      signals.hasFaq || signals.hasFaqSchema
-        ? signals.faqCount >= 3 || signals.hasFaqSchema
-          ? "pass"
-          : "warn"
-        : "fail",
+      faqStatus,
       "توفر الأسئلة الشائعة",
       signals.hasFaq || signals.hasFaqSchema
         ? `تم العثور على ${signals.faqCount} سؤال/جواب${signals.hasFaqSchema ? " مع مخطط FAQPage" : ""}.`
-        : "لا يوجد محتوى أسئلة شائعة أو مخطط FAQPage."
+        : "لا يوجد محتوى أسئلة شائعة أو مخطط FAQPage.",
+      page,
+      signals.faqCount,
+      `faqCount=${signals.faqCount};hasFaqSchema=${signals.hasFaqSchema}`
     )
   );
 
@@ -195,7 +210,10 @@ function buildFindings(
       "مخطط المنتج",
       signals.hasProductSchema
         ? "مخطط Product (JSON-LD) موجود."
-        : "مخطط المنتج (JSON-LD) مفقود."
+        : "مخطط المنتج (JSON-LD) مفقود.",
+      page,
+      signals.hasProductSchema,
+      `hasProductSchema=${signals.hasProductSchema}`
     )
   );
 
@@ -206,7 +224,10 @@ function buildFindings(
       "مخطط المؤسسة",
       signals.hasOrganizationSchema
         ? "مخطط Organization موجود."
-        : "مخطط المؤسسة / العلامة التجارية مفقود."
+        : "مخطط المؤسسة / العلامة التجارية مفقود.",
+      page,
+      signals.hasOrganizationSchema,
+      `hasOrganizationSchema=${signals.hasOrganizationSchema}`
     )
   );
 
@@ -217,7 +238,10 @@ function buildFindings(
       "مخطط مسار التنقل",
       signals.hasBreadcrumbSchema
         ? "مخطط BreadcrumbList موجود."
-        : "مخطط BreadcrumbList مفقود."
+        : "مخطط BreadcrumbList مفقود.",
+      page,
+      signals.hasBreadcrumbSchema,
+      `hasBreadcrumbSchema=${signals.hasBreadcrumbSchema}`
     )
   );
 
@@ -228,7 +252,10 @@ function buildFindings(
       "العناوين المنظمة",
       signals.headingCount > 0
         ? `تم رصد ${signals.headingCount} عنوانًا يساعد أنظمة AI على فهم الهيكل.`
-        : "لا يوجد هيكل عناوين واضح."
+        : "لا يوجد هيكل عناوين واضح.",
+      page,
+      signals.headingCount,
+      `headingCount=${signals.headingCount}`
     )
   );
 
@@ -237,7 +264,10 @@ function buildFindings(
       "content-structure",
       components.contentStructure >= 8 ? "pass" : components.contentStructure >= 4 ? "warn" : "fail",
       "هيكل المحتوى القابل للقراءة آليًا",
-      `${signals.wordCount} كلمة، ${signals.paragraphCount} فقرة، ${signals.listItemCount} عنصر قائمة.`
+      `${signals.wordCount} كلمة، ${signals.paragraphCount} فقرة، ${signals.listItemCount} عنصر قائمة.`,
+      page,
+      signals.wordCount,
+      `wordCount=${signals.wordCount};paragraphCount=${signals.paragraphCount};listItemCount=${signals.listItemCount}`
     )
   );
 
@@ -248,10 +278,19 @@ function buildFindings(
       "جودة الروابط الداخلية",
       signals.internalLinkCount > 0
         ? `تم العثور على ${signals.internalLinkCount} رابطًا داخليًا.`
-        : "لا توجد روابط داخلية تدعم السياق الموضوعي."
+        : "لا توجد روابط داخلية تدعم السياق الموضوعي.",
+      page,
+      signals.internalLinkCount,
+      `internalLinkCount=${signals.internalLinkCount}`
     )
   );
 
+  const entityBits = [
+    signals.hasProductName ? "name" : null,
+    signals.hasBrand ? "brand" : null,
+    signals.hasPrice ? "price" : null,
+    signals.hasCategoryHint ? "category" : null,
+  ].filter(Boolean);
   findings.push(
     finding(
       "entities",
@@ -264,7 +303,10 @@ function buildFindings(
         signals.hasCategoryHint ? "فئة" : null,
       ]
         .filter(Boolean)
-        .join("، ") || "كيانات المنتج المكتشفة قليلة."
+        .join("، ") || "كيانات المنتج المكتشفة قليلة.",
+      page,
+      entityBits.length,
+      `entities=${entityBits.join(",") || "none"}`
     )
   );
 
@@ -275,7 +317,10 @@ function buildFindings(
       "اكتمال البيانات الوصفية",
       signals.hasTitle && signals.hasDescription
         ? "العنوان والوصف موجودان؛ تم فحص تغطية Open Graph."
-        : "العنوان و/أو الوصف التعريفي غير مكتملين."
+        : "العنوان و/أو الوصف التعريفي غير مكتملين.",
+      page,
+      signals.hasTitle && signals.hasDescription,
+      `hasTitle=${signals.hasTitle};hasDescription=${signals.hasDescription};hasOgImage=${signals.hasOgImage}`
     )
   );
 
@@ -286,7 +331,10 @@ function buildFindings(
       "وضوح المحتوى",
       signals.hasBenefitStatement
         ? "تم رصد عبارات فائدة / جمهور مستهدف."
-        : "لا توجد عبارة فائدة أو جمهور مستهدف واضحة."
+        : "لا توجد عبارة فائدة أو جمهور مستهدف واضحة.",
+      page,
+      signals.hasBenefitStatement,
+      `hasBenefitStatement=${signals.hasBenefitStatement}`
     )
   );
 
@@ -297,9 +345,25 @@ function finding(
   id: string,
   status: GeoFindingStatus,
   label: string,
-  detail: string
+  detail: string,
+  page: NormalizedPage | null | undefined,
+  detectedValue?: string | number | boolean | null,
+  detectedState?: string | null
 ): GeoFinding {
-  return { id: `geo-${id}`, status, label, detail };
+  const { evidenceStatus, evidence } = resolveFindingEvidence({
+    findingStatus: status,
+    page,
+    detectedValue,
+    detectedState,
+  });
+  return {
+    id: `geo-${id}`,
+    status,
+    label,
+    detail,
+    evidenceStatus,
+    evidence,
+  };
 }
 
 function buildRecommendations(

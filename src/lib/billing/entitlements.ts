@@ -26,6 +26,23 @@ export const ENTITLEMENT_CODES = {
 export type EntitlementCode =
   (typeof ENTITLEMENT_CODES)[keyof typeof ENTITLEMENT_CODES];
 
+/**
+ * Development-only escape hatch for local multi-store / multi-audit testing.
+ * Production always enforces plan storesLimit and monthly audit quota.
+ */
+export function shouldBypassEntitlementLimits(
+  env: { NODE_ENV?: string } = process.env
+): boolean {
+  return env.NODE_ENV !== "production";
+}
+
+/** Alias kept for store-limit call sites; same predicate as shouldBypassEntitlementLimits. */
+export function shouldBypassStoreLimit(
+  env: { NODE_ENV?: string } = process.env
+): boolean {
+  return shouldBypassEntitlementLimits(env);
+}
+
 export function isPlanFeatureEnabled(
   plan: Pick<PlanLimits, "features">,
   feature: PlanFeature
@@ -53,11 +70,13 @@ export function isPlanFeatureEnabled(
 /**
  * Whether a workspace may add another store.
  * `storesLimit === null` means unlimited (legacy); current Business uses a finite cap.
+ * Non-production environments bypass the cap (plan limits themselves are unchanged).
  */
 export function canCreateStore(
   currentStoreCount: number,
   storesLimit: number | null
 ): boolean {
+  if (shouldBypassEntitlementLimits()) return true;
   if (storesLimit == null) return true;
   return currentStoreCount < storesLimit;
 }
@@ -75,6 +94,7 @@ export function oldestAllowedStoreIds(
   storeIdsOldestFirst: string[],
   storesLimit: number | null | undefined
 ): string[] {
+  if (shouldBypassEntitlementLimits()) return storeIdsOldestFirst;
   if (storesLimit == null) return storeIdsOldestFirst;
   return storeIdsOldestFirst.slice(0, storesLimit);
 }
@@ -87,6 +107,8 @@ export function oldestAllowedStoreIds(
  * Same-URL updates are allowed only for in-quota stores. An extra row that
  * already exists (e.g. inserted by a former client RLS bypass) is rejected
  * instead of being treated as a legitimate existing store.
+ *
+ * Non-production environments skip the stores cap so local multi-store audits work.
  */
 export function decideStoreEnsure(input: {
   existingId: string | null;
@@ -95,6 +117,10 @@ export function decideStoreEnsure(input: {
   oldestAllowedStoreIds: string[];
 }): StoreEnsureDecision {
   const { existingId, currentCount, storesLimit, oldestAllowedStoreIds } = input;
+
+  if (shouldBypassEntitlementLimits()) {
+    return existingId ? { action: "update" } : { action: "insert" };
+  }
 
   if (existingId) {
     if (

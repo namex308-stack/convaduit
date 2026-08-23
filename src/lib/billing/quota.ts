@@ -8,9 +8,33 @@
  * mirrors that function's decision predicate for documentation/tests only.
  */
 
-/** `limit === null` means unlimited (Business plan). */
+import { shouldBypassEntitlementLimits } from "@/lib/billing/entitlements";
+import type { UsageMetric } from "@/lib/db/types";
+
+/** `limit === null` means unlimited (Business plan / legacy). */
 export function isUnderQuota(used: number, limit: number | null): boolean {
   return limit == null || used < limit;
+}
+
+/**
+ * Development-only: skip monthly audit/analysis quota enforcement.
+ * Does not change plan catalogs or production limits.
+ */
+export function shouldBypassAuditQuota(
+  env: { NODE_ENV?: string } = process.env
+): boolean {
+  return shouldBypassEntitlementLimits(env);
+}
+
+/**
+ * Whether tryConsumeUsageQuota may allow without hitting the DB quota check.
+ * Only the audit metric is bypassed in non-production; AI gens stay enforced.
+ */
+export function shouldSkipUsageQuotaCheck(
+  metric: UsageMetric,
+  env: { NODE_ENV?: string } = process.env
+): boolean {
+  return metric === "audit" && shouldBypassAuditQuota(env);
 }
 
 /** Arabic 403 message shown when a workspace has used its full monthly audit quota. */

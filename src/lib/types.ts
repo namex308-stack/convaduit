@@ -54,6 +54,11 @@ export interface PageSignals {
   productPageDetected: boolean;
   productImageDetected: boolean;
   productImageUrl?: string;
+  /**
+   * Screenshot of the analyzed target URL (Firecrawl), not a product/OG image.
+   * May be missing when crawl used fallback fetch or capture failed.
+   */
+  pageScreenshotUrl?: string;
   pageTitle?: string;
   pageType?: string;
   errors: PageSignalError[];
@@ -81,11 +86,30 @@ export interface GeneratedContent {
 
 export type GeoFindingStatus = "pass" | "warn" | "fail";
 
+/**
+ * Crawl-backed verification outcome for a finding.
+ * Distinct from GeoFindingStatus (pass/warn/fail), which still drives scoring/copy.
+ */
+export type EvidenceStatus = "PASS" | "FAIL" | "NOT_VERIFIED";
+
+/** Structured proof attached to a finding — never invent values when unverified. */
+export interface FindingEvidence {
+  /** Page URL the check was evaluated against; null when no crawl target exists. */
+  url: string | null;
+  /** Concrete observed value from the crawl when available. */
+  detectedValue?: string | number | boolean | null;
+  /** Compact machine-readable state (e.g. "hasProductSchema=false"). */
+  detectedState?: string | null;
+}
+
 export interface GeoFinding {
   id: string;
   status: GeoFindingStatus;
   label: string;
   detail: string;
+  /** Present on engine-produced findings; may be absent on older stored rows. */
+  evidenceStatus?: EvidenceStatus;
+  evidence?: FindingEvidence;
 }
 
 export interface GeoComponentScores {

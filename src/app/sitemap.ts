@@ -26,6 +26,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: ROUTES.affiliate, priority: 0.5, changeFreq: "monthly" },
     { path: ROUTES.security, priority: 0.5, changeFreq: "monthly" },
     { path: ROUTES.privacy, priority: 0.5, changeFreq: "monthly" },
+    { path: ROUTES.terms, priority: 0.5, changeFreq: "monthly" },
+    { path: ROUTES.refundPolicy, priority: 0.5, changeFreq: "monthly" },
+    { path: ROUTES.about, priority: 0.5, changeFreq: "monthly" },
+    { path: ROUTES.contact, priority: 0.5, changeFreq: "monthly" },
     { path: ROUTES.roadmap, priority: 0.4, changeFreq: "monthly" },
   ];
 

@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   aiLimitReachedMessage,
   auditLimitReachedMessage,
   isUnderQuota,
+  shouldBypassAuditQuota,
+  shouldSkipUsageQuotaCheck,
 } from "@/lib/billing/quota";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
 
@@ -35,6 +37,33 @@ describe("isUnderQuota", () => {
     expect(isUnderQuota(pro.aiGensPerMonth, pro.aiGensPerMonth)).toBe(false);
     expect(isUnderQuota(business.aiGensPerMonth - 1, business.aiGensPerMonth)).toBe(true);
     expect(isUnderQuota(business.aiGensPerMonth, business.aiGensPerMonth)).toBe(false);
+  });
+});
+
+describe("development audit quota bypass", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("bypasses monthly audit quota outside production", () => {
+    expect(shouldBypassAuditQuota({ NODE_ENV: "development" })).toBe(true);
+    expect(shouldBypassAuditQuota({ NODE_ENV: "test" })).toBe(true);
+    expect(shouldSkipUsageQuotaCheck("audit", { NODE_ENV: "development" })).toBe(true);
+    expect(PLAN_LIMITS.free.auditsPerMonth).toBe(3);
+    // Exhausted Free plan usage would still be under quota when bypassed via null limit.
+    expect(isUnderQuota(PLAN_LIMITS.free.auditsPerMonth, null)).toBe(true);
+  });
+
+  it("does not bypass AI generation quota checks in development", () => {
+    expect(shouldSkipUsageQuotaCheck("ai_generation", { NODE_ENV: "development" })).toBe(false);
+  });
+
+  it("never bypasses monthly audit quota in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    expect(shouldBypassAuditQuota()).toBe(false);
+    expect(shouldSkipUsageQuotaCheck("audit")).toBe(false);
+    expect(PLAN_LIMITS.free.auditsPerMonth).toBe(3);
+    expect(isUnderQuota(3, PLAN_LIMITS.free.auditsPerMonth)).toBe(false);
   });
 });
 

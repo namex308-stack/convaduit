@@ -1,5 +1,6 @@
 import "server-only";
 
+import { workspaceAllowsPlanFeature } from "@/lib/billing/workspace-entitlement";
 import {
   getLatestAuditPairForStore,
   getWeeklyReportByStorePeriod,
@@ -232,12 +233,13 @@ async function generateForStore(
   }
 }
 
-/** Cron entrypoint: one report per active store every 7 days. */
+/** Cron entrypoint: one report per Business-entitled active store every 7 days. */
 export async function runWeeklyReportJob(now = new Date()): Promise<WeeklyReportJobResult> {
   const startedAt = Date.now();
   const { periodStart, periodEnd } = weeklyPeriodBounds(now);
   const periodStartIso = periodStart.toISOString();
   const periodEndIso = periodEnd.toISOString();
+  const entitlementCache = new Map<string, boolean>();
 
   console.info("[weekly-report] job start", {
     periodStart: periodStartIso,
@@ -255,6 +257,21 @@ export async function runWeeklyReportJob(now = new Date()): Promise<WeeklyReport
   };
 
   for (const store of stores) {
+    const allowed = await workspaceAllowsPlanFeature(
+      store.workspaceId,
+      "weeklyMonitoring",
+      entitlementCache
+    );
+    if (!allowed) {
+      // Free/Pro (and expired) workspaces must not generate reports, email, or notifications.
+      console.info("[weekly-report] skip plan not entitled", {
+        storeId: store.storeId,
+        workspaceId: store.workspaceId,
+      });
+      result.skipped += 1;
+      continue;
+    }
+
     if (!isWeeklyReportDue(store.lastReportAt, now)) {
       result.skipped += 1;
       continue;

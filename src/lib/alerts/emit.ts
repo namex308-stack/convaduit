@@ -1,5 +1,6 @@
 import "server-only";
 
+import { workspaceAllowsPlanFeature } from "@/lib/billing/workspace-entitlement";
 import {
   insertAlertDrafts,
   loadPreviousAuditForAlerts,
@@ -8,7 +9,7 @@ import type { AuditData } from "@/lib/types";
 import type { DetectedCompetitorChange } from "@/lib/competitor-monitor/types";
 import { generateAuditAlerts, generateCompetitorAlerts } from "./generate";
 
-/** Compare latest audit to previous and persist resulting alerts. */
+/** Compare latest audit to previous and persist resulting alerts (Business only). */
 export async function emitAlertsForCompletedAudit(input: {
   workspaceId: string;
   storeId: string | null;
@@ -16,6 +17,18 @@ export async function emitAlertsForCompletedAudit(input: {
   audit: AuditData;
 }): Promise<number> {
   try {
+    const allowed = await workspaceAllowsPlanFeature(
+      input.workspaceId,
+      "automatedAlerts"
+    );
+    if (!allowed) {
+      console.info("[alerts] skip audit emit — plan not entitled", {
+        workspaceId: input.workspaceId,
+        auditId: input.auditId,
+      });
+      return 0;
+    }
+
     const previous = await loadPreviousAuditForAlerts({
       workspaceId: input.workspaceId,
       storeId: input.storeId,
@@ -44,7 +57,7 @@ export async function emitAlertsForCompletedAudit(input: {
   }
 }
 
-/** Persist alerts for competitor monitor diffs. */
+/** Persist alerts for competitor monitor diffs (Business automatedAlerts). */
 export async function emitAlertsForCompetitorChanges(input: {
   workspaceId: string;
   storeId: string | null;
@@ -55,6 +68,18 @@ export async function emitAlertsForCompetitorChanges(input: {
   changes: DetectedCompetitorChange[];
 }): Promise<number> {
   try {
+    const allowed = await workspaceAllowsPlanFeature(
+      input.workspaceId,
+      "automatedAlerts"
+    );
+    if (!allowed) {
+      console.info("[alerts] skip competitor emit — plan not entitled", {
+        workspaceId: input.workspaceId,
+        targetId: input.targetId,
+      });
+      return 0;
+    }
+
     const drafts = generateCompetitorAlerts({
       changes: input.changes,
       targetId: input.targetId,

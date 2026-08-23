@@ -19,6 +19,10 @@ describe("sitemap", () => {
     expect(urls).toContain("https://www.convaudit.com/affiliate");
     expect(urls).toContain("https://www.convaudit.com/security");
     expect(urls).toContain("https://www.convaudit.com/privacy");
+    expect(urls).toContain("https://www.convaudit.com/terms");
+    expect(urls).toContain("https://www.convaudit.com/refund-policy");
+    expect(urls).toContain("https://www.convaudit.com/about");
+    expect(urls).toContain("https://www.convaudit.com/contact");
     expect(urls).toContain("https://www.convaudit.com/roadmap");
 
     for (const post of BLOG_POSTS) {

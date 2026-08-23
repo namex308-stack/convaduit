@@ -11,8 +11,7 @@ import {
   type DueCompetitorTarget,
 } from "@/lib/db/competitor-monitor-repository";
 import { emitAlertsForCompetitorChanges } from "@/lib/alerts/emit";
-import { getPlanForWorkspace } from "@/lib/db/workspace-stats";
-import { isPlanFeatureEnabled } from "@/lib/billing/entitlements";
+import { workspaceAllowsPlanFeature } from "@/lib/billing/workspace-entitlement";
 import { isCompetitorCrawlAllowed } from "./crawl-policy";
 import { detectCompetitorChanges } from "./diff";
 import { extractCompetitorSignals } from "./signals";
@@ -163,18 +162,6 @@ async function processTarget(target: DueCompetitorTarget): Promise<{
   };
 }
 
-async function workspaceAllowsCompetitor(
-  workspaceId: string,
-  cache: Map<string, boolean>
-): Promise<boolean> {
-  const cached = cache.get(workspaceId);
-  if (cached !== undefined) return cached;
-  const plan = await getPlanForWorkspace(workspaceId);
-  const allowed = isPlanFeatureEnabled(plan, "competitorMonitoring");
-  cache.set(workspaceId, allowed);
-  return allowed;
-}
-
 /** Scheduled production entrypoint for competitor change monitoring. */
 export async function runCompetitorMonitorJob(
   now = new Date()
@@ -187,7 +174,11 @@ export async function runCompetitorMonitorJob(
 
   const targetsSynced = await syncCompetitorTargetsFromAudits({
     isWorkspaceAllowed: (workspaceId) =>
-      workspaceAllowsCompetitor(workspaceId, entitlementCache),
+      workspaceAllowsPlanFeature(
+        workspaceId,
+        "competitorMonitoring",
+        entitlementCache
+      ),
   });
   const due = await listDueCompetitorTargets(now);
 
@@ -204,8 +195,9 @@ export async function runCompetitorMonitorJob(
 
   for (const target of due) {
     try {
-      const allowed = await workspaceAllowsCompetitor(
+      const allowed = await workspaceAllowsPlanFeature(
         target.workspaceId,
+        "competitorMonitoring",
         entitlementCache
       );
       if (!allowed) {

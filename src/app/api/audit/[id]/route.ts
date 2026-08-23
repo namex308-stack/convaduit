@@ -3,8 +3,8 @@ import { z } from "zod";
 import {
   deleteAuditForUser,
   getAuditAccessForUser,
-  getAuditByIdForUser,
 } from "@/lib/db/audit-repository";
+import { getEntitledAuditReportForUser } from "@/lib/billing/audit-report-access";
 import { requireApiUser } from "@/lib/auth/require-api-user";
 import { isAuditInProgress, isPlaceholderAuditId } from "@/lib/audits/types";
 
@@ -49,7 +49,7 @@ export async function GET(
   const auth = await requireApiUser();
   if (!auth.ok) return auth.response;
 
-  const stored = await getAuditByIdForUser(parsed.id, auth.user.id);
+  const stored = await getEntitledAuditReportForUser(parsed.id, auth.user.id);
   if (!stored) {
     return NextResponse.json({ error: "لم يتم العثور على التدقيق" }, { status: 404 });
   }
@@ -59,6 +59,7 @@ export async function GET(
     demoMode: stored.demoMode,
     aiConfigured: stored.aiConfigured,
     analysisRuns: stored.analysisRuns,
+    reportAccess: stored.reportAccess,
   });
 }
 

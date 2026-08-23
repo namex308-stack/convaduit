@@ -87,6 +87,12 @@ describe("GEO analysis engine", () => {
     expect(rich.score).toBeGreaterThanOrEqual(60);
     expect(weak.score).toBeLessThan(40);
     expect(rich.findings.some((f) => f.id === "geo-faq" && f.status === "pass")).toBe(true);
+    expect(rich.findings.every((f) => f.evidenceStatus === "PASS" || f.evidenceStatus === "FAIL")).toBe(
+      true
+    );
+    expect(rich.findings.every((f) => f.evidence?.url === "https://shop.example.com/products/serum")).toBe(
+      true
+    );
     expect(rich.recommendations.length).toBeGreaterThanOrEqual(0);
   });
 
@@ -172,6 +178,7 @@ describe("GEO analysis engine", () => {
     const empty = analyzeGeo(null);
     expect(empty.score).toBe(0);
     expect(empty.findings.length).toBeGreaterThan(0);
+    expect(empty.findings.every((f) => f.evidenceStatus === "NOT_VERIFIED")).toBe(true);
 
     const broken = analyzeGeo(
       page({
@@ -188,6 +195,7 @@ describe("GEO analysis engine", () => {
     expect(broken.score).toBeGreaterThanOrEqual(0);
     expect(broken.score).toBeLessThanOrEqual(100);
     expect(Array.isArray(broken.findings)).toBe(true);
+    expect(broken.findings.every((f) => f.evidenceStatus != null && f.evidence != null)).toBe(true);
     expect(broken.readability.chatgpt).toBeGreaterThanOrEqual(0);
   });
 

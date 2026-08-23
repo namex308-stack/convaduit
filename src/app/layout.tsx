@@ -105,7 +105,12 @@ export default function RootLayout({
   const locale = getLocaleConfig(getActiveLocaleId());
 
   return (
-    <html lang={locale.htmlLang} dir={locale.dir} suppressHydrationWarning>
+    <html
+      lang={locale.htmlLang}
+      dir={locale.dir}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body
         className={`${cairo.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

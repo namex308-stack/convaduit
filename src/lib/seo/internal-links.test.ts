@@ -14,6 +14,10 @@ const SITEMAP_STATIC_PATHS = [
   ROUTES.affiliate,
   ROUTES.security,
   ROUTES.privacy,
+  ROUTES.terms,
+  ROUTES.refundPolicy,
+  ROUTES.about,
+  ROUTES.contact,
   ROUTES.roadmap,
 ] as const;
 

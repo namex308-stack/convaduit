@@ -1,17 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   aiGeneratorLockedMessage,
   apiLockedMessage,
   canCreateStore,
   competitorLockedMessage,
+  automatedAlertsLockedMessage,
   competitorMonitoringLockedMessage,
   decideStoreEnsure,
   ENTITLEMENT_CODES,
   featureLockedBody,
   isPlanFeatureEnabled,
   oldestAllowedStoreIds,
+  shouldBypassEntitlementLimits,
+  shouldBypassStoreLimit,
   storeLimitReachedBody,
   storeLimitReachedMessage,
+  weeklyMonitoringLockedMessage,
 } from "@/lib/billing/entitlements";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
 import type { PlanLimits } from "@/lib/dashboard/types";
@@ -93,29 +97,68 @@ describe("isPlanFeatureEnabled", () => {
   });
 });
 
-describe("canCreateStore", () => {
+describe("shouldBypassEntitlementLimits", () => {
+  it("bypasses outside production", () => {
+    expect(shouldBypassEntitlementLimits({ NODE_ENV: "development" })).toBe(true);
+    expect(shouldBypassEntitlementLimits({ NODE_ENV: "test" })).toBe(true);
+    expect(shouldBypassStoreLimit({ NODE_ENV: "development" })).toBe(true);
+  });
+
+  it("never bypasses in production", () => {
+    expect(shouldBypassEntitlementLimits({ NODE_ENV: "production" })).toBe(false);
+    expect(shouldBypassStoreLimit({ NODE_ENV: "production" })).toBe(false);
+  });
+});
+
+describe("canCreateStore (production)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("enforces Free stores_limit of 1", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    expect(PLAN_LIMITS.free.storesLimit).toBe(1);
     expect(canCreateStore(0, 1)).toBe(true);
     expect(canCreateStore(1, 1)).toBe(false);
   });
 
   it("enforces Pro stores_limit of 5", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(canCreateStore(4, 5)).toBe(true);
     expect(canCreateStore(5, 5)).toBe(false);
   });
 
   it("enforces Business stores_limit of 15", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(canCreateStore(14, 15)).toBe(true);
     expect(canCreateStore(15, 15)).toBe(false);
   });
 });
 
-describe("decideStoreEnsure", () => {
+describe("canCreateStore (development)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("allows multiple stores even when Free plan limit is 1", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(PLAN_LIMITS.free.storesLimit).toBe(1);
+    expect(canCreateStore(1, PLAN_LIMITS.free.storesLimit)).toBe(true);
+    expect(canCreateStore(5, PLAN_LIMITS.free.storesLimit)).toBe(true);
+  });
+});
+
+describe("decideStoreEnsure (production)", () => {
   const freeLimit = freePlan.storesLimit;
   const proLimit = proPlan.storesLimit;
   const businessLimit = businessPlan.storesLimit;
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("rejects Free store #2 (insert)", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(
       decideStoreEnsure({
         existingId: null,
@@ -127,6 +170,7 @@ describe("decideStoreEnsure", () => {
   });
 
   it("allows updating the existing Free store", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(
       decideStoreEnsure({
         existingId: "store-1",
@@ -138,6 +182,7 @@ describe("decideStoreEnsure", () => {
   });
 
   it("rejects ensureWorkspaceStore on a bypass extra when a store already exists", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(
       decideStoreEnsure({
         existingId: "store-2",
@@ -149,6 +194,7 @@ describe("decideStoreEnsure", () => {
   });
 
   it("enforces Pro stores_limit of 5", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(
       decideStoreEnsure({
         existingId: null,
@@ -168,6 +214,7 @@ describe("decideStoreEnsure", () => {
   });
 
   it("enforces Business stores_limit of 15", () => {
+    vi.stubEnv("NODE_ENV", "production");
     expect(
       decideStoreEnsure({
         existingId: null,
@@ -182,6 +229,7 @@ describe("decideStoreEnsure", () => {
   });
 
   it("does not count another workspace's stores toward this workspace quota", () => {
+    vi.stubEnv("NODE_ENV", "production");
     const thisWorkspaceIds = ["ws-a-store-1"];
     expect(
       oldestAllowedStoreIds(["ws-b-store-1", "ws-b-store-2"], freeLimit)
@@ -202,6 +250,51 @@ describe("decideStoreEnsure", () => {
         oldestAllowedStoreIds: oldestAllowedStoreIds([], freeLimit),
       })
     ).toEqual({ action: "insert" });
+  });
+});
+
+describe("decideStoreEnsure (development)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("allows inserting Free store #2 and beyond", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(PLAN_LIMITS.free.storesLimit).toBe(1);
+    expect(
+      decideStoreEnsure({
+        existingId: null,
+        currentCount: 1,
+        storesLimit: PLAN_LIMITS.free.storesLimit,
+        oldestAllowedStoreIds: oldestAllowedStoreIds(["store-1"], PLAN_LIMITS.free.storesLimit),
+      })
+    ).toEqual({ action: "insert" });
+    expect(
+      decideStoreEnsure({
+        existingId: null,
+        currentCount: 4,
+        storesLimit: PLAN_LIMITS.free.storesLimit,
+        oldestAllowedStoreIds: oldestAllowedStoreIds(
+          ["s1", "s2", "s3", "s4"],
+          PLAN_LIMITS.free.storesLimit
+        ),
+      })
+    ).toEqual({ action: "insert" });
+  });
+
+  it("allows updating an over-quota existing store", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(
+      decideStoreEnsure({
+        existingId: "store-2",
+        currentCount: 2,
+        storesLimit: PLAN_LIMITS.free.storesLimit,
+        oldestAllowedStoreIds: oldestAllowedStoreIds(
+          ["store-1", "store-2"],
+          PLAN_LIMITS.free.storesLimit
+        ),
+      })
+    ).toEqual({ action: "update" });
   });
 });
 
@@ -234,6 +327,32 @@ describe("featureLockedBody", () => {
     expect(featureLockedBody("competitorMonitoring", "pro")).toEqual({
       error: competitorMonitoringLockedMessage(),
       code: ENTITLEMENT_CODES.COMPETITOR_MONITORING_LOCKED,
+      plan: "pro",
+    });
+  });
+
+  it("returns WEEKLY_MONITORING_LOCKED for Free/Pro direct API bypass attempts", () => {
+    expect(featureLockedBody("weeklyMonitoring", "free")).toEqual({
+      error: weeklyMonitoringLockedMessage(),
+      code: ENTITLEMENT_CODES.WEEKLY_MONITORING_LOCKED,
+      plan: "free",
+    });
+    expect(featureLockedBody("weeklyMonitoring", "pro")).toEqual({
+      error: weeklyMonitoringLockedMessage(),
+      code: ENTITLEMENT_CODES.WEEKLY_MONITORING_LOCKED,
+      plan: "pro",
+    });
+  });
+
+  it("returns AUTOMATED_ALERTS_LOCKED for Free/Pro direct API bypass attempts", () => {
+    expect(featureLockedBody("automatedAlerts", "free")).toEqual({
+      error: automatedAlertsLockedMessage(),
+      code: ENTITLEMENT_CODES.AUTOMATED_ALERTS_LOCKED,
+      plan: "free",
+    });
+    expect(featureLockedBody("automatedAlerts", "pro")).toEqual({
+      error: automatedAlertsLockedMessage(),
+      code: ENTITLEMENT_CODES.AUTOMATED_ALERTS_LOCKED,
       plan: "pro",
     });
   });

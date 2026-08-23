@@ -46,6 +46,11 @@ export interface NormalizedPage {
   structuredData: Record<string, unknown>;
   scrapeStatus: "ok" | "failed";
   scrapeMs?: number;
+  /**
+   * Firecrawl viewport screenshot of this page URL (signed URL; may expire).
+   * Not a product/OG image — those live in structuredData.
+   */
+  screenshotUrl?: string | null;
 }
 
 export type AnalyzerName =

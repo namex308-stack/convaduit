@@ -9,6 +9,7 @@ import {
   extractPageData,
   extractionToStructuredData,
 } from "@/lib/firecrawl/extract";
+import { extractFirecrawlScreenshotUrl } from "@/lib/firecrawl/screenshot";
 import { fetchSafePublicHttpUrl } from "@/lib/safe-http-fetch";
 import { assertSafePublicHttpUrl } from "@/lib/url-safety";
 
@@ -103,7 +104,7 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
       },
       body: JSON.stringify({
         url: target,
-        formats: ["markdown", "html"],
+        formats: ["markdown", "html", "screenshot"],
         onlyMainContent: true,
       }),
       cache: "no-store",
@@ -143,11 +144,17 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
     const data = json.data ?? json;
     const html: string | undefined = typeof data.html === "string" ? data.html.slice(0, MAX_HTML_BYTES) : undefined;
     const markdown: string = data.markdown || "";
+    const screenshotUrl = extractFirecrawlScreenshotUrl(
+      data && typeof data === "object" ? (data as Record<string, unknown>) : null
+    );
     const extracted = extractPageData(html, markdown, data.metadata as Record<string, unknown> | undefined, target);
     const title = extracted.title || extractTitleFromUrl(target);
     const description = extracted.description || "";
     const pageType = classifyPageType(target, title, markdown);
-    const structuredData = extractionToStructuredData(extracted);
+    const structuredData = {
+      ...extractionToStructuredData(extracted),
+      ...(screenshotUrl ? { screenshotUrl } : {}),
+    };
     const normalizedMarkdown = normalizeMarkdown(markdown);
     const imageCount = extracted.images.length || (extracted.ogImage ? 1 : 0);
 
@@ -163,6 +170,7 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
         structuredData,
         scrapeStatus: "ok",
         scrapeMs: Date.now() - started,
+        screenshotUrl,
       },
       errorCode: null,
       source: "firecrawl",

@@ -19,9 +19,27 @@ export const FOOTER_LINK_COLS: readonly {
     links: [
       { labelKey: "footer.link.features", href: "/#features" },
       { labelKey: "footer.link.howItWorks", href: "/#how" },
-      { labelKey: "footer.link.methodology", href: "/#methodology" },
       { labelKey: "footer.pricing", href: ROUTES.pricing },
       { labelKey: "footer.docs", href: ROUTES.docs },
+      { labelKey: "footer.link.geoVisibility", href: ROUTES.geo },
+      { labelKey: "footer.link.aiGenerator", href: `${ROUTES.docs}#2` },
+    ],
+  },
+  {
+    titleKey: "footer.col.company",
+    links: [
+      { labelKey: "footer.link.about", href: ROUTES.about },
+      { labelKey: "footer.link.contact", href: ROUTES.contact },
+      { labelKey: "footer.link.faqs", href: "/#faq" },
+    ],
+  },
+  {
+    titleKey: "footer.col.resources",
+    links: [
+      { labelKey: "footer.blog", href: ROUTES.blog },
+      { labelKey: "footer.link.changelog", href: ROUTES.changelog },
+      { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
+      { labelKey: "footer.link.affiliateProgram", href: ROUTES.affiliate },
     ],
   },
   {
@@ -29,18 +47,9 @@ export const FOOTER_LINK_COLS: readonly {
     links: [
       { labelKey: "footer.link.security", href: ROUTES.security },
       { labelKey: "footer.link.privacy", href: ROUTES.privacy },
-      { labelKey: "footer.link.infrastructure", href: `${ROUTES.security}#infrastructure` },
-      { labelKey: "footer.link.compliance", href: `${ROUTES.security}#compliance` },
+      { labelKey: "footer.link.terms", href: ROUTES.terms },
+      { labelKey: "footer.link.refundPolicy", href: ROUTES.refundPolicy },
       { labelKey: "footer.link.systemStatus", href: ROUTES.status },
-    ],
-  },
-  {
-    titleKey: "footer.col.resources",
-    links: [
-      { labelKey: "footer.link.changelog", href: ROUTES.changelog },
-      { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
-      { labelKey: "footer.blog", href: ROUTES.blog },
-      { labelKey: "footer.link.affiliateProgram", href: ROUTES.affiliate },
     ],
   },
 ];
@@ -50,7 +59,7 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-border/60 bg-muted/20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
           <div className="col-span-2 md:col-span-1">
             <Link href={ROUTES.home} className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-ring">
               <Logo />
@@ -67,7 +76,7 @@ export function Footer() {
               </h4>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((link) => (
-                  <li key={link.href}>
+                  <li key={`${link.labelKey}-${link.href}`}>
                     <Link
                       href={link.href}
                       className="text-sm text-muted-foreground hover:text-foreground transition-colors"

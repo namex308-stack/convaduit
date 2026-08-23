@@ -5,6 +5,7 @@ import {
   decideStoreEnsure,
   oldestAllowedStoreIds,
 } from "@/lib/billing/entitlements";
+import { shouldSkipUsageQuotaCheck } from "@/lib/billing/quota";
 import type { AnalyzerName, AnalyzerJsonResult, NormalizedPage, UsageMetric } from "@/lib/db/types";
 import type { AuditData } from "@/lib/types";
 import {
@@ -547,6 +548,9 @@ export type UsageQuotaResult = {
  * `limit === null` means unlimited (e.g. Business plan) — always allowed.
  * Fails closed (denies) on unexpected database errors so a broken quota
  * check can never silently bypass a billing limit.
+ *
+ * Non-production environments skip the monthly audit quota check so local
+ * multi-store analysis is not blocked; AI generation quota stays enforced.
  */
 export async function tryConsumeUsageQuota(input: {
   workspaceId: string;
@@ -556,6 +560,10 @@ export async function tryConsumeUsageQuota(input: {
   periodEnd: string;
   ref?: { type: string; id: string };
 }): Promise<UsageQuotaResult> {
+  if (shouldSkipUsageQuotaCheck(input.metric)) {
+    return { allowed: true, used: 0, usageEventId: null };
+  }
+
   const sb = getSupabaseAdmin();
   // Fail closed: never silently bypass billing limits when admin is unavailable.
   if (!sb) {
@@ -736,6 +744,7 @@ export async function saveGeneratedContentForAudit(input: {
 
 export type StoredAuditReport = {
   audit: AuditData;
+  workspaceId: string;
   demoMode: boolean;
   aiConfigured: boolean;
   analysisRuns: {
@@ -861,6 +870,7 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
   const sb = getSupabaseAdmin();
   if (!sb) return null;
   const auditId = row.id as string;
+  const workspaceId = row.workspace_id as string;
 
   const demoMode = row.model === "demo" || !process.env.GEMINI_API_KEY;
   const aiConfigured = !!process.env.GEMINI_API_KEY;
@@ -893,6 +903,7 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
   if (report?.summary && typeof report.summary === "object") {
     const summary = report.summary as AuditData;
     return {
+      workspaceId,
       audit: decodeAuditDisplayFields({
         ...summary,
         id: auditId,
@@ -912,6 +923,7 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
   // In-progress / failed audits must be readable for scanning polls and routing.
   if (rowStatus !== "completed") {
     return {
+      workspaceId,
       audit: decodeAuditDisplayFields({
         id: auditId,
         productUrl: (row.product_url as string) || "",
@@ -1013,5 +1025,11 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
     status: rowStatus,
   };
 
-  return { audit: decodeAuditDisplayFields(audit), demoMode, aiConfigured, analysisRuns };
+  return {
+    workspaceId,
+    audit: decodeAuditDisplayFields(audit),
+    demoMode,
+    aiConfigured,
+    analysisRuns,
+  };
 }

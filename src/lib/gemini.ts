@@ -723,6 +723,11 @@ function buildPageSignals(
     (typeof structured.ogImage === "string" && structured.ogImage) ||
     undefined;
 
+  const pageScreenshotUrl =
+    (typeof page.screenshotUrl === "string" && page.screenshotUrl) ||
+    (typeof structured.screenshotUrl === "string" && structured.screenshotUrl) ||
+    undefined;
+
   const websiteDetected = page.scrapeStatus === "ok" && Boolean(page.markdown?.trim() || page.title);
   const productPageDetected =
     page.pageType === "product" ||
@@ -788,6 +793,7 @@ function buildPageSignals(
     productPageDetected,
     productImageDetected,
     productImageUrl: primaryImage,
+    pageScreenshotUrl,
     pageTitle: decodeHtmlEntities(page.title),
     pageType: page.pageType,
     errors: uniqueErrors.slice(0, 8),

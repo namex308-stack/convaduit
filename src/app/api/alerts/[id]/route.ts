@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth/require-api-user";
 import { markAlertReadForUser } from "@/lib/db/alerts-repository";
+import { getPlanForUser } from "@/lib/db/workspace-stats";
+import {
+  featureLockedBody,
+  isPlanFeatureEnabled,
+} from "@/lib/billing/entitlements";
 
 export async function PATCH(
   request: Request,
@@ -8,6 +13,13 @@ export async function PATCH(
 ) {
   const auth = await requireApiUser();
   if (!auth.ok) return auth.response;
+
+  const plan = await getPlanForUser(auth.user.id);
+  if (!isPlanFeatureEnabled(plan, "automatedAlerts")) {
+    return NextResponse.json(featureLockedBody("automatedAlerts", plan.planId), {
+      status: 403,
+    });
+  }
 
   const { id } = await context.params;
   if (!id) {

@@ -1,6 +1,6 @@
 import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import { AuditReport } from "@/components/app/audit-report";
-import { getAuditByIdForUser } from "@/lib/db/audit-repository";
+import { getEntitledAuditReportForUser } from "@/lib/billing/audit-report-access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAuditInProgress, isPlaceholderAuditId } from "@/lib/audits/types";
 
@@ -15,7 +15,7 @@ export default async function ReportPage({ params }: PageProps) {
     notFound();
   }
 
-  let stored: Awaited<ReturnType<typeof getAuditByIdForUser>>;
+  let stored: Awaited<ReturnType<typeof getEntitledAuditReportForUser>>;
   try {
     const supabase = await createSupabaseServerClient();
     if (!supabase) {
@@ -30,7 +30,7 @@ export default async function ReportPage({ params }: PageProps) {
       redirect(`/auth?next=${encodeURIComponent(`/audit/${id}/report`)}`);
     }
 
-    stored = await getAuditByIdForUser(id, user.id);
+    stored = await getEntitledAuditReportForUser(id, user.id);
   } catch (err) {
     // Preserve notFound()/redirect() control-flow errors for the App Router.
     unstable_rethrow(err);
@@ -52,6 +52,7 @@ export default async function ReportPage({ params }: PageProps) {
       audit={stored.audit}
       demoMode={stored.demoMode}
       aiConfigured={stored.aiConfigured}
+      reportAccess={stored.reportAccess}
     />
   );
 }

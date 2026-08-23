@@ -94,7 +94,9 @@ import {
   type QuickWinTask,
 } from "@/lib/report/quick-wins";
 import type { AuditData, PageSignals, Recommendation, ScorePillar } from "@/lib/types";
+import { resolveWebsitePagePreview } from "@/lib/firecrawl/screenshot";
 import { decodeAuditDisplayFields } from "@/lib/text/decode-html";
+import type { ReportAccess } from "@/lib/billing/report-preview";
 
 type PillarIcon = typeof Zap;
 
@@ -112,12 +114,15 @@ export type AuditReportProps = {
   audit?: AuditData | null;
   demoMode?: boolean;
   aiConfigured?: boolean;
+  /** Server-enforced Free preview vs full paid report access. */
+  reportAccess?: ReportAccess;
 };
 
 export function AuditReport({
   audit: rawAudit,
   demoMode = false,
   aiConfigured = true,
+  reportAccess,
 }: AuditReportProps) {
   const t = useT();
   const audit = rawAudit ? decodeAuditDisplayFields(rawAudit) : rawAudit;
@@ -145,8 +150,21 @@ export function AuditReport({
   const isDemo = demoMode || Boolean(audit.demoMode);
   const showAiWarning = !aiConfigured || isDemo;
   const auditId = audit.id ?? "demo";
+  const isPreview = reportAccess?.mode === "preview";
   const prioritized = prioritizeRecommendations(audit.recommendations);
-  const criticalCount = prioritized.filter((r) => r.severity === "critical").length;
+  const visibleCritical = prioritized
+    .filter((r) => r.severity === "critical")
+    .slice(0, reportAccess?.visibleCriticalLimit ?? prioritized.length);
+  const recommendationCards = isPreview ? visibleCritical : prioritized;
+  const criticalCount =
+    reportAccess?.criticalIssueCount ??
+    prioritized.filter((r) => r.severity === "critical").length;
+  const totalRecommendations =
+    reportAccess?.totalRecommendations ?? prioritized.length;
+  const lockedRecommendationCount = Math.max(
+    0,
+    totalRecommendations - recommendationCards.length
+  );
   const scoreDelta =
     audit.competitorScore != null ? audit.overallScore - audit.competitorScore : null;
 
@@ -156,10 +174,12 @@ export function AuditReport({
   }));
 
   const comparisonData =
-    audit.competitorBreakdown?.map((c) => {
-      const you = audit.breakdown.find((b) => b.pillar === c.pillar)?.score ?? 0;
-      return { pillar: t(PILLAR_META[c.pillar].labelKey), you, competitor: c.score };
-    }) ?? [];
+    !isPreview && audit.competitorBreakdown
+      ? audit.competitorBreakdown.map((c) => {
+          const you = audit.breakdown.find((b) => b.pillar === c.pillar)?.score ?? 0;
+          return { pillar: t(PILLAR_META[c.pillar].labelKey), you, competitor: c.score };
+        })
+      : [];
 
   const signals = audit.pageSignals ?? deriveSignalsFromAudit(audit);
   const executiveSummary = buildExecutiveSummary(audit);
@@ -184,7 +204,12 @@ export function AuditReport({
 
         <EstimatedBusinessImpactSection audit={audit} />
 
-        <QuickWinsSection audit={audit} />
+        <QuickWinsSection
+          audit={audit}
+          maxOpen={
+            isPreview ? reportAccess?.visibleQuickWinsLimit ?? 2 : undefined
+          }
+        />
 
         <ScoreOverviewSection
           overallScore={audit.overallScore}
@@ -310,7 +335,7 @@ export function AuditReport({
                     {
                       icon: ListChecks,
                       labelKey: "report.recommendations" as TranslationKey,
-                      value: String(prioritized.length),
+                      value: String(totalRecommendations),
                       tone: "brand" as const,
                     },
                   ] as const
@@ -338,12 +363,12 @@ export function AuditReport({
                   );
                 })}
               </div>
-              {prioritized[0] && (
+              {recommendationCards[0] && (
                 <div className="mt-5 rounded-xl border border-primary/25 bg-primary/5 p-4 text-start">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-primary">
                     {t("report.nextAction")}
                   </div>
-                  <p className="mt-1 text-sm font-semibold leading-snug">{prioritized[0].problem}</p>
+                  <p className="mt-1 text-sm font-semibold leading-snug">{recommendationCards[0].problem}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t("report.nextActionHint")}</p>
                 </div>
               )}
@@ -390,7 +415,12 @@ export function AuditReport({
 
         {/* Comparison */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {comparisonData.length > 0 ? (
+          {isPreview ? (
+            <ReportUpgradeCard
+              title={t("report.competitorComparison")}
+              body={t("dashboard.unlockSub")}
+            />
+          ) : comparisonData.length > 0 ? (
             <div className="rounded-2xl border border-border/60 bg-card p-6">
               <h2 className="font-display text-lg font-bold flex items-center gap-2">
                 <TrendingUp className="size-5 text-primary" /> {t("report.competitorComparison")}
@@ -483,10 +513,26 @@ export function AuditReport({
                 </div>
               ))}
             </div>
+            {isPreview && (
+              <div className="mt-4">
+                <ReportUpgradeCard
+                  compact
+                  title={t("report.geoTitle")}
+                  body={t("report.unlockAll", { count: totalRecommendations })}
+                />
+              </div>
+            )}
           </div>
         </div>
 
-        <AiRecommendationSimulator audit={audit} />
+        {isPreview ? (
+          <ReportUpgradeCard
+            title={t("report.simulator")}
+            body={t("dashboard.unlockSub")}
+          />
+        ) : (
+          <AiRecommendationSimulator audit={audit} />
+        )}
 
         {/* Unified prioritized recommendations */}
         <div>
@@ -495,29 +541,46 @@ export function AuditReport({
               <h2 className="font-display text-2xl font-bold">{t("report.aiRecommendations")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("report.priorityListHint")}</p>
             </div>
-            {prioritized.length > 0 && (
+            {recommendationCards.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                {t("report.showingAll", { count: prioritized.length })}
+                {isPreview
+                  ? t("report.moreOnPro", { count: lockedRecommendationCount })
+                  : t("report.showingAll", { count: recommendationCards.length })}
               </p>
             )}
           </div>
           <ol className="space-y-4">
-            {prioritized.map((r, i) => (
+            {recommendationCards.map((r, i) => (
               <li key={r.id}>
                 <RecommendationCard rec={r} index={i} />
               </li>
             ))}
           </ol>
-          {prioritized.length === 0 && (
+          {recommendationCards.length === 0 && (
             <p className="text-sm text-muted-foreground rounded-2xl border border-border/60 bg-card p-6 text-center">
               {t("report.emptyRecommendations")}
             </p>
           )}
+          {isPreview && lockedRecommendationCount > 0 && (
+            <div className="mt-4">
+              <ReportUpgradeCard
+                title={t("report.aiRecommendations")}
+                body={t("report.unlockAll", { count: totalRecommendations })}
+              />
+            </div>
+          )}
         </div>
 
-        <GrowthRoadmapSection audit={audit} />
+        <GrowthRoadmapSection
+          audit={audit}
+          maxTasks={
+            isPreview ? reportAccess?.visibleRoadmapTaskLimit ?? 2 : undefined
+          }
+          showUpgrade={isPreview}
+          lockedCount={lockedRecommendationCount}
+        />
 
-        {audit.generatedContent && (
+        {!isPreview && audit.generatedContent && (
           <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="font-display text-xl font-bold flex items-center gap-2">
@@ -563,29 +626,75 @@ export function AuditReport({
           </div>
         )}
 
+        {isPreview && (
+          <ReportUpgradeCard
+            title={t("report.generatedImprovements")}
+            body={t("dashboard.unlockSub")}
+          />
+        )}
+
         {/* CTA */}
         <div className="rounded-2xl gradient-brand p-8 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-dots opacity-20" />
           <div className="relative">
-            <h3 className="font-display text-2xl font-bold">{t("report.applyFixes")}</h3>
+            <h3 className="font-display text-2xl font-bold">
+              {isPreview ? t("report.unlockAll", { count: totalRecommendations }) : t("report.applyFixes")}
+            </h3>
             <div className="mt-6 flex flex-wrap gap-3 justify-center">
-              <Button asChild variant="secondary" className="rounded-full font-semibold">
-                <Link href={`/audit/${auditId}/generate`}>{t("report.aiGenerator")}</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-full font-semibold bg-white/10 border-white/30 text-white hover:bg-white/20"
-              >
-                <Link href={`/audit/${auditId}/compare`}>
-                  {t("compare.title")} <ArrowRight className="size-4 ms-1 rtl:rotate-180" />
-                </Link>
-              </Button>
+              {isPreview ? (
+                <Button asChild variant="secondary" className="rounded-full font-semibold">
+                  <Link href="/pricing">{t("nav.upgradePlan")}</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="secondary" className="rounded-full font-semibold">
+                    <Link href={`/audit/${auditId}/generate`}>{t("report.aiGenerator")}</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="rounded-full font-semibold bg-white/10 border-white/30 text-white hover:bg-white/20"
+                  >
+                    <Link href={`/audit/${auditId}/compare`}>
+                      {t("compare.title")} <ArrowRight className="size-4 ms-1 rtl:rotate-180" />
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </PageContent>
     </PageShell>
+  );
+}
+
+/** Reuses the compare-page upgrade card pattern — no new visual design. */
+function ReportUpgradeCard({
+  title,
+  body,
+  compact = false,
+}: {
+  title: string;
+  body: string;
+  compact?: boolean;
+}) {
+  const t = useT();
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-border/60 bg-card text-center",
+        compact ? "p-5" : "p-8"
+      )}
+    >
+      {!compact && (
+        <h2 className="font-display text-lg font-bold mb-2">{title}</h2>
+      )}
+      <p className="text-sm text-muted-foreground">{body}</p>
+      <Button asChild className="mt-4 rounded-full">
+        <Link href="/pricing">{t("nav.upgradePlan")}</Link>
+      </Button>
+    </div>
   );
 }
 
@@ -615,7 +724,17 @@ function roadmapStorageKey(auditId: string): string {
   return `storepulse:growth-roadmap:${auditId}`;
 }
 
-function GrowthRoadmapSection({ audit }: { audit: AuditData }) {
+function GrowthRoadmapSection({
+  audit,
+  maxTasks,
+  showUpgrade = false,
+  lockedCount = 0,
+}: {
+  audit: AuditData;
+  maxTasks?: number;
+  showUpgrade?: boolean;
+  lockedCount?: number;
+}) {
   const t = useT();
   const roadmap = React.useMemo(() => buildGrowthRoadmap(audit), [audit]);
   const auditId = audit.id ?? "demo";
@@ -647,6 +766,18 @@ function GrowthRoadmapSection({ audit }: { audit: AuditData }) {
     });
   };
 
+  const flatPreviewIds = React.useMemo(() => {
+    if (maxTasks == null) return null;
+    const ids: string[] = [];
+    for (const horizon of ROADMAP_HORIZON_ORDER) {
+      for (const task of roadmap[horizon]) {
+        ids.push(task.id);
+        if (ids.length >= maxTasks) return new Set(ids);
+      }
+    }
+    return new Set(ids);
+  }, [roadmap, maxTasks]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -673,7 +804,11 @@ function GrowthRoadmapSection({ audit }: { audit: AuditData }) {
         <div className="space-y-5">
           {ROADMAP_HORIZON_ORDER.map((horizon) => {
             const meta = ROADMAP_HORIZON_META[horizon];
-            const tasks = roadmap[horizon];
+            const tasks =
+              flatPreviewIds == null
+                ? roadmap[horizon]
+                : roadmap[horizon].filter((task) => flatPreviewIds.has(task.id));
+            if (flatPreviewIds != null && tasks.length === 0) return null;
             return (
               <div
                 key={horizon}
@@ -704,6 +839,13 @@ function GrowthRoadmapSection({ audit }: { audit: AuditData }) {
             );
           })}
         </div>
+
+        {showUpgrade && (
+          <ReportUpgradeCard
+            title={t("report.roadmap")}
+            body={t("report.unlockAll", { count: Math.max(lockedCount, 1) })}
+          />
+        )}
       </div>
     </motion.div>
   );
@@ -808,16 +950,24 @@ const QUICK_WIN_DIFFICULTY_KEYS: Record<QuickWinDifficulty, TranslationKey> = {
   medium: "report.quickWinsDifficultyMedium",
 };
 
-function QuickWinsSection({ audit }: { audit: AuditData }) {
+function QuickWinsSection({
+  audit,
+  maxOpen,
+}: {
+  audit: AuditData;
+  maxOpen?: number;
+}) {
   const t = useT();
   const [open, setOpen] = React.useState<QuickWinTask[]>([]);
   const [completed, setCompleted] = React.useState<QuickWinTask[]>([]);
 
   React.useEffect(() => {
     const resolved = resolveQuickWinsWithCompletion(audit);
-    setOpen(resolved.open);
-    setCompleted(resolved.completed);
-  }, [audit]);
+    setOpen(
+      maxOpen != null ? resolved.open.slice(0, maxOpen) : resolved.open
+    );
+    setCompleted(maxOpen != null ? [] : resolved.completed);
+  }, [audit, maxOpen]);
 
   return (
     <motion.div
@@ -859,26 +1009,28 @@ function QuickWinsSection({ audit }: { audit: AuditData }) {
           )}
         </div>
 
-        <div>
-          <h3 className="font-display text-lg font-bold mb-1 flex items-center gap-2">
-            <Check className="size-4 text-primary" />
-            {t("report.quickWinsCompleted")}
-          </h3>
-          <p className="text-xs text-muted-foreground mb-3">
-            {t("report.quickWinsCompletedHint")}
-          </p>
-          {completed.length === 0 ? (
-            <p className="text-sm text-muted-foreground rounded-2xl border border-border/60 bg-background/50 p-5">
-              {t("report.quickWinsCompletedEmpty")}
+        {maxOpen == null && (
+          <div>
+            <h3 className="font-display text-lg font-bold mb-1 flex items-center gap-2">
+              <Check className="size-4 text-primary" />
+              {t("report.quickWinsCompleted")}
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              {t("report.quickWinsCompletedHint")}
             </p>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-4">
-              {completed.map((task) => (
-                <QuickWinCard key={`done-${task.fingerprint}`} task={task} />
-              ))}
-            </div>
-          )}
-        </div>
+            {completed.length === 0 ? (
+              <p className="text-sm text-muted-foreground rounded-2xl border border-border/60 bg-background/50 p-5">
+                {t("report.quickWinsCompletedEmpty")}
+              </p>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {completed.map((task) => (
+                  <QuickWinCard key={`done-${task.fingerprint}`} task={task} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -1613,6 +1765,58 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   );
 }
 
+function WebsitePagePreview({
+  productUrl,
+  pageScreenshotUrl,
+  productImageUrl,
+}: {
+  productUrl: string;
+  pageScreenshotUrl?: string;
+  productImageUrl?: string;
+}) {
+  const t = useT();
+  const resolved = resolveWebsitePagePreview({
+    analyzedUrl: productUrl,
+    pageUrl: productUrl,
+    pageScreenshotUrl,
+    productImageUrl,
+  });
+  const [broken, setBroken] = React.useState(false);
+  const showShot = resolved.kind === "screenshot" && !broken;
+
+  return (
+    <div className="mt-3 rounded-lg border border-border/50 bg-background/80 overflow-hidden">
+      <div dir="ltr" className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border/50 bg-muted/40">
+        <span className="size-2 rounded-full bg-rose-400" />
+        <span className="size-2 rounded-full bg-amber-400" />
+        <span className="size-2 rounded-full bg-emerald-400" />
+        <span className="ms-2 text-[10px] text-muted-foreground truncate">{productUrl}</span>
+      </div>
+      {showShot ? (
+        <div className="aspect-[16/10] bg-muted/30">
+          <img
+            src={resolved.url}
+            alt={t("report.signals.websitePreviewAlt")}
+            className="size-full object-cover object-top"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setBroken(true)}
+          />
+        </div>
+      ) : (
+        <div className="aspect-[16/10] grid place-items-center px-3 text-center bg-muted/20">
+          <div>
+            <Globe2 className="size-6 text-muted-foreground/50 mx-auto" aria-hidden />
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              {t("report.signals.previewUnavailable")}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PageSignalsPanel({
   signals,
   productUrl,
@@ -1633,24 +1837,11 @@ function PageSignalsPanel({
       okKey: "report.signals.websiteOk" as const,
       failKey: "report.signals.websiteFail" as const,
       preview: (
-        <div className="mt-3 rounded-lg border border-border/50 bg-background/80 overflow-hidden">
-          <div dir="ltr" className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border/50 bg-muted/40">
-            <span className="size-2 rounded-full bg-rose-400" />
-            <span className="size-2 rounded-full bg-amber-400" />
-            <span className="size-2 rounded-full bg-emerald-400" />
-            <span className="ms-2 text-[10px] text-muted-foreground truncate">{productUrl}</span>
-          </div>
-          <div className="p-3 space-y-2">
-            <div className="h-2 w-2/3 rounded bg-foreground/15" />
-            <div className="h-2 w-full rounded bg-muted" />
-            <div className="h-2 w-5/6 rounded bg-muted" />
-            <div className="grid grid-cols-3 gap-1.5 pt-1">
-              <div className="h-8 rounded bg-primary/15" />
-              <div className="h-8 rounded bg-muted" />
-              <div className="h-8 rounded bg-muted" />
-            </div>
-          </div>
-        </div>
+        <WebsitePagePreview
+          productUrl={productUrl}
+          pageScreenshotUrl={signals.pageScreenshotUrl}
+          productImageUrl={signals.productImageUrl}
+        />
       ),
     },
     {
