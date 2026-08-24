@@ -48,6 +48,7 @@ const privateAppRobotHeaders = PRIVATE_APP_PATHS.flatMap((path) => [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   // `next dev` binds as localhost. Chromium on http://127.0.0.1:3000 sends
   // Origin: 127.0.0.1 for scripts with crossorigin=""; Next then 403s those
   // chunks unless this host is allowlisted.

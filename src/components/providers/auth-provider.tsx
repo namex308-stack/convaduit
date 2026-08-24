@@ -33,40 +33,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     let mounted = true;
+    let subscription: { unsubscribe: () => void } | null = null;
 
     void withTimeout(
       supabase.auth.getSession().then((r) => r.data.session),
       4_000,
       null
-    ).then((nextSession) => {
-      if (!mounted) return;
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      setLoading(false);
-    });
+    )
+      .then((nextSession) => {
+        if (!mounted) return;
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        // If Supabase/network fails, keep the app usable (marketing + guest flows).
+        if (!mounted) return;
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
+    try {
+      const {
+        data: { subscription: nextSubscription },
+      } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+        setLoading(false);
+      });
+      subscription = nextSubscription;
+    } catch {
+      // auth listener setup failed; don't block the UI
       setLoading(false);
-    });
+    }
 
     const onProfileUpdated = () => {
-      void supabase.auth.refreshSession().then(({ data }) => {
-        if (!mounted) return;
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user);
-        }
-      });
+      void supabase.auth
+        .refreshSession()
+        .then(({ data }) => {
+          if (!mounted) return;
+          if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+          }
+        })
+        .catch(() => {
+          // Network failures during refresh are non-fatal for the UI.
+        });
     };
     window.addEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
       window.removeEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
     };
   }, []);
