@@ -47,7 +47,10 @@ const privateAppRobotHeaders = PRIVATE_APP_PATHS.flatMap((path) => [
 ]);
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Next 16.3 + Vercel adapter: standalone skips `.next/next-server.js.nft.json`,
+  // then onBuildComplete fails with ENOENT. Keep standalone for local/Docker;
+  // Vercel traces the deployment itself.
+  output: process.env.VERCEL ? undefined : "standalone",
   poweredByHeader: false,
   // `next dev` binds as localhost. Chromium on http://127.0.0.1:3000 sends
   // Origin: 127.0.0.1 for scripts with crossorigin=""; Next then 403s those
