@@ -14,6 +14,7 @@ import {
   SITE_DESCRIPTION,
   SITE_OG_TITLE,
 } from "@/lib/seo/site-copy";
+import { Analytics } from "@vercel/analytics/next";
 
 /** Arabic-first typeface (Latin fallback for brand name, URLs, code). */
 const cairo = Cairo({
@@ -120,6 +121,7 @@ export default function RootLayout({
             <SonnerToaster position="top-center" richColors closeButton />
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
       <GoogleAnalytics gaId="G-MDR2NP5CJ3" />
     </html>
