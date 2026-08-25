@@ -5,11 +5,13 @@ import { translate } from "@/lib/locale/t";
 import { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 import {
   buildBlogArticleJsonLd,
+  buildContactPageJsonLd,
   buildFaqPageJsonLd,
   buildHomeJsonLdGraph,
   buildSoftwareApplicationJsonLd,
   collectJsonLdUrls,
 } from "@/lib/seo/structured-data";
+import { CONTACT_EMAIL } from "@/lib/seo/contact";
 import { ORGANIZATION_SAME_AS } from "@/lib/seo/social";
 import { ROUTES } from "@/lib/routes";
 
@@ -65,6 +67,16 @@ describe("structured data", () => {
     };
     const org = graph["@graph"].find((n) => n["@type"] === "Organization");
     expect(org?.sameAs).toEqual([...ORGANIZATION_SAME_AS]);
+    expect(org?.email).toBe(CONTACT_EMAIL);
+  });
+
+  it("builds ContactPage schema pointing at the Organization", () => {
+    const jsonLd = parseJsonLd(buildContactPageJsonLd()) as Record<string, unknown>;
+    expect(jsonLd).toMatchObject({
+      "@type": "ContactPage",
+      url: `${CANONICAL}${ROUTES.contact}`,
+      mainEntity: { "@id": `${CANONICAL}#organization` },
+    });
   });
 
   it("emits EGP offers that match marketing plan monthly prices", () => {

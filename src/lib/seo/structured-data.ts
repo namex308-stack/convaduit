@@ -4,6 +4,7 @@ import { ROUTES } from "@/lib/routes";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
 import { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 import { isCalendarDateOnOrBeforeToday } from "@/lib/seo/dates";
+import { CONTACT_EMAIL } from "@/lib/seo/contact";
 import { ORGANIZATION_SAME_AS } from "@/lib/seo/social";
 
 export { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
@@ -36,7 +37,15 @@ function organizationNode(base: string) {
     url: base,
     logo: absoluteUrl("/icon.svg"),
     description: SOFTWARE_DESCRIPTION,
+    email: CONTACT_EMAIL,
     sameAs: [...ORGANIZATION_SAME_AS],
+    contactPoint: {
+      "@type": "ContactPoint" as const,
+      email: CONTACT_EMAIL,
+      contactType: "customer support",
+      url: absoluteUrl(ROUTES.contact),
+      availableLanguage: ["ar"],
+    },
   };
 }
 
@@ -91,6 +100,18 @@ function faqPageNode() {
         text: translate(aKey),
       },
     })),
+  };
+}
+
+export function buildContactPageJsonLd() {
+  const base = getSiteUrl();
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "ContactPage" as const,
+    name: "اتصل بنا",
+    url: absoluteUrl(ROUTES.contact),
+    inLanguage: "ar",
+    mainEntity: { "@id": organizationSchemaId(base) },
   };
 }
 
