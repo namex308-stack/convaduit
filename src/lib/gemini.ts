@@ -227,7 +227,13 @@ export async function runAudit(
   await options?.onAnalyzerComplete?.("trust", batch.perPillarResults.trust);
   await options?.onAnalyzerComplete?.("recommendations", batch.recommendationsResult);
 
-  return assembleAuditData(primary, comp, results, moduleResults, !isGeminiConfigured());
+  return assembleAuditData(
+    primary,
+    comp,
+    results,
+    moduleResults,
+    batch.pillarSource !== "gemini"
+  );
 }
 
 /** One Gemini call for conversion + SEO + trust + recommendations. */
@@ -705,6 +711,7 @@ function heuristicBatchedPillarAnalysis(
         fixType: "manual" as const,
       })),
     },
+    pillarSource: "heuristic",
   };
 }
 
@@ -900,7 +907,7 @@ function buildBatchedPillarPrompt(
 
   const textExample = "string بالعربية";
 
-  return `أنت محرك تحليل متاجر إلكترونية في مصر والخليج (StorePulse / ConvAudit).
+  return `أنت محرك تحليل متاجر إلكترونية في مصر والخليج (ConvAudit).
 حلّل الصفحة وأرجع درجات التحويل وSEO والثقة مع النتائج — في استجابة JSON واحدة فقط.
 درجة GEO تُحسب محليًا؛ لا تُرجع عمود geo.
 

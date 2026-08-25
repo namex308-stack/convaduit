@@ -21,6 +21,10 @@ const PUBLIC_INDEXABLE_PATHS = [
   ...BLOG_SLUGS.map((slug) => ROUTES.blogPost(slug)),
   ROUTES.security,
   ROUTES.privacy,
+  ROUTES.terms,
+  ROUTES.refundPolicy,
+  ROUTES.about,
+  ROUTES.contact,
   ROUTES.roadmap,
 ] as const;
 

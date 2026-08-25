@@ -11,6 +11,10 @@ import {
   AUTH_APP_PATHS,
   PROTECTED_APP_PATHS,
 } from "@/lib/seo/private-app-paths";
+import {
+  hasSupabaseSessionCookie,
+  shouldRefreshAuthSession,
+} from "@/lib/supabase/auth-cookie";
 
 /** App routes that require a Supabase session. */
 const PROTECTED_PATHS = [...PROTECTED_APP_PATHS];
@@ -28,8 +32,9 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 }
 
 /**
- * Refresh the Supabase session cookie on every matched request, then gate
+ * Refresh the Supabase session cookie when a session cookie is present, then gate
  * protected App Router paths whenever Supabase is configured.
+ * Anonymous public traffic skips getUser() to keep TTFB low.
  * Incomplete onboarding redirects to the resume step (Supabase is source of truth).
  */
 export async function updateSession(request: NextRequest) {
@@ -63,6 +68,22 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
+  const hasSessionCookie = hasSupabaseSessionCookie(request.cookies.getAll());
+  if (!hasSessionCookie && !isAuthCallback) {
+    if (isProtected) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/auth";
+      loginUrl.searchParams.set(
+        "next",
+        buildLoginRedirectTarget(pathname, request.nextUrl.search, {
+          isOnboardingRoute: isOnboardingPath(pathname),
+        })
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
+  }
+
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
@@ -81,7 +102,12 @@ export async function updateSession(request: NextRequest) {
   });
 
   let user: { id: string } | null = null;
-  if (!isAuthCallback) {
+  if (
+    shouldRefreshAuthSession({
+      hasSessionCookie,
+      isAuthCallback,
+    })
+  ) {
     try {
       const result = await withTimeout(
         supabase.auth.getUser(),

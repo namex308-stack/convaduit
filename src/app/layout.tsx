@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Cairo, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { DeferredGoogleAnalytics } from "@/components/analytics/deferred-google-analytics";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
@@ -23,11 +23,18 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  // Preload only the files next/font selects as primary; extra weights still
+  // load via @font-face + swap and must remain available (no visual change).
+  preload: true,
+  adjustFontFallback: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -56,6 +63,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
       { url: "/icon.svg", type: "image/svg+xml" },
     ],
     apple: [
@@ -127,8 +135,8 @@ export default function RootLayout({
             <SpeedInsights />
           </AuthProvider>
         </ThemeProvider>
+        <DeferredGoogleAnalytics />
       </body>
-      <GoogleAnalytics gaId="G-MDR2NP5CJ3" />
     </html>
   );
 }

@@ -30,9 +30,35 @@ test.describe("CI — HTTP status / soft-200 SEO", () => {
   });
 
   test("valid public pages return 200", async ({ request }) => {
-    for (const path of ["/", "/pricing", "/blog", "/blog/geo-ai-visibility-guide"]) {
+    for (const path of [
+      "/",
+      "/pricing",
+      "/docs",
+      "/blog",
+      "/blog/geo-ai-visibility-guide",
+      "/about",
+      "/contact",
+      "/security",
+      "/privacy",
+      "/terms",
+      "/refund-policy",
+      "/roadmap",
+      "/auth",
+      "/sitemap.xml",
+      "/robots.txt",
+      "/llms.txt",
+      "/favicon.ico",
+      "/icon.svg",
+    ]) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status(), path).toBe(200);
+    }
+  });
+
+  test("deleted placeholder pages return 404", async ({ request }) => {
+    for (const path of ["/status", "/changelog", "/affiliate"]) {
+      const res = await request.get(path, { maxRedirects: 0 });
+      expect(res.status(), path).toBe(404);
     }
   });
 

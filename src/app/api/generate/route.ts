@@ -11,7 +11,7 @@ import {
   saveGeneratedContentForAudit,
   tryConsumeUsageQuota,
 } from "@/lib/db/audit-repository";
-import { getCurrentUsagePeriod, getPlanForUser } from "@/lib/db/workspace-stats";
+import { getCurrentUsagePeriod, getPlanForWorkspace } from "@/lib/db/workspace-stats";
 import { aiLimitReachedMessage } from "@/lib/billing/quota";
 import {
   aiGeneratorLockedMessage,
@@ -21,6 +21,9 @@ import {
 import { assertSafePublicHttpUrl } from "@/lib/url-safety";
 import { normalizeAppLocale } from "@/lib/locale";
 import { toJsonValue } from "@/lib/audits/parse";
+
+export const runtime = "nodejs";
+export const maxDuration = 300;
 
 const Body = z.object({
   productUrl: z.string().url().optional(),
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "تعذّر تجهيز مساحة العمل" }, { status: 503 });
     }
 
-    const plan = await getPlanForUser(auth.user.id);
+    const plan = await getPlanForWorkspace(workspaceId);
 
     const rateKey = `user:${auth.user.id}`;
     const { success } = await checkRateLimit(rateKey, plan.planId);
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
         auditId,
         productUrl: safeUrl.href,
         content: toJsonValue({ error: generated.error, code: generated.code }),
-        model: geminiConfigured ? getGeminiModelId() : "page",
+        model: geminiConfigured ? "failed" : "page",
         generationType,
         status: "failed",
         durationMs: Math.max(0, Date.now() - started),

@@ -365,9 +365,11 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
       crawl_duration_ms: audit.crawlMetadata?.scrapeMs ?? null,
       analysis_version: AUDIT_ANALYSIS_VERSION,
       completed_at: new Date().toISOString(),
-      model: process.env.GEMINI_API_KEY
-        ? getGeminiModelId()
-        : "demo",
+      model: audit.demoMode
+        ? process.env.GEMINI_API_KEY
+          ? "heuristic"
+          : "demo"
+        : getGeminiModelId(),
     })
     .eq("id", auditId);
 
@@ -873,7 +875,10 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
   const auditId = row.id as string;
   const workspaceId = row.workspace_id as string;
 
-  const demoMode = row.model === "demo" || !process.env.GEMINI_API_KEY;
+  const demoMode =
+    row.model === "demo" ||
+    row.model === "heuristic" ||
+    !process.env.GEMINI_API_KEY;
   const aiConfigured = !!process.env.GEMINI_API_KEY;
 
   const { data: runs } = await sb

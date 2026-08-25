@@ -72,7 +72,7 @@ export async function probeStoreUrl(rawUrl: string): Promise<StoreProbeResult> {
       method: "GET",
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; ConvAuditBot/1.0; +https://convaudit.com)",
+          "Mozilla/5.0 (compatible; ConvAuditBot/1.0; +https://www.convaudit.com)",
         Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
       },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),

@@ -8,6 +8,7 @@ import {
   buildContactPageJsonLd,
   buildFaqPageJsonLd,
   buildHomeJsonLdGraph,
+  buildMarketingPageJsonLd,
   buildSoftwareApplicationJsonLd,
   collectJsonLdUrls,
 } from "@/lib/seo/structured-data";
@@ -40,13 +41,30 @@ describe("structured data", () => {
     expect(graph["@graph"]).toHaveLength(4);
 
     const types = graph["@graph"].map((n) => n["@type"]);
-    expect(types).toEqual(["Organization", "WebSite", "SoftwareApplication", "FAQPage"]);
+    expect(types).toEqual([
+      "Organization",
+      "WebSite",
+      ["SoftwareApplication", "Product"],
+      "FAQPage",
+    ]);
 
     const orgNodes = graph["@graph"].filter((n) => n["@type"] === "Organization");
     expect(orgNodes).toHaveLength(1);
 
     const website = graph["@graph"].find((n) => n["@type"] === "WebSite");
     expect(website?.publisher).toEqual({ "@id": `${CANONICAL}#organization` });
+    expect(website?.about).toEqual({ "@id": `${CANONICAL}#software` });
+
+    const software = graph["@graph"].find((n) => {
+      const t = n["@type"];
+      return t === "SoftwareApplication" || (Array.isArray(t) && t.includes("SoftwareApplication"));
+    });
+    expect(software?.["@id"]).toBe(`${CANONICAL}#software`);
+    expect(software?.name).toBe("ConvAudit");
+    expect(software?.url).toBe(CANONICAL);
+    const features = software?.featureList as string[];
+    expect(features.join(" ")).not.toMatch(/استعلام حي داخل ChatGPT/);
+    expect(features.some((f) => f.includes("بدون استعلام حي"))).toBe(true);
   });
 
   it("uses the canonical deployment domain for every site-owned absolute URL", () => {
@@ -142,5 +160,36 @@ describe("structured data", () => {
     }
 
     vi.useRealTimers();
+  });
+
+  it("does not claim live ChatGPT or Perplexity search integrations", () => {
+    const faq = buildFaqPageJsonLd();
+    const blob = JSON.stringify(faq);
+    expect(blob).toMatch(/لا يدمج ChatGPT أو Perplexity/);
+    expect(blob).not.toMatch(/نختبر صفحتك داخل ChatGPT/);
+    expect(blob).toMatch(/Shopify/);
+    expect(blob).toMatch(/WooCommerce/);
+    expect(blob).toMatch(/سلة \(Salla\)/);
+    expect(blob).toMatch(/زد \(Zid\)/);
+
+    const software = buildSoftwareApplicationJsonLd();
+    expect(JSON.stringify(software.featureList)).toMatch(/بدون استعلام حي/);
+  });
+
+  it("builds inner marketing WebPage + BreadcrumbList linked to site entities", () => {
+    const jsonLd = parseJsonLd(
+      buildMarketingPageJsonLd({
+        name: "التوثيق ودليل البدء",
+        path: ROUTES.docs,
+        description: "دليل المنتج",
+      })
+    ) as { "@graph": Array<Record<string, unknown>> };
+
+    const page = jsonLd["@graph"].find((n) => n["@type"] === "WebPage");
+    const crumbs = jsonLd["@graph"].find((n) => n["@type"] === "BreadcrumbList");
+    expect(page?.isPartOf).toEqual({ "@id": `${CANONICAL}#website` });
+    expect(page?.about).toEqual({ "@id": `${CANONICAL}#software` });
+    expect(page?.url).toBe(`${CANONICAL}${ROUTES.docs}`);
+    expect(crumbs?.itemListElement).toHaveLength(2);
   });
 });

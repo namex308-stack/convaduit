@@ -17,9 +17,7 @@ export const ROUTES = {
   about: "/about",
   contact: "/contact",
   geo: "/geo",
-  status: "/status",
   roadmap: "/roadmap",
-  changelog: "/changelog",
 
   auth: "/auth",
   dashboard: "/dashboard",

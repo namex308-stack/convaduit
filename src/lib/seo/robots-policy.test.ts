@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import robots from "@/app/robots";
 import {
   PRIVATE_APP_PATHS,
   ROBOTS_DISALLOW_PATHS,
@@ -15,9 +16,11 @@ const PUBLIC_PATHS = [
   ...BLOG_SLUGS.map((slug) => ROUTES.blogPost(slug)),
   ROUTES.security,
   ROUTES.privacy,
-  ROUTES.status,
+  ROUTES.terms,
+  ROUTES.refundPolicy,
+  ROUTES.about,
+  ROUTES.contact,
   ROUTES.roadmap,
-  ROUTES.changelog,
   "/llms.txt",
 ] as const;
 
@@ -52,5 +55,14 @@ describe("robots disallow contract", () => {
     // Billing lives under /settings/billing; there is no /billing or /ai-studio page.
     expect(PRIVATE_APP_PATHS).not.toContain("/billing");
     expect(PRIVATE_APP_PATHS).not.toContain("/ai-studio");
+  });
+
+  it("advertises the www origin for Host and sitemap even when APP_URL is apex", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com");
+    const policy = robots();
+    expect(policy.host).toBe("https://www.convaudit.com");
+    expect(policy.sitemap).toBe("https://www.convaudit.com/sitemap.xml");
+    vi.unstubAllEnvs();
   });
 });

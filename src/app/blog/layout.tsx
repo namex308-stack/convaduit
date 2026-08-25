@@ -1,15 +1,31 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { JsonLd } from "@/components/seo/json-ld";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
+import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
 import { translate } from "@/lib/locale/t";
 import { ROUTES } from "@/lib/routes";
 
+const TITLE = "مدونة التجارة الإلكترونية وGEO";
+const DESCRIPTION = translate("blog.subtitle");
+
 export const metadata: Metadata = publicPageMetadata({
-  title: "مدونة التجارة الإلكترونية وGEO",
-  description: translate("blog.subtitle"),
+  title: TITLE,
+  description: DESCRIPTION,
   path: ROUTES.blog,
 });
 
 export default function BlogLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <JsonLd
+        data={buildMarketingPageJsonLd({
+          name: TITLE,
+          path: ROUTES.blog,
+          description: DESCRIPTION,
+        })}
+      />
+      {children}
+    </>
+  );
 }

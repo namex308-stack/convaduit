@@ -9,7 +9,6 @@ import { absoluteUrl } from "@/lib/site-url";
  * Excluded (by design):
  * - Private/authenticated app surfaces (dashboard, audit, settings, auth, …)
  * - API routes
- * - Placeholder shells (`/status`, `/changelog`) until they have real content
  * - lastModified — omitted when no reliable modification timestamp exists
  *   (do not invent or stamp “today” / synthetic dates)
  */

@@ -14,10 +14,14 @@ import { parseImpact, parseSeverity } from "@/lib/audits/parse";
 import { buildScoreTrend } from "@/lib/dashboard/trend";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
 import { sanitizeDisplayName } from "@/lib/auth/display-user";
+import {
+  pageStatsFromRows,
+  recommendationStatsFromRows,
+  topIssuesFromRows,
+} from "@/lib/dashboard/recommendation-aggregates";
 import type {
   DashboardPayload,
   DashboardPriorityIssue,
-  DashboardTopIssue,
   PlanLimits,
   UsageCounts,
 } from "@/lib/dashboard/types";
@@ -262,15 +266,15 @@ export type ShellPayload = {
 };
 
 export async function getShellForUser(userId: string): Promise<ShellPayload> {
-  const [plan, audits, profileName] = await Promise.all([
+  const [plan, audits, profileName, notificationCount] = await Promise.all([
     getPlanForUser(userId),
     listAuditsForUser(userId, 8),
     getProfileDisplayName(userId),
+    countUnreadNotificationsForUser(userId),
   ]);
 
   const latestCompleted = audits.find((a) => a.status === "completed") ?? null;
   const latestAny = latestCompleted ?? audits[0] ?? null;
-  const notificationCount = await countUnreadNotificationsForUser(userId);
 
   return {
     planName: plan.displayName,
@@ -287,10 +291,11 @@ export async function getShellForUser(userId: string): Promise<ShellPayload> {
 export async function getDashboardForUser(userId: string): Promise<DashboardPayload> {
   const monthStart = startOfMonth().toISOString();
   const monthEnd = endOfMonth().toISOString();
-  const [plan, audits, counts] = await Promise.all([
+  const [plan, audits, counts, profileName] = await Promise.all([
     getPlanForUser(userId),
     listAuditsForUser(userId, 50),
     getUsageCountsForUser(userId, monthStart, monthEnd),
+    getProfileDisplayName(userId),
   ]);
   const completed = audits.filter((a) => a.status === "completed" && a.overallScore != null);
   const latest = completed[0] ?? null;
@@ -307,16 +312,27 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
   ].slice(0, 5);
   const trend = buildScoreTrend(completed, { locale: "ar", limit: 24 });
 
-  const [geoScore, geoSignals, decision, recStats, topIssues, pageStats, profileName] =
-    await Promise.all([
-      getLatestGeoScore(userId, latest?.id ?? null),
-      getLatestGeoSignals(latest?.id ?? null),
-      getDecisionRecommendations(latest?.id ?? null),
-      getRecommendationStats(userId),
-      getTopIssuesForUser(userId),
-      getPageStatsForUser(userId),
-      getProfileDisplayName(userId),
-    ]);
+  const statsAuditIds = new Set(audits.slice(0, 20).map((a) => a.id));
+  const monthStartTs = startOfMonth().getTime();
+  const auditsThisMonthIds = new Set(
+    audits
+      .filter((a) => {
+        const ts = new Date(a.completedAt || a.createdAt).getTime();
+        return Number.isFinite(ts) && ts >= monthStartTs;
+      })
+      .map((a) => a.id)
+  );
+
+  const [geoBundle, decision, recRows, pageRows] = await Promise.all([
+    getLatestGeoBundle(latest?.id ?? null),
+    getDecisionRecommendations(latest?.id ?? null),
+    fetchRecommendationRows(audits.map((a) => a.id)),
+    fetchAuditPageRows(audits.map((a) => a.id)),
+  ]);
+
+  const recStats = recommendationStatsFromRows(recRows, statsAuditIds);
+  const topIssues = topIssuesFromRows(recRows, statsAuditIds);
+  const pageStats = pageStatsFromRows(pageRows, recRows, auditsThisMonthIds);
 
   const recentEnriched = recent.map((r) => ({
     ...r,
@@ -333,7 +349,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
       totalAudits: audits.length,
       auditsThisMonth,
       auditsLimit: plan.auditsPerMonth,
-      geoScore,
+      geoScore: geoBundle.geoScore,
       openRecommendations: recStats.open,
       totalRecommendations: recStats.total,
       latestStoreScore: latest?.overallScore ?? null,
@@ -349,7 +365,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
           completedAt: latest.completedAt,
         }
       : null,
-    geoSignals,
+    geoSignals: geoBundle.geoSignals,
     priorityIssue: decision.priority,
     nextFixes: decision.next,
     topIssues,
@@ -369,36 +385,26 @@ async function getProfileDisplayName(userId: string): Promise<string | null> {
     .select("full_name")
     .eq("id", userId)
     .maybeSingle();
-  const name = sanitizeDisplayName(
+  return sanitizeDisplayName(
     typeof data?.full_name === "string" ? data.full_name : null
   );
-  if (!name) return null;
-
-  // Keep auth metadata aligned with profiles.full_name so JWT fallbacks stay current.
-  void sb.auth.admin
-    .updateUserById(userId, { user_metadata: { full_name: name.slice(0, 120) } })
-    .then(({ error }) => {
-      if (error) console.error("[profiles] auth metadata heal failed:", error.message);
-    });
-
-  return name;
 }
 
-async function getLatestGeoScore(userId: string, auditId: string | null): Promise<number | null> {
-  if (!auditId) return null;
+async function getLatestGeoBundle(auditId: string | null): Promise<{
+  geoScore: number | null;
+  geoSignals: DashboardPayload["geoSignals"];
+}> {
+  if (!auditId) return { geoScore: null, geoSignals: null };
   const sb = getSupabaseAdmin();
-  if (!sb) return null;
+  if (!sb) return { geoScore: null, geoSignals: null };
 
-  // Confirm membership already implied by listAuditsForUser
-  void userId;
+  const [{ data: auditRow }, geoSignals] = await Promise.all([
+    sb.from("audits").select("geo_score").eq("id", auditId).maybeSingle(),
+    getLatestGeoSignals(auditId),
+  ]);
 
-  const { data: auditRow } = await sb
-    .from("audits")
-    .select("geo_score")
-    .eq("id", auditId)
-    .maybeSingle();
   if (auditRow?.geo_score != null && Number.isFinite(Number(auditRow.geo_score))) {
-    return Math.round(Number(auditRow.geo_score));
+    return { geoScore: Math.round(Number(auditRow.geo_score)), geoSignals };
   }
 
   const { data: categories } = await sb
@@ -407,13 +413,15 @@ async function getLatestGeoScore(userId: string, auditId: string | null): Promis
     .eq("slug", "geo")
     .maybeSingle();
   if (!categories?.id) {
-    const signals = await getLatestGeoSignals(auditId);
-    if (!signals) return null;
-    const vals = [signals.perplexity, signals.chatgpt, signals.googleAi]
+    if (!geoSignals) return { geoScore: null, geoSignals: null };
+    const vals = [geoSignals.perplexity, geoSignals.chatgpt, geoSignals.googleAi]
       .map((n) => Number(n))
       .filter((n) => Number.isFinite(n));
-    if (!vals.length) return null;
-    return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    if (!vals.length) return { geoScore: null, geoSignals };
+    return {
+      geoScore: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length),
+      geoSignals,
+    };
   }
 
   const { data: score } = await sb
@@ -424,7 +432,10 @@ async function getLatestGeoScore(userId: string, auditId: string | null): Promis
     .eq("subject", "self")
     .maybeSingle();
 
-  return score?.score != null ? Number(score.score) : null;
+  return {
+    geoScore: score?.score != null ? Number(score.score) : null,
+    geoSignals,
+  };
 }
 
 async function getLatestGeoSignals(
@@ -541,153 +552,51 @@ async function getDecisionRecommendations(
   };
 }
 
-async function getRecommendationStats(
-  userId: string
-): Promise<{ open: number; total: number }> {
-  const sb = getSupabaseAdmin();
-  if (!sb) return { open: 0, total: 0 };
-
-  const audits = await listAuditsForUser(userId, 20);
-  const ids = audits.map((a) => a.id);
-  if (!ids.length) return { open: 0, total: 0 };
-
-  const { data, error } = await sb
-    .from("recommendations")
-    .select("id, status, severity")
-    .in("audit_id", ids);
-
-  if (error || !data) return { open: 0, total: 0 };
-  // Count real problems only — exclude filler "opportunity" success fluff.
-  const actionable = data.filter((r) => {
-    const severity = String(r.severity || "");
-    return severity === "critical" || severity === "warning";
-  });
-  const total = actionable.length;
-  const open = actionable.filter((r) => r.status === "open").length;
-  return { open, total };
-}
-
-async function getTopIssuesForUser(userId: string): Promise<DashboardTopIssue[]> {
+async function fetchRecommendationRows(auditIds: string[]): Promise<
+  { audit_id: string; status: string | null; severity: string | null; problem: string | null }[]
+> {
+  if (!auditIds.length) return [];
   const sb = getSupabaseAdmin();
   if (!sb) return [];
 
-  const audits = await listAuditsForUser(userId, 20);
-  const ids = audits.map((a) => a.id);
-  if (!ids.length) return [];
-
   const { data, error } = await sb
     .from("recommendations")
-    .select("problem, severity, status, audit_id")
-    .in("audit_id", ids)
-    .eq("status", "open")
-    .in("severity", ["critical", "warning"]);
+    .select("audit_id, status, severity, problem")
+    .in("audit_id", auditIds);
 
-  if (error || !data?.length) {
-    if (error) console.error("[dashboard] top issues failed:", error.message);
+  if (error || !data) {
+    if (error) console.error("[dashboard] recommendations aggregate failed:", error.message);
     return [];
   }
-
-  const grouped = new Map<
-    string,
-    { problem: string; count: number; severity: string; auditId: string }
-  >();
-
-  for (const row of data) {
-    const problem = String(row.problem || "").trim();
-    if (!problem) continue;
-    const key = problem.toLowerCase();
-    const existing = grouped.get(key);
-    if (existing) {
-      existing.count += 1;
-      const nextRank = SEVERITY_RANK[row.severity as string] ?? 9;
-      const curRank = SEVERITY_RANK[existing.severity] ?? 9;
-      if (nextRank < curRank) existing.severity = String(row.severity);
-    } else {
-      grouped.set(key, {
-        problem,
-        count: 1,
-        severity: String(row.severity || "opportunity"),
-        auditId: String(row.audit_id),
-      });
-    }
-  }
-
-  return [...grouped.values()]
-    .sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count;
-      return (SEVERITY_RANK[a.severity] ?? 9) - (SEVERITY_RANK[b.severity] ?? 9);
-    })
-    .slice(0, 5)
-    .map((item) => ({
-      problem: item.problem,
-      count: item.count,
-      severity: parseSeverity(item.severity),
-      auditId: item.auditId,
-    }));
+  return data as {
+    audit_id: string;
+    status: string | null;
+    severity: string | null;
+    problem: string | null;
+  }[];
 }
 
-async function getPageStatsForUser(userId: string): Promise<{
-  totalPages: number;
-  pagesThisMonth: number;
-  byAudit: Record<string, number>;
-  openIssuesByAudit: Record<string, number>;
-}> {
-  const empty = { totalPages: 0, pagesThisMonth: 0, byAudit: {}, openIssuesByAudit: {} };
+async function fetchAuditPageRows(auditIds: string[]): Promise<{ audit_id: string }[]> {
+  if (!auditIds.length) return [];
   const sb = getSupabaseAdmin();
-  if (!sb) return empty;
+  if (!sb) return [];
 
-  const audits = await listAuditsForUser(userId, 50);
-  const ids = audits.map((a) => a.id);
-  if (!ids.length) return empty;
-
-  const monthStartTs = startOfMonth().getTime();
-  const auditsThisMonthIds = new Set(
-    audits
-      .filter((a) => {
-        const ts = new Date(a.completedAt || a.createdAt).getTime();
-        return Number.isFinite(ts) && ts >= monthStartTs;
-      })
-      .map((a) => a.id)
-  );
-
-  const [{ data: pages }, { data: recs }] = await Promise.all([
-    sb.from("audit_pages").select("audit_id").in("audit_id", ids),
-    sb
-      .from("recommendations")
-      .select("audit_id, status, severity")
-      .in("audit_id", ids)
-      .eq("status", "open")
-      .in("severity", ["critical", "warning"]),
-  ]);
-
-  const byAudit: Record<string, number> = {};
-  let pagesThisMonth = 0;
-  for (const row of pages ?? []) {
-    const id = String(row.audit_id);
-    byAudit[id] = (byAudit[id] ?? 0) + 1;
-    if (auditsThisMonthIds.has(id)) pagesThisMonth += 1;
+  const { data, error } = await sb.from("audit_pages").select("audit_id").in("audit_id", auditIds);
+  if (error || !data) {
+    if (error) console.error("[dashboard] audit pages failed:", error.message);
+    return [];
   }
-
-  const openIssuesByAudit: Record<string, number> = {};
-  for (const row of recs ?? []) {
-    const id = String(row.audit_id);
-    openIssuesByAudit[id] = (openIssuesByAudit[id] ?? 0) + 1;
-  }
-
-  return {
-    totalPages: (pages ?? []).length,
-    pagesThisMonth,
-    byAudit,
-    openIssuesByAudit,
-  };
+  return data as { audit_id: string }[];
 }
 
 export async function getUsageSummaryForUser(userId: string): Promise<UsagePayload> {
-  const plan = await getPlanForUser(userId);
   const from = startOfMonth();
   const to = endOfMonth();
-  const counts = await getUsageCountsForUser(userId, from.toISOString(), to.toISOString());
   const workspaceId = await ensurePersonalWorkspace(userId);
+  const [plan, counts] = await Promise.all([
+    workspaceId ? getPlanForWorkspace(workspaceId) : Promise.resolve(FREE_PLAN_FALLBACK),
+    getUsageCountsForUser(userId, from.toISOString(), to.toISOString()),
+  ]);
   const sb = getSupabaseAdmin();
 
   const endpoints: UsagePayload["endpoints"] = [

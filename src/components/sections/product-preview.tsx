@@ -6,16 +6,26 @@ import { StartAuditCta } from "@/components/common/start-audit-cta";
 import { Container, Section, SectionHeader } from "@/components/design-system/section";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { useT } from "@/lib/i18n";
+import auditNewPng from "../../../public/product/audit-new.png";
+import dashboardPng from "../../../public/product/dashboard.png";
+
+/**
+ * Display width of each screenshot in the homepage grid:
+ * max-w-7xl (1280) − lg padding (4rem) − gap (1.5rem) ÷ 2 = 596px.
+ * `vw` tokens must be standalone so next/image's srcset width picker can see them.
+ */
+const PRODUCT_PREVIEW_SIZES =
+  "(min-width: 1280px) 596px, (min-width: 768px) 45vw, 92vw";
 
 const SHOTS = [
   {
-    src: "/product/audit-new.png",
+    image: auditNewPng,
     icon: Link2,
     titleKey: "productPreview.shot1.title" as const,
     captionKey: "productPreview.shot1.caption" as const,
   },
   {
-    src: "/product/dashboard.png",
+    image: dashboardPng,
     icon: LayoutDashboard,
     titleKey: "productPreview.shot2.title" as const,
     captionKey: "productPreview.shot2.caption" as const,
@@ -39,7 +49,7 @@ export function ProductPreview() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {SHOTS.map((shot, i) => (
-            <BlurFade key={shot.src} delay={i * 0.08} className="h-full">
+            <BlurFade key={shot.image.src} delay={i * 0.08} className="h-full">
               <figure className="h-full flex flex-col">
                 <div className="relative rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-elevated)] overflow-hidden">
                   <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/40">
@@ -48,11 +58,13 @@ export function ProductPreview() {
                   </div>
                   <div className="relative aspect-[16/10]">
                     <Image
-                      src={shot.src}
+                      src={shot.image}
                       alt={t(shot.titleKey)}
-                      fill
-                      sizes="(min-width: 768px) 50vw, 100vw"
-                      className="object-cover object-top"
+                      width={shot.image.width}
+                      height={shot.image.height}
+                      sizes={PRODUCT_PREVIEW_SIZES}
+                      className="absolute inset-0 size-full object-cover object-top"
+                      loading="lazy"
                     />
                   </div>
                 </div>

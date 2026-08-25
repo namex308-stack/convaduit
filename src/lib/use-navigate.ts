@@ -4,17 +4,12 @@ import { useRouter } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { ROUTES } from "@/lib/routes";
 import { withTimeout } from "@/lib/with-timeout";
+import {
+  CRAWLABLE_LOGIN_HREF,
+  CRAWLABLE_START_AUDIT_HREF,
+} from "@/lib/marketing-hrefs";
 
-/**
- * Stable guest destinations for marketing CTAs.
- * Always present as real `href`s so crawlers see crawlable links; click handlers
- * may still `preventDefault` and resolve auth/onboarding state for signed-in users.
- */
-export const CRAWLABLE_START_AUDIT_HREF =
-  `${ROUTES.auth}?mode=signup&next=${encodeURIComponent(ROUTES.onboarding)}` as const;
-
-export const CRAWLABLE_LOGIN_HREF =
-  `${ROUTES.auth}?mode=login&next=${encodeURIComponent(ROUTES.onboarding)}` as const;
+export { CRAWLABLE_LOGIN_HREF, CRAWLABLE_START_AUDIT_HREF };
 
 const AUTH_LOOKUP_MS = 2_500;
 const ONBOARDING_LOOKUP_MS = 2_500;

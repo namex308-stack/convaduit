@@ -17,7 +17,7 @@ const PLATFORM_KEYS: readonly TranslationKey[] = [
 export function LogosStrip() {
   const t = useT();
   return (
-    <section className="py-10 border-y border-border/50 bg-muted/20" aria-label={t("logos.title")}>
+    <section id="platforms" className="py-10 border-y border-border/50 bg-muted/20" aria-label={t("logos.title")}>
       <Container>
         <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-6">
           {t("logos.title")}

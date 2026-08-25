@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Code2, Zap, Bot, ShieldCheck, Search, Terminal } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { useT, type TranslationKey } from "@/lib/i18n";
+import { ROUTES } from "@/lib/routes";
 
 type Section = {
   icon: typeof Zap;
@@ -89,13 +90,44 @@ export default function DocsPage() {
                 <span className="text-xs font-mono text-muted-foreground mr-2">terminal</span>
               </div>
               <pre className="p-4 text-xs font-mono overflow-x-auto" dir="ltr"><code>{`${t("docs.code.runNewAudit")}
-curl -X POST https://api.convaudit.com/api/audit \\
+curl -X POST https://www.convaudit.com/api/audit \\
   -H "Content-Type: application/json" \\
   -d '{"productUrl": "https://shop.example.com/products/serum"}'
 
 ${t("docs.code.result")}
-{ "audit": { "overallScore": 82, ... } }`}</code></pre>
+{ "auditId": "...", "accepted": true }`}</code></pre>
             </div>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl font-bold mb-3">{t("docs.related.title")}</h2>
+            <ul className="rounded-2xl border border-border/60 bg-card p-5 space-y-2 text-sm">
+              <li>
+                <Link href="/#how" className="text-primary hover:underline">
+                  {t("docs.related.audit")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/#methodology" className="text-primary hover:underline">
+                  {t("docs.related.geo")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/#platforms" className="text-primary hover:underline">
+                  {t("docs.related.platforms")}
+                </Link>
+              </li>
+              <li>
+                <Link href={`${ROUTES.docs}#2`} className="text-primary hover:underline">
+                  {t("docs.related.generator")}
+                </Link>
+              </li>
+              <li>
+                <Link href={ROUTES.pricing} className="text-primary hover:underline">
+                  {t("docs.related.pricing")}
+                </Link>
+              </li>
+            </ul>
           </section>
         </div>
       </PageContent>

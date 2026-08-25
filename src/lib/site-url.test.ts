@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
+import {
+  absoluteUrl,
+  getSiteUrl,
+  PRODUCTION_CANONICAL_ORIGIN,
+  wwwRedirectLocation,
+} from "@/lib/site-url";
 
 describe("getSiteUrl", () => {
   afterEach(() => {
@@ -61,6 +66,19 @@ describe("getSiteUrl", () => {
     expect(getSiteUrl()).toBe("https://www.convaudit.com");
   });
 
+  it("rewrites the apex production host to the www origin", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com");
+    expect(getSiteUrl()).toBe(PRODUCTION_CANONICAL_ORIGIN);
+  });
+
+  it("rewrites apex APP_URL outside production so canonicals stay on www", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com/");
+    expect(getSiteUrl()).toBe(PRODUCTION_CANONICAL_ORIGIN);
+  });
+
   it("rewrites stale *.vercel.app APP_URL to the canonical production domain", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "production");
@@ -94,5 +112,38 @@ describe("absoluteUrl", () => {
     expect(absoluteUrl("/sitemap.xml")).toBe("https://www.convaudit.com/sitemap.xml");
     expect(absoluteUrl("pricing")).toBe("https://www.convaudit.com/pricing");
     expect(absoluteUrl("/")).toBe("https://www.convaudit.com");
+  });
+
+  it("rewrites apex absolute URLs to the www origin", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com");
+    expect(absoluteUrl("https://convaudit.com/pricing")).toBe(
+      "https://www.convaudit.com/pricing"
+    );
+    expect(absoluteUrl("https://convaudit.com/")).toBe(PRODUCTION_CANONICAL_ORIGIN);
+    expect(absoluteUrl("/docs")).toBe("https://www.convaudit.com/docs");
+  });
+
+  it("does not rewrite unrelated absolute URLs", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://www.convaudit.com");
+    expect(absoluteUrl("https://schema.org")).toBe("https://schema.org");
+  });
+});
+
+describe("wwwRedirectLocation", () => {
+  it("builds a www Location for apex hosts and preserves path + query", () => {
+    expect(wwwRedirectLocation("convaudit.com", "/", "")).toBe(
+      "https://www.convaudit.com/"
+    );
+    expect(wwwRedirectLocation("CONVAUDIT.COM:443", "/pricing", "?ref=1")).toBe(
+      "https://www.convaudit.com/pricing?ref=1"
+    );
+  });
+
+  it("does not redirect www, preview, or loopback hosts", () => {
+    expect(wwwRedirectLocation("www.convaudit.com", "/pricing")).toBeNull();
+    expect(wwwRedirectLocation("geo-lime-chi.vercel.app", "/")).toBeNull();
+    expect(wwwRedirectLocation("localhost", "/")).toBeNull();
   });
 });

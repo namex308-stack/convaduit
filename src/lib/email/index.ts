@@ -12,3 +12,10 @@ export {
   type SendEmailInput,
   type SendEmailResult,
 } from "./resend";
+export {
+  renderMasterEmailHtml,
+  sendMasterTransactionalEmail,
+  EMAIL_BRAND_ORANGE,
+  type MasterEmailVars,
+  type SendMasterEmailInput,
+} from "./master-template";

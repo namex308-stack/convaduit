@@ -11,7 +11,7 @@ type PublicPageMetadataInput = {
   type?: "website" | "article";
   /**
    * When false, page stays crawlable for UX but is not indexed
-   * (thin placeholders such as /status and /changelog).
+   * (use sparingly for thin or transitional public surfaces).
    */
   indexable?: boolean;
 };
@@ -52,7 +52,7 @@ export function publicPageMetadata({
     robots: indexable
       ? { index: true, follow: true }
       : {
-          // Thin public shells (/status, /changelog) — crawlable UX, not indexable.
+          // Non-indexable public surfaces — crawlable UX, not for search results.
           index: false,
           follow: true,
           googleBot: { index: false, follow: true },

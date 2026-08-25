@@ -22,7 +22,7 @@ import {
   tryConsumeUsageQuota,
   updateAuditStatus,
 } from "@/lib/db/audit-repository";
-import { getCurrentUsagePeriod, getPlanForUser } from "@/lib/db/workspace-stats";
+import { getCurrentUsagePeriod, getPlanForWorkspace } from "@/lib/db/workspace-stats";
 import { auditLimitReachedMessage } from "@/lib/billing/quota";
 import {
   competitorLockedMessage,
@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const plan = await getPlanForUser(auth.user.id);
+    const plan = await getPlanForWorkspace(workspaceId);
 
     const rateKey = `user:${auth.user.id}`;
     const { success, remaining, limit } = await checkRateLimit(rateKey, plan.planId);

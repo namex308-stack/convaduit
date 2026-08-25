@@ -39,6 +39,15 @@ describe("public internal links crawlability", () => {
     );
   });
 
+  it("does not send marketing GEO links to the private /geo app route", () => {
+    const hrefs = FOOTER_LINK_COLS.flatMap((col) => col.links.map((l) => l.href));
+    expect(hrefs).not.toContain(ROUTES.geo);
+    expect(hrefs).toContain("/#methodology");
+    expect(hrefs).toContain("/#platforms");
+    expect(hrefs).toContain("/#how");
+    expect(hrefs).toContain(`${ROUTES.docs}#2`);
+  });
+
   it("does not use empty or hash-only footer destinations", () => {
     const hrefs = FOOTER_LINK_COLS.flatMap((col) => col.links.map((l) => l.href));
     for (const href of hrefs) {

@@ -35,11 +35,11 @@ describe("public page metadata", () => {
     expect(meta.robots).toEqual({ index: true, follow: true });
   });
 
-  it("supports noindex for placeholder public shells", () => {
+  it("supports noindex for non-indexable public surfaces", () => {
     const meta = publicPageMetadata({
-      title: "حالة النظام",
-      description: "قيد الإعداد",
-      path: ROUTES.status,
+      title: "صفحة غير مفهرسة",
+      description: "وصف اختباري",
+      path: "/temporary-public-shell",
       indexable: false,
     });
     expect(meta.robots).toEqual({

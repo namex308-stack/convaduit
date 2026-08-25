@@ -164,7 +164,7 @@ export interface AuditData {
   /** Rule-engine GEO analysis (score, findings, component breakdown). */
   geoAnalysis?: GeoAnalysisResult;
   createdAt: string;
-  /** True when Gemini was unavailable and page-signal heuristics were used. */
+  /** True when Gemini was unavailable or failed, so page-signal heuristics were used. */
   demoMode?: boolean;
   /** What the crawler found on the merchant's page. */
   pageSignals?: PageSignals;

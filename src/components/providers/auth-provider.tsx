@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useAppStore } from "@/lib/store";
 import { PROFILE_UPDATED_EVENT } from "@/lib/auth/display-user";
 import { withTimeout } from "@/lib/with-timeout";
+import { clearCachedShell } from "@/lib/app/shell-cache";
 
 type AuthContextValue = {
   user: User | null;
@@ -94,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const supabase = getSupabaseBrowser();
     clearLocalSession();
+    clearCachedShell();
     if (supabase) {
       await supabase.auth.signOut();
     }

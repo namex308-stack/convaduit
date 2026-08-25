@@ -12,6 +12,7 @@ export { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 const SCHEMA_CONTEXT = "https://schema.org";
 const ORG_FRAGMENT = "#organization";
 const WEBSITE_FRAGMENT = "#website";
+const SOFTWARE_FRAGMENT = "#software";
 
 /** Stable `@id` for the site Organization (used in `@graph` to avoid duplicate nodes). */
 export function organizationSchemaId(base: string): string {
@@ -22,12 +23,16 @@ function websiteSchemaId(base: string): string {
   return `${base}${WEBSITE_FRAGMENT}`;
 }
 
+function softwareSchemaId(base: string): string {
+  return `${base}${SOFTWARE_FRAGMENT}`;
+}
+
 /**
  * Product description for schema — factual, aligned with homepage pillars.
- * No fixed SLAs or invented statistics.
+ * No fixed SLAs, invented statistics, or live ChatGPT/Perplexity query claims.
  */
 const SOFTWARE_DESCRIPTION =
-  "منصة تحليل تجارة إلكترونية بالذكاء الاصطناعي تحلل أي متجر أو صفحة منتج وتقيّمه في التحويل، SEO، الظهور في محركات الذكاء الاصطناعي (GEO) والثقة — مع إصلاحات جاهزة للنشر.";
+  "ConvAudit منصة تحليل تجارة إلكترونية على الويب: تدقيق صفحات المنتجات العامة عبر التحويل وSEO والثقة، وتحليل GEO لقابلية الظهور في محركات الذكاء الاصطناعي من إشارات الصفحة، مع مولد محتوى اختياري. الموقع الرسمي هو النطاق الأساسي للخدمة.";
 
 function organizationNode(base: string) {
   return {
@@ -58,19 +63,23 @@ function webSiteNode(base: string) {
     inLanguage: "ar",
     description: SOFTWARE_DESCRIPTION,
     publisher: { "@id": organizationSchemaId(base) },
+    about: { "@id": softwareSchemaId(base) },
   };
 }
 
 function softwareApplicationNode(base: string) {
   return {
-    "@type": "SoftwareApplication" as const,
+    "@type": ["SoftwareApplication", "Product"] as const,
+    "@id": softwareSchemaId(base),
     name: "ConvAudit",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     url: base,
     image: absoluteUrl("/opengraph-image"),
     description: SOFTWARE_DESCRIPTION,
+    brand: { "@id": organizationSchemaId(base) },
     provider: { "@id": organizationSchemaId(base) },
+    isPartOf: { "@id": websiteSchemaId(base) },
     offers: MARKETING_PLANS.map((plan) => ({
       "@type": "Offer" as const,
       name: plan.name,
@@ -79,12 +88,12 @@ function softwareApplicationNode(base: string) {
       url: absoluteUrl(ROUTES.pricing),
     })),
     featureList: [
-      "تقييم التحويل",
-      "تقييم SEO",
-      "تقييم الظهور في ChatGPT وPerplexity وGoogle AI",
-      "تقييم الثقة",
-      "مقارنة بالمنافسين",
-      "مولّد ذكاء اصطناعي (عناوين، أوصاف، أسئلة شائعة، Meta، نصوص إعلانية)",
+      "تدقيق صفحات منتجات المتاجر الإلكترونية",
+      "تحليل التحويل وSEO والثقة",
+      "تحليل GEO لقابلية الاقتباس من إشارات الصفحة (بدون استعلام حي لـ ChatGPT أو Perplexity)",
+      "تقدير قابلية الظهور في محركات الذكاء الاصطناعي من هيكل الصفحة",
+      "مولّد محتوى بالذكاء الاصطناعي (عناوين، أوصاف، أسئلة شائعة، نصوص إعلانية) عند تفعيل الباقة والمزوّد",
+      "دعم صفحات المنتجات العامة على Shopify وWooCommerce وسلة وزد",
     ],
   };
 }
@@ -147,6 +156,53 @@ export function buildFaqPageJsonLd() {
   return {
     "@context": SCHEMA_CONTEXT,
     ...faqPageNode(),
+  };
+}
+
+export type BreadcrumbItem = {
+  name: string;
+  path: string;
+};
+
+/** BreadcrumbList + WebPage for inner marketing URLs — links to Organization/Software via `@id`. */
+export function buildMarketingPageJsonLd(input: {
+  name: string;
+  path: string;
+  description?: string;
+}) {
+  const base = getSiteUrl();
+  const url = absoluteUrl(input.path);
+  const crumbs: BreadcrumbItem[] = [
+    { name: "ConvAudit", path: ROUTES.home },
+    { name: input.name, path: input.path },
+  ];
+
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@graph": [
+      {
+        "@type": "WebPage" as const,
+        "@id": url,
+        url,
+        name: input.name,
+        ...(input.description ? { description: input.description } : {}),
+        inLanguage: "ar",
+        isPartOf: { "@id": websiteSchemaId(base) },
+        about: { "@id": softwareSchemaId(base) },
+        publisher: { "@id": organizationSchemaId(base) },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+      },
+      {
+        "@type": "BreadcrumbList" as const,
+        "@id": `${url}#breadcrumb`,
+        itemListElement: crumbs.map((crumb, index) => ({
+          "@type": "ListItem" as const,
+          position: index + 1,
+          name: crumb.name,
+          item: absoluteUrl(crumb.path),
+        })),
+      },
+    ],
   };
 }
 

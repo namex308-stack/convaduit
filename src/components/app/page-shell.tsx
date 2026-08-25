@@ -17,6 +17,12 @@ import {
   PROFILE_UPDATED_EVENT,
   type ProfileUpdatedDetail,
 } from "@/lib/auth/display-user";
+import {
+  clearCachedShell,
+  getCachedShell,
+  setCachedShell,
+  type CachedShell,
+} from "@/lib/app/shell-cache";
 
 /** Public routes share homepage Navbar + Footer (one marketing chrome). */
 function MarketingShell({ children }: { children: React.ReactNode }) {
@@ -35,37 +41,55 @@ function ProductShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { lang, dir } = useLocale();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [latestAuditId, setLatestAuditId] = React.useState<string | null>(null);
-  const [planName, setPlanName] = React.useState<string | null>(null);
-  const [notificationCount, setNotificationCount] = React.useState(0);
-  const [preferredDisplayName, setPreferredDisplayName] = React.useState<string | null>(null);
+  const [latestAuditId, setLatestAuditId] = React.useState<string | null>(
+    () => getCachedShell()?.latestAuditId ?? null
+  );
+  const [planName, setPlanName] = React.useState<string | null>(
+    () => getCachedShell()?.planName ?? null
+  );
+  const [notificationCount, setNotificationCount] = React.useState(() => {
+    const cached = getCachedShell();
+    const latest = cached?.latestAuditId ?? null;
+    return latest ? (cached?.notificationCount ?? 0) : 0;
+  });
+  const [preferredDisplayName, setPreferredDisplayName] = React.useState<string | null>(
+    () => getCachedShell()?.displayName ?? null
+  );
 
   React.useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  const loadShell = React.useCallback(async (signal?: { cancelled: boolean }) => {
-    try {
-      const res = await fetch("/api/shell");
-      if (!res.ok) return;
-      const json = (await res.json()) as {
-        shell?: {
-          planName?: string;
-          displayName?: string | null;
-          latestAuditId?: string | null;
-          notificationCount?: number;
-        };
-      };
-      if (signal?.cancelled || !json.shell) return;
-      setPlanName(json.shell.planName ?? null);
-      setPreferredDisplayName(json.shell.displayName ?? null);
-      const latest = json.shell.latestAuditId ?? null;
-      setLatestAuditId(latest);
-      setNotificationCount(latest ? (json.shell.notificationCount ?? 0) : 0);
-    } catch {
-      /* ignore — nav still works with fallbacks */
-    }
+  const applyShell = React.useCallback((shell: CachedShell) => {
+    setPlanName(shell.planName ?? null);
+    setPreferredDisplayName(shell.displayName ?? null);
+    const latest = shell.latestAuditId ?? null;
+    setLatestAuditId(latest);
+    setNotificationCount(latest ? (shell.notificationCount ?? 0) : 0);
   }, []);
+
+  const loadShell = React.useCallback(
+    async (signal?: { cancelled: boolean }, options?: { force?: boolean }) => {
+      if (!options?.force) {
+        const cached = getCachedShell();
+        if (cached) {
+          applyShell(cached);
+          return;
+        }
+      }
+      try {
+        const res = await fetch("/api/shell");
+        if (!res.ok) return;
+        const json = (await res.json()) as { shell?: CachedShell };
+        if (signal?.cancelled || !json.shell) return;
+        setCachedShell(json.shell);
+        applyShell(json.shell);
+      } catch {
+        /* ignore — nav still works with fallbacks */
+      }
+    },
+    [applyShell]
+  );
 
   React.useEffect(() => {
     const state = { cancelled: false };
@@ -79,7 +103,8 @@ function ProductShell({ children }: { children: React.ReactNode }) {
     const onProfileUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ProfileUpdatedDetail>).detail;
       if (detail?.displayName) setPreferredDisplayName(detail.displayName);
-      void loadShell();
+      clearCachedShell();
+      void loadShell(undefined, { force: true });
     };
     window.addEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
     return () => window.removeEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);

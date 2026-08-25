@@ -2,7 +2,6 @@ import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { ScrollProgress } from "@/components/common/visual-effects";
 import { Hero } from "@/components/sections/hero";
 import { LogosStrip } from "@/components/sections/logos-strip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,6 +52,10 @@ function SectionSkeleton() {
   );
 }
 
+const ScrollProgress = dynamic(
+  () => import("@/components/common/scroll-progress").then((m) => ({ default: m.ScrollProgress })),
+  { ssr: true }
+);
 const WhyLoseSales = dynamic(
   () => import("@/components/sections/why-lose-sales").then((m) => ({ default: m.WhyLoseSales })),
   { loading: () => <SectionSkeleton /> }

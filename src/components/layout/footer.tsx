@@ -8,8 +8,7 @@ import { useT, type TranslationKey } from "@/lib/i18n";
 
 /**
  * Public footer link inventory — real `href`s only (no JS-only destinations).
- * Sitemap indexable pages are covered here; `/status` and `/changelog` remain
- * linked for humans but are noindex placeholders (not in sitemap).
+ * Every sitemap static marketing page should appear here as a crawlable href.
  */
 export const FOOTER_LINK_COLS: readonly {
   titleKey: TranslationKey;
@@ -22,7 +21,8 @@ export const FOOTER_LINK_COLS: readonly {
       { labelKey: "footer.link.howItWorks", href: "/#how" },
       { labelKey: "footer.pricing", href: ROUTES.pricing },
       { labelKey: "footer.docs", href: ROUTES.docs },
-      { labelKey: "footer.link.geoVisibility", href: ROUTES.geo },
+      { labelKey: "footer.link.geoVisibility", href: "/#methodology" },
+      { labelKey: "footer.link.platforms", href: "/#platforms" },
       { labelKey: "footer.link.aiGenerator", href: `${ROUTES.docs}#2` },
     ],
   },
@@ -38,7 +38,6 @@ export const FOOTER_LINK_COLS: readonly {
     titleKey: "footer.col.resources",
     links: [
       { labelKey: "footer.blog", href: ROUTES.blog },
-      { labelKey: "footer.link.changelog", href: ROUTES.changelog },
       { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
     ],
   },
@@ -49,7 +48,6 @@ export const FOOTER_LINK_COLS: readonly {
       { labelKey: "footer.link.privacy", href: ROUTES.privacy },
       { labelKey: "footer.link.terms", href: ROUTES.terms },
       { labelKey: "footer.link.refundPolicy", href: ROUTES.refundPolicy },
-      { labelKey: "footer.link.systemStatus", href: ROUTES.status },
     ],
   },
 ];
@@ -94,9 +92,6 @@ export function Footer() {
         <div className="mt-12 pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             {t("footer.copyright", { year: new Date().getFullYear() })}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("footer.statusNote")}
           </p>
         </div>
       </div>

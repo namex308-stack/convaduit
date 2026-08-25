@@ -15,4 +15,4 @@ export const SITE_OG_TITLE = "ConvAudit — ذكاء اصطناعي لتحليل
  * Describes what the product does without promising a fixed completion time.
  */
 export const SITE_DESCRIPTION =
-  "حلّل أي متجر أو صفحة منتج عامة بالذكاء الاصطناعي عبر التحويل، SEO، الظهور في محركات الذكاء الاصطناعي (GEO)، والثقة — مع مقارنة بالمنافسين عند توفرها. يدعم Shopify وWooCommerce وسلة وزد.";
+  "ConvAudit منصة تحليل متاجر إلكترونية: تدقيق صفحات المنتجات العامة عبر التحويل وSEO والثقة، وتحليل GEO لقابلية الظهور في محركات الذكاء الاصطناعي من إشارات الصفحة — مع مولد محتوى اختياري. يدعم Shopify وWooCommerce وسلة وزد.";

@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Search, Bot, ShieldCheck, Zap, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,8 +5,8 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text";
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { Container } from "@/components/design-system/section";
-import { useNavigateAfterAction } from "@/lib/use-navigate";
-import { useT } from "@/lib/i18n";
+import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/marketing-hrefs";
+import { translate as t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const PILLARS = [
@@ -24,11 +22,11 @@ const TRUST_POINTS = [
   { icon: CheckCircle2, labelKey: "hero.trust.platforms" as const },
 ] as const;
 
-/** Marketing hero — no fabricated scores or sample store metrics. */
+/**
+ * Marketing hero — server-rendered so the H1 is in the first HTML paint
+ * (not opacity:0 behind a client BlurFade / hydration wait).
+ */
 export function Hero() {
-  const t = useT();
-  const { startAuditHref } = useNavigateAfterAction();
-
   return (
     <section className="relative overflow-hidden pt-24 pb-16 sm:pt-32 sm:pb-24">
       <div className="absolute inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]" />
@@ -38,10 +36,6 @@ export function Hero() {
         <BlurFade className="flex justify-center">
           <Link
             href="/#why-lose-sales"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("why-lose-sales")?.scrollIntoView({ behavior: "smooth" });
-            }}
             className={cn(
               "group inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/90 px-4 py-1.5 text-xs font-medium",
               "hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring transition-colors"
@@ -54,35 +48,25 @@ export function Hero() {
           </Link>
         </BlurFade>
 
-        <BlurFade delay={0.05}>
-          <h1 className="mt-8 text-center font-display text-[2.35rem] sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight text-balance max-w-4xl mx-auto">
-            {t("hero.headline1")}{" "}
-            <span className="gradient-text">{t("hero.headline3")}</span>
-          </h1>
-        </BlurFade>
+        <h1 className="mt-8 text-center font-display text-[2.35rem] sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight text-balance max-w-4xl mx-auto">
+          {t("hero.headline1")}{" "}
+          <span className="gradient-text">{t("hero.headline3")}</span>
+        </h1>
 
-        <BlurFade delay={0.1}>
-          <p className="mt-5 text-center text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty">
-            {t("hero.subheadline")}
-          </p>
-        </BlurFade>
+        <p className="mt-5 text-center text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty">
+          {t("hero.subheadline")}
+        </p>
 
         <BlurFade delay={0.15}>
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
             <Button size="lg" asChild className="h-11 px-7 font-semibold rounded-full shadow-glow group">
-              <Link href={startAuditHref}>
+              <Link href={CRAWLABLE_START_AUDIT_HREF}>
                 {t("hero.startFreeAudit")}
                 <ArrowRight className="size-4 ms-0.5 rtl:rotate-180 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="h-11 px-7 font-semibold bg-card/80">
-              <Link
-                href="/#how"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById("how")?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
+              <Link href="/#how">
                 {t("hero.viewDemo")}
               </Link>
             </Button>

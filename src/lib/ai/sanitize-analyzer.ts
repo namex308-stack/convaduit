@@ -85,6 +85,8 @@ export type BatchedPillarAnalysis = {
   competitorModules?: Partial<Record<"conversion" | "seo" | "trust", PillarScoreModuleResult>>;
   recommendationsResult: AnalyzerJsonResult;
   perPillarResults: Record<"conversion" | "seo" | "trust", AnalyzerJsonResult>;
+  /** Who actually produced conversion/SEO/trust — never claim Gemini on heuristic fallback. */
+  pillarSource: "gemini" | "heuristic";
 };
 
 function clamp(n: unknown): number {
@@ -196,6 +198,7 @@ export function sanitizeBatchedPillarAnalysis(parsed: unknown): BatchedPillarAna
       tokensUsed: data.tokensUsed,
       estimatedCost: data.estimatedCost,
     },
+    pillarSource: "gemini",
   };
 }
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Clock, ArrowUpRight, ArrowRight, Search } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
@@ -29,6 +29,7 @@ function statusLabel(
 
 function HistoryContent() {
   const t = useT();
+  const router = useRouter();
   const { dir } = useLocale();
   const searchParams = useSearchParams();
   const q = searchParams.get("q")?.trim() || "";
@@ -84,9 +85,7 @@ function HistoryContent() {
             onSubmit={(e) => {
               e.preventDefault();
               const next = query.trim();
-              window.location.href = next
-                ? `/history?q=${encodeURIComponent(next)}`
-                : "/history";
+              router.push(next ? `/history?q=${encodeURIComponent(next)}` : "/history");
             }}
           >
             <div className="relative">

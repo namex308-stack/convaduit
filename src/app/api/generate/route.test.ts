@@ -17,6 +17,7 @@ const getPlanForUser = vi.fn();
 const getCurrentUsagePeriod = vi.fn();
 vi.mock("@/lib/db/workspace-stats", () => ({
   getPlanForUser: (...args: unknown[]) => getPlanForUser(...args),
+  getPlanForWorkspace: (...args: unknown[]) => getPlanForUser(...args),
   getCurrentUsagePeriod: (...args: unknown[]) => getCurrentUsagePeriod(...args),
 }));
 
@@ -245,7 +246,7 @@ describe("/api/generate", () => {
     expect(saveGeneratedContentForAudit).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "failed",
-        model: "gemini-test",
+        model: "failed",
       })
     );
   });

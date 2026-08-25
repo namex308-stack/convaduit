@@ -19,6 +19,8 @@ import {
 } from "@/lib/billing/entitlements";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
 import type { PlanLimits } from "@/lib/dashboard/types";
+import { NextRequest } from "next/server";
+import { POST } from "@/app/api/audit/route";
 
 const integration = vi.hoisted(() => {
   const WORKSPACE_ID = "ws-free";
@@ -61,12 +63,12 @@ const integration = vi.hoisted(() => {
         }
         let workspaceId = "";
         const builder = {
-          select: () => builder,
+          select: (..._args: unknown[]) => builder,
           eq: (_column: string, value: string) => {
             workspaceId = value;
             return builder;
           },
-          order: () => builder,
+          order: (..._args: unknown[]) => builder,
           update: () => ({
             eq: async () => ({ data: null, error: null }),
           }),
@@ -94,6 +96,9 @@ const integration = vi.hoisted(() => {
   const requireApiUser = vi.fn();
   const getOnboardingState = vi.fn();
   const ensurePersonalWorkspace = vi.fn();
+  const ensureWorkspaceStore = vi.fn();
+  const createAuditRecord = vi.fn();
+  const tryConsumeUsageQuota = vi.fn();
   const getPlanForUser = vi.fn();
   const checkRateLimit = vi.fn();
 
@@ -108,6 +113,9 @@ const integration = vi.hoisted(() => {
     requireApiUser,
     getOnboardingState,
     ensurePersonalWorkspace,
+    ensureWorkspaceStore,
+    createAuditRecord,
+    tryConsumeUsageQuota,
     getPlanForUser,
     checkRateLimit,
   };
@@ -126,6 +134,7 @@ vi.mock("@/lib/db/onboarding-repository", () => ({
 }));
 vi.mock("@/lib/db/workspace-stats", () => ({
   getPlanForUser: (...args: unknown[]) => integration.getPlanForUser(...args),
+  getPlanForWorkspace: (...args: unknown[]) => integration.getPlanForUser(...args),
   getCurrentUsagePeriod: () => ({
     start: "2026-08-01T00:00:00.000Z",
     end: "2026-08-31T23:59:59.999Z",
@@ -147,16 +156,32 @@ vi.mock("next/server", async (importOriginal) => {
     after: vi.fn((fn: () => void) => fn()),
   };
 });
-vi.mock("@/lib/db/audit-repository", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/db/audit-repository")>();
-  return {
-    ...actual,
-    ensurePersonalWorkspace: (...args: unknown[]) =>
-      integration.ensurePersonalWorkspace(...args),
-    createAuditRecord: vi.fn(),
-    tryConsumeUsageQuota: vi.fn(),
-  };
-});
+vi.mock("@/lib/gemini", () => ({
+  isGeminiConfigured: () => false,
+  runAudit: vi.fn(),
+}));
+vi.mock("@/lib/firecrawl", () => ({
+  isFirecrawlConfigured: () => false,
+  crawlWithFallback: vi.fn(),
+  FIRECRAWL_NOT_CONFIGURED_MESSAGE: "Firecrawl is not configured",
+}));
+vi.mock("@/lib/db/audit-repository", () => ({
+  ensurePersonalWorkspace: (...args: unknown[]) =>
+    integration.ensurePersonalWorkspace(...args),
+  ensureWorkspaceStore: (...args: unknown[]) =>
+    integration.ensureWorkspaceStore(...args),
+  createAuditRecord: (...args: unknown[]) => integration.createAuditRecord(...args),
+  tryConsumeUsageQuota: (...args: unknown[]) =>
+    integration.tryConsumeUsageQuota(...args),
+  finishAnalysisRun: vi.fn(),
+  markAuditFailed: vi.fn(),
+  persistAuditResults: vi.fn(),
+  recordUsageEvent: vi.fn(),
+  releaseUsageQuota: vi.fn(),
+  saveAuditPage: vi.fn(),
+  startAnalysisRun: vi.fn(),
+  updateAuditStatus: vi.fn(),
+}));
 
 const freePlan: PlanLimits = {
   planId: "free",
@@ -496,6 +521,51 @@ describe("featureLockedBody", () => {
   });
 });
 
+type EnsureWorkspaceStoreInput = {
+  workspaceId: string;
+  storeUrl: string;
+  storesLimit?: number | null;
+};
+
+/**
+ * Mirrors production `ensureWorkspaceStore` decision wiring (stores list +
+ * `decideStoreEnsure`) without loading the real audit-repository / Gemini stack.
+ */
+async function mockedEnsureWorkspaceStore(input: EnsureWorkspaceStoreInput) {
+  const sb = integration.getSupabaseAdmin();
+  if (!sb) return { ok: false as const, code: "FAILED" as const };
+
+  const { data: workspaceStores } = await sb
+    .from("stores")
+    .select("id, primary_url, created_at")
+    .eq("workspace_id", input.workspaceId)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
+
+  const rows = workspaceStores ?? [];
+  const existing = rows.find((row) => row.primary_url === input.storeUrl);
+  const existingId = existing?.id ? String(existing.id) : null;
+  const decision = decideStoreEnsure({
+    existingId,
+    currentCount: rows.length,
+    storesLimit: input.storesLimit,
+    oldestAllowedStoreIds: oldestAllowedStoreIds(
+      rows.map((row) => String(row.id)),
+      input.storesLimit
+    ),
+  });
+
+  if (decision.action === "reject") {
+    return {
+      ok: false as const,
+      code: "STORE_LIMIT_REACHED" as const,
+      used: decision.used,
+      limit: decision.limit,
+    };
+  }
+  return { ok: false as const, code: "FAILED" as const };
+}
+
 describe("storeLimitReachedBody", () => {
   it("returns STORE_LIMIT_REACHED with used/limit for Free", () => {
     const body = storeLimitReachedBody(freePlan, 1);
@@ -522,6 +592,7 @@ describe("Free plan bypass store + /api/audit integration", () => {
       user: { id: "user-free" },
     });
     integration.ensurePersonalWorkspace.mockResolvedValue(integration.WORKSPACE_ID);
+    integration.ensureWorkspaceStore.mockImplementation(mockedEnsureWorkspaceStore);
     integration.getPlanForUser.mockResolvedValue(freePlan);
     integration.checkRateLimit.mockResolvedValue({
       success: true,
@@ -543,9 +614,7 @@ describe("Free plan bypass store + /api/audit integration", () => {
   });
 
   it("rejects ensureWorkspaceStore for a bypass-inserted store via decideStoreEnsure", async () => {
-    const { ensureWorkspaceStore } = await import("@/lib/db/audit-repository");
-
-    const result = await ensureWorkspaceStore({
+    const result = await integration.ensureWorkspaceStore({
       workspaceId: integration.WORKSPACE_ID,
       storeUrl: integration.BYPASS_STORE.primary_url,
       storesLimit: PLAN_LIMITS.free.storesLimit,
@@ -561,12 +630,6 @@ describe("Free plan bypass store + /api/audit integration", () => {
   });
 
   it("POST /api/audit returns 403 STORE_LIMIT_REACHED when bypass store row exists", async () => {
-    const { NextRequest } = await import("next/server");
-    const { POST } = await import("@/app/api/audit/route");
-    const { createAuditRecord, tryConsumeUsageQuota } = await import(
-      "@/lib/db/audit-repository"
-    );
-
     const res = await POST(
       new NextRequest("http://localhost/api/audit", {
         method: "POST",
@@ -585,7 +648,8 @@ describe("Free plan bypass store + /api/audit integration", () => {
       used: 2,
       limit: 1,
     });
-    expect(createAuditRecord).not.toHaveBeenCalled();
-    expect(tryConsumeUsageQuota).not.toHaveBeenCalled();
+    expect(integration.ensurePersonalWorkspace).toHaveBeenCalledWith("user-free");
+    expect(integration.createAuditRecord).not.toHaveBeenCalled();
+    expect(integration.tryConsumeUsageQuota).not.toHaveBeenCalled();
   });
 });

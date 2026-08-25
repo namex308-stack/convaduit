@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 
 /* ============================================================
    FloatingOrbs — ambient gradient blobs that drift slowly
@@ -91,20 +91,7 @@ export function ParticleField({ count = 24, className }: { count?: number; class
   );
 }
 
-/* ============================================================
-   ScrollProgress — top-of-page reading progress bar
-   ============================================================ */
-export function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
-  return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 h-[3px] gradient-brand origin-left rtl:origin-right z-[60]"
-      style={{ scaleX }}
-      aria-hidden
-    />
-  );
-}
+export { ScrollProgress } from "@/components/common/scroll-progress";
 
 /* ============================================================
    Reveal — scroll-triggered fade/slide in
