@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocaleConfig } from "@/lib/locale/config";
 import { getActiveLocaleId } from "@/lib/locale/resolve";
+import { SOCIAL_X_HANDLE } from "@/lib/seo/social";
 
 type PublicPageMetadataInput = {
   title: string;
@@ -43,6 +44,8 @@ export function publicPageMetadata({
     },
     twitter: {
       card: "summary_large_image",
+      site: SOCIAL_X_HANDLE,
+      creator: SOCIAL_X_HANDLE,
       title,
       description,
     },

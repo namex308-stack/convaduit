@@ -10,6 +10,7 @@ import {
   buildSoftwareApplicationJsonLd,
   collectJsonLdUrls,
 } from "@/lib/seo/structured-data";
+import { ORGANIZATION_SAME_AS } from "@/lib/seo/social";
 import { ROUTES } from "@/lib/routes";
 
 const CANONICAL = "https://convaudit.example";
@@ -46,22 +47,24 @@ describe("structured data", () => {
     expect(website?.publisher).toEqual({ "@id": `${CANONICAL}#organization` });
   });
 
-  it("uses the canonical deployment domain for every absolute URL", () => {
+  it("uses the canonical deployment domain for every site-owned absolute URL", () => {
     const urls = collectJsonLdUrls(buildHomeJsonLdGraph());
-    
-    // Debug: print all collected URLs
-    console.log("Collected URLs:", urls);
-    console.log("Canonical:", CANONICAL);
-    urls.forEach((url, idx) => {
-      const valid = url.startsWith(CANONICAL);
-      console.log(`[${idx}] ${valid ? "✓" : "✗"} ${url}`);
-    });
-    
-    expect(urls.length).toBeGreaterThan(0);
-    for (const url of urls) {
+    const sameAs = new Set<string>(ORGANIZATION_SAME_AS);
+    const siteOwned = urls.filter((url) => !sameAs.has(url));
+
+    expect(siteOwned.length).toBeGreaterThan(0);
+    for (const url of siteOwned) {
       expect(url.startsWith(CANONICAL)).toBe(true);
       expect(url).not.toContain("localhost");
     }
+  });
+
+  it("lists official X and LinkedIn profiles on Organization sameAs", () => {
+    const graph = parseJsonLd(buildHomeJsonLdGraph()) as {
+      "@graph": Array<Record<string, unknown>>;
+    };
+    const org = graph["@graph"].find((n) => n["@type"] === "Organization");
+    expect(org?.sameAs).toEqual([...ORGANIZATION_SAME_AS]);
   });
 
   it("emits EGP offers that match marketing plan monthly prices", () => {

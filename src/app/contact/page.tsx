@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
+import { SocialLinks } from "@/components/layout/social-links";
 import { ROUTES } from "@/lib/routes";
 
 export default function ContactPage() {
@@ -30,6 +31,14 @@ export default function ContactPage() {
               support@convaudit.com
             </a>
           </p>
+        </SurfaceCard>
+
+        <SurfaceCard className="p-5">
+          <h2 className="font-display font-semibold text-sm">الحسابات الرسمية</h2>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            تابع ConvAudit على X وLinkedIn للأخبار وتحديثات المنتج.
+          </p>
+          <SocialLinks className="mt-4" />
         </SurfaceCard>
 
         <SurfaceCard className="p-5">

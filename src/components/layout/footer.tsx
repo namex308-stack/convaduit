@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { SocialLinks } from "@/components/layout/social-links";
 import { ROUTES } from "@/lib/routes";
 import { useT, type TranslationKey } from "@/lib/i18n";
 
@@ -67,6 +68,7 @@ export function Footer() {
             <p className="mt-4 text-sm text-muted-foreground max-w-xs leading-relaxed">
               {t("footer.tagline")}
             </p>
+            <SocialLinks className="mt-5" />
           </div>
 
           {FOOTER_LINK_COLS.map((col) => (

@@ -16,6 +16,7 @@ import {
   SITE_DESCRIPTION,
   SITE_OG_TITLE,
 } from "@/lib/seo/site-copy";
+import { SOCIAL_X_HANDLE } from "@/lib/seo/social";
 
 /** Arabic-first typeface (Latin fallback for brand name, URLs, code). */
 const cairo = Cairo({
@@ -70,6 +71,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: SOCIAL_X_HANDLE,
+    creator: SOCIAL_X_HANDLE,
     title: SITE_OG_TITLE,
     description: SITE_DESCRIPTION,
   },

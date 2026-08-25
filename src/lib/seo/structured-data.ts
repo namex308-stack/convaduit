@@ -4,6 +4,7 @@ import { ROUTES } from "@/lib/routes";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
 import { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 import { isCalendarDateOnOrBeforeToday } from "@/lib/seo/dates";
+import { ORGANIZATION_SAME_AS } from "@/lib/seo/social";
 
 export { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 
@@ -35,6 +36,7 @@ function organizationNode(base: string) {
     url: base,
     logo: absoluteUrl("/icon.svg"),
     description: SOFTWARE_DESCRIPTION,
+    sameAs: [...ORGANIZATION_SAME_AS],
   };
 }
 

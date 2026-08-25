@@ -3,6 +3,7 @@ import { BLOG_POSTS } from "@/lib/blog-posts";
 import { translate } from "@/lib/locale/t";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { SITE_DESCRIPTION, SITE_DEFAULT_TITLE, SITE_OG_TITLE } from "@/lib/seo/site-copy";
+import { SOCIAL_X_HANDLE } from "@/lib/seo/social";
 import { ROUTES } from "@/lib/routes";
 
 describe("public page metadata", () => {
@@ -26,6 +27,8 @@ describe("public page metadata", () => {
     });
     expect(meta.twitter).toMatchObject({
       card: "summary_large_image",
+      site: SOCIAL_X_HANDLE,
+      creator: SOCIAL_X_HANDLE,
       title: "أسعار الباقات",
       description: "وصف فريد للأسعار",
     });
