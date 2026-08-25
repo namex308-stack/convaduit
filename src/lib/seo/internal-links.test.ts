@@ -11,7 +11,6 @@ const SITEMAP_STATIC_PATHS = [
   ROUTES.pricing,
   ROUTES.docs,
   ROUTES.blog,
-  ROUTES.affiliate,
   ROUTES.security,
   ROUTES.privacy,
   ROUTES.terms,

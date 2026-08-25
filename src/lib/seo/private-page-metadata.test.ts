@@ -19,7 +19,6 @@ const PUBLIC_INDEXABLE_PATHS = [
   ROUTES.docs,
   ROUTES.blog,
   ...BLOG_SLUGS.map((slug) => ROUTES.blogPost(slug)),
-  ROUTES.affiliate,
   ROUTES.security,
   ROUTES.privacy,
   ROUTES.roadmap,

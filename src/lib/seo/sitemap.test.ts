@@ -16,7 +16,6 @@ describe("sitemap", () => {
     expect(urls).toContain("https://www.convaudit.com/pricing");
     expect(urls).toContain("https://www.convaudit.com/docs");
     expect(urls).toContain("https://www.convaudit.com/blog");
-    expect(urls).toContain("https://www.convaudit.com/affiliate");
     expect(urls).toContain("https://www.convaudit.com/security");
     expect(urls).toContain("https://www.convaudit.com/privacy");
     expect(urls).toContain("https://www.convaudit.com/terms");
@@ -29,7 +28,8 @@ describe("sitemap", () => {
       expect(urls).toContain(`https://www.convaudit.com${ROUTES.blogPost(post.slug)}`);
     }
 
-    // Placeholders excluded until they have real content
+    // Removed program + placeholders excluded until they have real content
+    expect(urls.some((u) => u.endsWith("/affiliate"))).toBe(false);
     expect(urls.some((u) => u.endsWith("/status"))).toBe(false);
     expect(urls.some((u) => u.endsWith("/changelog"))).toBe(false);
 

@@ -24,6 +24,11 @@ test.describe("CI — HTTP status / soft-200 SEO", () => {
     expect(res.status()).toBe(404);
   });
 
+  test("removed affiliate program returns 404", async ({ request }) => {
+    const res = await request.get("/affiliate", { maxRedirects: 0 });
+    expect(res.status()).toBe(404);
+  });
+
   test("valid public pages return 200", async ({ request }) => {
     for (const path of ["/", "/pricing", "/blog", "/blog/geo-ai-visibility-guide"]) {
       const res = await request.get(path, { maxRedirects: 0 });

@@ -10,7 +10,6 @@ export const ROUTES = {
   docs: "/docs",
   blog: "/blog",
   blogPost: (slug: string) => `/blog/${slug}`,
-  affiliate: "/affiliate",
   security: "/security",
   privacy: "/privacy",
   terms: "/terms",

@@ -40,7 +40,6 @@ export const FOOTER_LINK_COLS: readonly {
       { labelKey: "footer.blog", href: ROUTES.blog },
       { labelKey: "footer.link.changelog", href: ROUTES.changelog },
       { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
-      { labelKey: "footer.link.affiliateProgram", href: ROUTES.affiliate },
     ],
   },
   {
