@@ -6,8 +6,6 @@ import { StartAuditCta } from "@/components/common/start-audit-cta";
 import { Container, Section, SectionHeader } from "@/components/design-system/section";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { useT } from "@/lib/i18n";
-import auditNewPng from "../../../public/product/audit-new.png";
-import dashboardPng from "../../../public/product/dashboard.png";
 
 /**
  * Display width of each screenshot in the homepage grid:
@@ -17,15 +15,18 @@ import dashboardPng from "../../../public/product/dashboard.png";
 const PRODUCT_PREVIEW_SIZES =
   "(min-width: 1280px) 596px, (min-width: 768px) 45vw, 92vw";
 
+/** Intrinsic size of `/public/product/*.png` (1119×653). */
+const PRODUCT_SHOT_SIZE = { width: 1119, height: 653 } as const;
+
 const SHOTS = [
   {
-    image: auditNewPng,
+    src: "/product/audit-new.png",
     icon: Link2,
     titleKey: "productPreview.shot1.title" as const,
     captionKey: "productPreview.shot1.caption" as const,
   },
   {
-    image: dashboardPng,
+    src: "/product/dashboard.png",
     icon: LayoutDashboard,
     titleKey: "productPreview.shot2.title" as const,
     captionKey: "productPreview.shot2.caption" as const,
@@ -49,7 +50,7 @@ export function ProductPreview() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {SHOTS.map((shot, i) => (
-            <BlurFade key={shot.image.src} delay={i * 0.08} className="h-full">
+            <BlurFade key={shot.src} delay={i * 0.08} className="h-full">
               <figure className="h-full flex flex-col">
                 <div className="relative rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-elevated)] overflow-hidden">
                   <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/40">
@@ -58,10 +59,10 @@ export function ProductPreview() {
                   </div>
                   <div className="relative aspect-[16/10]">
                     <Image
-                      src={shot.image}
+                      src={shot.src}
                       alt={t(shot.titleKey)}
-                      width={shot.image.width}
-                      height={shot.image.height}
+                      width={PRODUCT_SHOT_SIZE.width}
+                      height={PRODUCT_SHOT_SIZE.height}
                       sizes={PRODUCT_PREVIEW_SIZES}
                       className="absolute inset-0 size-full object-cover object-top"
                       loading="lazy"
