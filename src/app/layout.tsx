@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Cairo, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
@@ -120,6 +121,7 @@ export default function RootLayout({
             <SonnerToaster position="top-center" richColors closeButton />
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
       <GoogleAnalytics gaId="G-MDR2NP5CJ3" />
     </html>
