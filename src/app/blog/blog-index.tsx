@@ -301,6 +301,22 @@ export function BlogIndex() {
             </Link>
           </div>
         </aside>
+
+        <aside className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+          <div>
+            <p className="font-display text-base font-bold tracking-tight">{t("blog.shopifyTitle")}</p>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-xl">
+              {t("blog.shopifyBody")}
+            </p>
+          </div>
+          <Link
+            href={ROUTES.shopify}
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-primary/25 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/15 transition-colors"
+          >
+            {t("blog.shopifyButton")}
+            <ArrowUpRight className="size-4" />
+          </Link>
+        </aside>
       </PageContent>
     </PageShell>
   );

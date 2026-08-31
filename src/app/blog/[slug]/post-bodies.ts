@@ -162,6 +162,16 @@ export const POST_BODIES: readonly BlogPostBody[] = [
       { type: "h2", textKey: "blog.post2.h2_close" },
       { type: "p", textKey: "blog.post2.p_close" },
       {
+        type: "pLinks",
+        textKey: "blog.shopifyInline",
+        links: [
+          {
+            href: ROUTES.shopify,
+            labelKey: "blog.shopifyInlineLabel",
+          },
+        ],
+      },
+      {
         type: "cta",
         titleKey: "blog.post2.cta.title",
         bodyKey: "blog.post2.cta.body",
@@ -180,6 +190,16 @@ export const POST_BODIES: readonly BlogPostBody[] = [
       { type: "h2", textKey: "blog.post3.h2_platforms" },
       { type: "h3", textKey: "blog.post3.h3_shopify" },
       { type: "p", textKey: "blog.post3.p_shopify" },
+      {
+        type: "pLinks",
+        textKey: "blog.shopifyInline",
+        links: [
+          {
+            href: ROUTES.shopify,
+            labelKey: "blog.shopifyInlineLabel",
+          },
+        ],
+      },
       { type: "h3", textKey: "blog.post3.h3_woo" },
       { type: "p", textKey: "blog.post3.p_woo" },
       { type: "h3", textKey: "blog.post3.h3_salla_zid" },
@@ -376,6 +396,16 @@ export const POST_BODIES: readonly BlogPostBody[] = [
       { type: "h2", textKey: "blog.post5.h2_close" },
       { type: "p", textKey: "blog.post5.p_close" },
       {
+        type: "pLinks",
+        textKey: "blog.shopifyInline",
+        links: [
+          {
+            href: ROUTES.shopify,
+            labelKey: "blog.shopifyInlineLabel",
+          },
+        ],
+      },
+      {
         type: "cta",
         titleKey: "blog.post5.cta.title",
         bodyKey: "blog.post5.cta.body",
@@ -448,6 +478,16 @@ export const POST_BODIES: readonly BlogPostBody[] = [
       },
       { type: "h2", textKey: "blog.post6.h2_close" },
       { type: "p", textKey: "blog.post6.p_close" },
+      {
+        type: "pLinks",
+        textKey: "blog.shopifyInline",
+        links: [
+          {
+            href: ROUTES.shopify,
+            labelKey: "blog.shopifyInlineLabel",
+          },
+        ],
+      },
       {
         type: "cta",
         titleKey: "blog.post6.cta.title",
@@ -587,6 +627,16 @@ export const POST_BODIES: readonly BlogPostBody[] = [
         textKey: "blog.post7.pLinks_platforms",
         links: [{ href: "/#platforms", labelKey: "blog.post7.link.platforms" }],
       },
+      {
+        type: "pLinks",
+        textKey: "blog.shopifyInline",
+        links: [
+          {
+            href: ROUTES.shopify,
+            labelKey: "blog.shopifyInlineLabel",
+          },
+        ],
+      },
 
       { type: "h2", textKey: "blog.post7.h2_mistakes" },
       {
@@ -662,5 +712,248 @@ export const POST_BODIES: readonly BlogPostBody[] = [
         href: ROUTES.auditNew,
       },
     ],
-  }
+  },
+  {
+    slug: "identify-seo-issues-store-growth",
+    titleKey: "blog.post8.title",
+    content: [
+      { type: "h2", textKey: "blog.post8.h2_intro" },
+      { type: "p", textKey: "blog.post8.p_intro_1" },
+      { type: "p", textKey: "blog.post8.p_intro_2" },
+      { type: "p", textKey: "blog.post8.p_intro_3" },
+
+      { type: "h2", textKey: "blog.post8.h2_define" },
+      { type: "p", textKey: "blog.post8.p_define_1" },
+      { type: "p", textKey: "blog.post8.p_define_2" },
+      {
+        type: "table",
+        headers: [
+          "blog.post8.table_sym.h1",
+          "blog.post8.table_sym.h2",
+          "blog.post8.table_sym.h3",
+        ],
+        rows: [
+          [
+            "blog.post8.table_sym.r1c1",
+            "blog.post8.table_sym.r1c2",
+            "blog.post8.table_sym.r1c3",
+          ],
+          [
+            "blog.post8.table_sym.r2c1",
+            "blog.post8.table_sym.r2c2",
+            "blog.post8.table_sym.r2c3",
+          ],
+          [
+            "blog.post8.table_sym.r3c1",
+            "blog.post8.table_sym.r3c2",
+            "blog.post8.table_sym.r3c3",
+          ],
+          [
+            "blog.post8.table_sym.r4c1",
+            "blog.post8.table_sym.r4c2",
+            "blog.post8.table_sym.r4c3",
+          ],
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_framework" },
+      { type: "p", textKey: "blog.post8.p_framework_1" },
+      {
+        type: "ol",
+        itemKeys: [
+          "blog.post8.ol_f1",
+          "blog.post8.ol_f2",
+          "blog.post8.ol_f3",
+          "blog.post8.ol_f4",
+        ],
+      },
+      { type: "p", textKey: "blog.post8.p_framework_2" },
+
+      { type: "h2", textKey: "blog.post8.h2_tech" },
+      { type: "p", textKey: "blog.post8.p_tech_1" },
+      { type: "h3", textKey: "blog.post8.h3_robots" },
+      { type: "p", textKey: "blog.post8.p_robots_1" },
+      { type: "p", textKey: "blog.post8.p_robots_2" },
+      { type: "h3", textKey: "blog.post8.h3_canonical" },
+      { type: "p", textKey: "blog.post8.p_canonical_1" },
+      { type: "h3", textKey: "blog.post8.h3_crawl" },
+      { type: "p", textKey: "blog.post8.p_crawl_1" },
+      { type: "h3", textKey: "blog.post8.h3_https" },
+      { type: "p", textKey: "blog.post8.p_https_1" },
+
+      { type: "h2", textKey: "blog.post8.h2_onpage" },
+      { type: "p", textKey: "blog.post8.p_onpage_1" },
+      { type: "h3", textKey: "blog.post8.h3_title" },
+      { type: "p", textKey: "blog.post8.p_title_1" },
+      { type: "p", textKey: "blog.post8.p_title_2" },
+      { type: "h3", textKey: "blog.post8.h3_content" },
+      { type: "p", textKey: "blog.post8.p_content_1" },
+      { type: "p", textKey: "blog.post8.p_content_2" },
+      { type: "h3", textKey: "blog.post8.h3_structure" },
+      { type: "p", textKey: "blog.post8.p_structure_1" },
+      { type: "h3", textKey: "blog.post8.h3_images" },
+      { type: "p", textKey: "blog.post8.p_images_1" },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_onpage",
+        links: [
+          {
+            href: ROUTES.blogPost("ai-product-descriptions"),
+            labelKey: "blog.post8.link.aiDescriptions",
+          },
+          {
+            href: ROUTES.blogPost("conversion-rate-optimization"),
+            labelKey: "blog.post8.link.cro",
+          },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_schema" },
+      { type: "p", textKey: "blog.post8.p_schema_1" },
+      { type: "p", textKey: "blog.post8.p_schema_2" },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_schema",
+        links: [
+          {
+            href: ROUTES.blogPost("product-schema-markup"),
+            labelKey: "blog.post8.link.schema",
+          },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_gcc" },
+      { type: "p", textKey: "blog.post8.p_gcc_1" },
+      { type: "p", textKey: "blog.post8.p_gcc_2" },
+      { type: "p", textKey: "blog.post8.p_gcc_3" },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_gcc",
+        links: [
+          {
+            href: ROUTES.blogPost("trust-signals-ecommerce"),
+            labelKey: "blog.post8.link.trust",
+          },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_ai" },
+      { type: "p", textKey: "blog.post8.p_ai_1" },
+      { type: "p", textKey: "blog.post8.p_ai_2" },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_ai",
+        links: [
+          {
+            href: ROUTES.blogPost("geo-ai-visibility-guide"),
+            labelKey: "blog.post8.link.geo",
+          },
+          {
+            href: ROUTES.blogPost("seo-for-ai-complete-guide"),
+            labelKey: "blog.post8.link.seoForAi",
+          },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_platforms" },
+      { type: "p", textKey: "blog.post8.p_platforms_1" },
+      {
+        type: "ul",
+        itemKeys: [
+          "blog.post8.ul_plat_1",
+          "blog.post8.ul_plat_2",
+          "blog.post8.ul_plat_3",
+        ],
+      },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_platforms",
+        links: [{ href: "/#platforms", labelKey: "blog.post8.link.platforms" }],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_measure" },
+      { type: "p", textKey: "blog.post8.p_measure_1" },
+      { type: "p", textKey: "blog.post8.p_measure_2" },
+      { type: "p", textKey: "blog.post8.p_measure_3" },
+
+      { type: "h2", textKey: "blog.post8.h2_process" },
+      { type: "p", textKey: "blog.post8.p_process_1" },
+      {
+        type: "ol",
+        itemKeys: [
+          "blog.post8.ol_p1",
+          "blog.post8.ol_p2",
+          "blog.post8.ol_p3",
+          "blog.post8.ol_p4",
+          "blog.post8.ol_p5",
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_mistakes" },
+      {
+        type: "ol",
+        itemKeys: [
+          "blog.post8.ol_m1",
+          "blog.post8.ol_m2",
+          "blog.post8.ol_m3",
+          "blog.post8.ol_m4",
+          "blog.post8.ol_m5",
+          "blog.post8.ol_m6",
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_checklist" },
+      {
+        type: "checklist",
+        itemKeys: [
+          "blog.post8.check_1",
+          "blog.post8.check_2",
+          "blog.post8.check_3",
+          "blog.post8.check_4",
+          "blog.post8.check_5",
+          "blog.post8.check_6",
+          "blog.post8.check_7",
+          "blog.post8.check_8",
+          "blog.post8.check_9",
+          "blog.post8.check_10",
+          "blog.post8.check_11",
+          "blog.post8.check_12",
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_faq" },
+      {
+        type: "faq",
+        items: [
+          { qKey: "blog.post8.faq.q1", aKey: "blog.post8.faq.a1" },
+          { qKey: "blog.post8.faq.q2", aKey: "blog.post8.faq.a2" },
+          { qKey: "blog.post8.faq.q3", aKey: "blog.post8.faq.a3" },
+          { qKey: "blog.post8.faq.q4", aKey: "blog.post8.faq.a4" },
+          { qKey: "blog.post8.faq.q5", aKey: "blog.post8.faq.a5" },
+          { qKey: "blog.post8.faq.q6", aKey: "blog.post8.faq.a6" },
+          { qKey: "blog.post8.faq.q7", aKey: "blog.post8.faq.a7" },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post8.h2_close" },
+      { type: "p", textKey: "blog.post8.p_close_1" },
+      { type: "p", textKey: "blog.post8.p_close_2" },
+      {
+        type: "pLinks",
+        textKey: "blog.post8.pLinks_close",
+        links: [
+          { href: "/#methodology", labelKey: "blog.post8.link.methodology" },
+          { href: ROUTES.docs, labelKey: "blog.post8.link.docs" },
+        ],
+      },
+
+      {
+        type: "cta",
+        titleKey: "blog.post8.cta.title",
+        bodyKey: "blog.post8.cta.body",
+        buttonKey: "blog.post8.cta.button",
+        href: ROUTES.auditNew,
+      },
+    ],
+  },
 ];

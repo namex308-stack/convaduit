@@ -46,7 +46,6 @@ export const BLOG_POSTS: readonly BlogPostMeta[] = [
     categoryKey: "blog.post1.category",
     color: "#FF6600",
     coverLabel: "GEO",
-    featured: true,
     metaDescription:
       "دليل GEO Audit لإشارات صفحة المنتج في متاجر الخليج: FAQ وSchema وجملة التموضع — تقدير جاهزية محلي بعد الزحف وليس استعلاماً حياً في ChatGPT.",
     faqKeys: [
@@ -185,6 +184,29 @@ export const BLOG_POSTS: readonly BlogPostMeta[] = [
       { qKey: "blog.post7.faq.q7", aKey: "blog.post7.faq.a7" },
     ],
   },
+  {
+    slug: "identify-seo-issues-store-growth",
+    titleKey: "blog.post8.title",
+    excerptKey: "blog.post8.excerpt",
+    dateKey: "blog.post8.date",
+    publishedOn: "2026-10-22",
+    readTime: 12,
+    categoryKey: "blog.post8.category",
+    color: "#cc5200",
+    coverLabel: "SEO",
+    featured: true,
+    metaDescription:
+      "كيف تكتشف مشاكل SEO التي تمنع ظهور متجرك في الخليج ونموه: فهرسة، صفحة المنتج، Schema وتجربة الجوال — دون ضمان ترتيب أو أرقام مخترعة.",
+    faqKeys: [
+      { qKey: "blog.post8.faq.q1", aKey: "blog.post8.faq.a1" },
+      { qKey: "blog.post8.faq.q2", aKey: "blog.post8.faq.a2" },
+      { qKey: "blog.post8.faq.q3", aKey: "blog.post8.faq.a3" },
+      { qKey: "blog.post8.faq.q4", aKey: "blog.post8.faq.a4" },
+      { qKey: "blog.post8.faq.q5", aKey: "blog.post8.faq.a5" },
+      { qKey: "blog.post8.faq.q6", aKey: "blog.post8.faq.a6" },
+      { qKey: "blog.post8.faq.q7", aKey: "blog.post8.faq.a7" },
+    ],
+  },
 ];
 
 /** Stable slug list derived from `BLOG_POSTS` (single source of truth). */
@@ -197,37 +219,42 @@ export const BLOG_RELATED_SLUGS: Readonly<Record<string, readonly string[]>> = {
   "geo-ai-visibility-guide": [
     "seo-for-ai-complete-guide",
     "product-schema-markup",
-    "trust-signals-ecommerce",
+    "identify-seo-issues-store-growth",
   ],
   "conversion-rate-optimization": [
     "trust-signals-ecommerce",
     "competitor-analysis-strategy",
-    "ai-product-descriptions",
+    "identify-seo-issues-store-growth",
   ],
   "product-schema-markup": [
     "seo-for-ai-complete-guide",
-    "geo-ai-visibility-guide",
+    "identify-seo-issues-store-growth",
     "ai-product-descriptions",
   ],
   "competitor-analysis-strategy": [
     "conversion-rate-optimization",
     "trust-signals-ecommerce",
-    "geo-ai-visibility-guide",
+    "identify-seo-issues-store-growth",
   ],
   "ai-product-descriptions": [
     "seo-for-ai-complete-guide",
     "product-schema-markup",
-    "geo-ai-visibility-guide",
+    "identify-seo-issues-store-growth",
   ],
   "trust-signals-ecommerce": [
     "conversion-rate-optimization",
     "competitor-analysis-strategy",
-    "product-schema-markup",
+    "identify-seo-issues-store-growth",
   ],
   "seo-for-ai-complete-guide": [
     "geo-ai-visibility-guide",
     "product-schema-markup",
-    "ai-product-descriptions",
+    "identify-seo-issues-store-growth",
+  ],
+  "identify-seo-issues-store-growth": [
+    "product-schema-markup",
+    "seo-for-ai-complete-guide",
+    "conversion-rate-optimization",
   ],
 };
 

@@ -173,6 +173,33 @@ export const GULF_KEYWORD_MAP: readonly GulfKeywordAssignment[] = [
     ],
     intent: "informational",
   },
+  {
+    path: ROUTES.blogPost("identify-seo-issues-store-growth"),
+    primary: ["SEO audit", "store visibility in search engines"],
+    secondary: [
+      "ecommerce audit",
+      "product page analysis",
+      "product page optimization",
+      "SEO analysis",
+      "GCC Countries",
+      "Shopify audit",
+      "Salla audit",
+      "Zid audit",
+      "WooCommerce audit",
+    ],
+    intent: "informational",
+  },
+  {
+    path: ROUTES.shopify,
+    primary: ["Shopify", "ecommerce"],
+    secondary: [
+      "Shopify audit",
+      "GCC Countries",
+      "product page optimization",
+      "ecommerce audit",
+    ],
+    intent: "commercial",
+  },
 ] as const;
 
 /** Schema.org `Country` nodes for Organization / Product graphs. */

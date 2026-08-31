@@ -14,6 +14,7 @@ import { Methodology } from "@/components/sections/methodology";
 import { SecurityBand } from "@/components/sections/security-band";
 import { TrustResources } from "@/components/sections/trust-resources";
 import { CTA } from "@/components/sections/cta";
+import { ShopifyPromoBand } from "@/components/sections/shopify-promo-band";
 import { ScrollProgress } from "@/components/common/scroll-progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -78,6 +79,7 @@ export default async function Home() {
       <main id="main-content" className="flex-1 flex flex-col pt-16">
         <Hero />
         <LogosStrip />
+        <ShopifyPromoBand />
         <WhyLoseSales />
         <ConceptExplainer />
         <ProductPreview />

@@ -39,6 +39,7 @@ describe("blog post SEO meta", () => {
       "2026-10-05",
       "2026-10-10",
       "2026-10-15",
+      "2026-10-22",
     ]);
     for (const post of BLOG_POSTS) {
       expect(isBlogPostDateInTheFuture(post.publishedOn, reportNow)).toBe(true);
