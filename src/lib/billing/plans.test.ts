@@ -21,7 +21,7 @@ describe("PLAN_PRICES / checkout", () => {
     expect(getCheckoutPrice("business", "yearly")).toBe(9990);
   });
 
-  it("maps Kashier paid amounts to plan + period", () => {
+  it("maps paid amounts to plan + period", () => {
     expect(mapAmountToPlan(399)).toEqual({ plan: "pro", period: "monthly" });
     expect(mapAmountToPlan(3990)).toEqual({ plan: "pro", period: "yearly" });
     expect(mapAmountToPlan(999)).toEqual({ plan: "business", period: "monthly" });

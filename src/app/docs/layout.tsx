@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
-import { translate } from "@/lib/locale/t";
 import { ROUTES } from "@/lib/routes";
 
-const TITLE = "التوثيق ودليل البدء";
-const DESCRIPTION = translate("docs.subtitle");
+const TITLE = "دليل تدقيق المتاجر وGEO";
+const DESCRIPTION =
+  "كيف يعمل تدقيق الصفحة في ConvAudit: تحويل، SEO، GEO، حدود التحليل، ومولد المحتوى لمتاجر Shopify وWooCommerce وسلة وزد.";
 
 export const metadata: Metadata = publicPageMetadata({
   title: TITLE,

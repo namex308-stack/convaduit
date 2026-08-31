@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
-import { BarChart3, Zap, Bot, Swords, Activity, Loader2 } from "lucide-react";
+import { BarChart3, Zap, Bot, Swords, Activity } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
+import { SettingsFrame } from "@/components/app/settings-nav";
 import { ApiLoadError } from "@/components/runtime/api-load-error";
 import { ScoreRadial } from "@/components/common/score-viz";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n";
 import { usageDescParams } from "@/lib/billing/plan-copy";
 
@@ -79,120 +81,133 @@ export default function UsagePage() {
 
   return (
     <PageShell>
-      <PageHeader title={t("usage.title")} subtitle={t("usage.subtitle")} icon={BarChart3} back="/settings" />
-      <PageContent className="space-y-6 max-w-3xl">
-        {!usage && !error && (
-          <div className="py-16 text-center">
-            <Loader2 className="size-8 animate-spin mx-auto text-primary" />
-          </div>
-        )}
-
-        {error && (
-          <ApiLoadError
-            message={error}
-            needsAuth={needsAuth}
-            onRetry={() => {
-              setUsage(null);
-              setRetryKey((k) => k + 1);
-            }}
-          />
-        )}
-
-        {usage && (
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-border/50 bg-card p-6 flex items-center gap-6"
-            >
-              <ScoreRadial score={usage.usagePct} size={100} stroke={8} label={t("settings.usage")} />
-              <div>
-                <h2 className="font-display text-xl font-bold">{t("usage.planUsage")}</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("usage.usageDesc", usageDescParams(usage.usagePct, usage.plan.displayName))}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">{t("usage.periodEnds", { date: renewLabel })}</p>
-              </div>
-            </motion.div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              {usage.endpoints
-                .filter((e) => e.metric !== "api_call")
-                .map((e, i) => {
-                  const meta = METRIC_META[e.metric] ?? METRIC_META.audit!;
-                  const pct =
-                    e.limit != null && e.limit > 0
-                      ? Math.min(100, Math.round((e.used / e.limit) * 100))
-                      : e.used > 0
-                        ? 5
-                        : 0;
-                  return (
-                    <motion.div
-                      key={e.metric}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      className="rounded-2xl border border-border/50 bg-card p-5"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <span
-                          className="size-9 rounded-lg grid place-items-center"
-                          style={{ background: `${meta.color}1a`, color: meta.color }}
-                        >
-                          <meta.icon className="size-5" />
-                        </span>
-                        <div className="flex-1">
-                          <div className="text-sm font-semibold">{t(meta.labelKey)}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {e.used} / {formatLimit(e.limit)}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ background: meta.color }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${pct}%` }}
-                          transition={{ duration: 0.8, delay: i * 0.1 }}
-                        />
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-1.5">
-                        {t("usage.used", { used: `${pct}%` })}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </div>
-
-            <div className="rounded-2xl border border-border/50 bg-card p-6">
-              <h2 className="font-display text-lg font-bold mb-4">{t("usage.apiUsage")}</h2>
-              <div className="space-y-3">
-                {usage.endpoints.map((api) => (
-                  <div
-                    key={api.metric}
-                    className="flex items-center gap-4 py-2 border-b border-border/50 last:border-0"
-                  >
-                    <code className="text-xs font-mono text-primary bg-primary/5 px-2 py-1 rounded">
-                      {api.metric}
-                    </code>
-                    <div className="flex-1 text-xs text-muted-foreground">
-                      {t("usage.calls", {
-                        used: api.used,
-                        limit: formatLimit(api.limit),
-                      })}
-                    </div>
-                    <div className="text-xs font-semibold tabular-nums">
-                      {api.limit != null && api.limit > 0
-                        ? `${((api.used / api.limit) * 100).toFixed(1)}%`
-                        : "—"}
-                    </div>
-                  </div>
+      <PageHeader title={t("usage.title")} subtitle={t("usage.subtitle")} icon={BarChart3} />
+      <PageContent>
+        <SettingsFrame>
+          {!usage && !error && (
+            <div className="space-y-6" aria-busy="true">
+              <Card className="flex items-center gap-6 p-6">
+                <Skeleton className="size-[100px] rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-4 w-56 max-w-full" />
+                </div>
+              </Card>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="p-5">
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <Skeleton className="mt-3 h-4 w-32" />
+                    <Skeleton className="mt-3 h-1.5 w-full rounded-full" />
+                  </Card>
                 ))}
               </div>
             </div>
-          </>
-        )}
+          )}
+
+          {error && (
+            <ApiLoadError
+              message={error}
+              needsAuth={needsAuth}
+              onRetry={() => {
+                setUsage(null);
+                setRetryKey((k) => k + 1);
+              }}
+            />
+          )}
+
+          {usage && (
+            <>
+              <Card className="p-5 sm:p-6">
+                <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                  <ScoreRadial score={usage.usagePct} size={100} stroke={8} label={t("settings.usage")} />
+                  <div className="text-center sm:text-start">
+                    <h2 className="font-display text-xl font-bold">{t("usage.planUsage")}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {t("usage.usageDesc", usageDescParams(usage.usagePct, usage.plan.displayName))}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t("usage.periodEnds", { date: renewLabel })}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {usage.endpoints
+                  .filter((e) => e.metric !== "api_call")
+                  .map((e) => {
+                    const meta = METRIC_META[e.metric] ?? METRIC_META.audit!;
+                    const pct =
+                      e.limit != null && e.limit > 0
+                        ? Math.min(100, Math.round((e.used / e.limit) * 100))
+                        : e.used > 0
+                          ? 5
+                          : 0;
+                    return (
+                      <Card key={e.metric} className="p-5">
+                        <div className="mb-3 flex items-center gap-3">
+                          <span
+                            className="grid size-9 place-items-center rounded-lg"
+                            style={{ background: `${meta.color}1a`, color: meta.color }}
+                          >
+                            <meta.icon className="size-5" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-semibold">{t(meta.labelKey)}</div>
+                            <div className="text-xs tabular-nums text-muted-foreground">
+                              {e.used} / {formatLimit(e.limit)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ background: meta.color, width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="mt-1.5 text-[11px] text-muted-foreground">
+                          {t("usage.used", { used: `${pct}%` })}
+                        </div>
+                      </Card>
+                    );
+                  })}
+              </div>
+
+              <Card>
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle>{t("usage.apiUsage")}</CardTitle>
+                  <CardDescription>{t("settings.usageDesc")}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <div className="space-y-1">
+                    {usage.endpoints.map((api) => (
+                      <div
+                        key={api.metric}
+                        className="flex items-center gap-3 border-b border-border/50 py-3 last:border-0"
+                      >
+                        <code className="rounded bg-primary/5 px-2 py-1 font-mono text-xs text-primary">
+                          {api.metric}
+                        </code>
+                        <div className="flex-1 text-xs text-muted-foreground">
+                          {t("usage.calls", {
+                            used: api.used,
+                            limit: formatLimit(api.limit),
+                          })}
+                        </div>
+                        <div className="text-xs font-semibold tabular-nums">
+                          {api.limit != null && api.limit > 0
+                            ? `${((api.used / api.limit) * 100).toFixed(1)}%`
+                            : "—"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </SettingsFrame>
       </PageContent>
     </PageShell>
   );

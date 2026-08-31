@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeResumeStep,
   isOnboardingGatedPath,
+  onboardingIndexResumeRedirect,
   onboardingPathForStep,
   slugFromStepNumber,
   stepNumberFromSlug,
@@ -29,6 +30,18 @@ describe("onboarding paths", () => {
     expect(isOnboardingGatedPath("/onboarding/business-name")).toBe(false);
     expect(isOnboardingGatedPath("/pricing")).toBe(false);
     expect(isOnboardingGatedPath("/watch")).toBe(false);
+  });
+
+  it("redirects the onboarding index once to the resume step", () => {
+    expect(
+      onboardingIndexResumeRedirect("/onboarding", false, "/onboarding/business-name")
+    ).toBe("/onboarding/business-name");
+    expect(
+      onboardingIndexResumeRedirect("/onboarding/business-name", false, "/onboarding/business-name")
+    ).toBeNull();
+    expect(
+      onboardingIndexResumeRedirect("/onboarding", true, "/onboarding/business-name")
+    ).toBeNull();
   });
 
   it("resumes at the first unanswered required step", () => {

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Code2, Zap, Bot, ShieldCheck, Search, Terminal } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { useT, type TranslationKey } from "@/lib/i18n";
-import { ROUTES } from "@/lib/routes";
+import { DOCS_RELATED_LINKS } from "@/app/docs/related-links";
 
 type Section = {
   icon: typeof Zap;
@@ -102,31 +102,13 @@ ${t("docs.code.result")}
           <section>
             <h2 className="font-display text-xl font-bold mb-3">{t("docs.related.title")}</h2>
             <ul className="rounded-2xl border border-border/60 bg-card p-5 space-y-2 text-sm">
-              <li>
-                <Link href="/#how" className="text-primary hover:underline">
-                  {t("docs.related.audit")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/#methodology" className="text-primary hover:underline">
-                  {t("docs.related.geo")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/#platforms" className="text-primary hover:underline">
-                  {t("docs.related.platforms")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`${ROUTES.docs}#2`} className="text-primary hover:underline">
-                  {t("docs.related.generator")}
-                </Link>
-              </li>
-              <li>
-                <Link href={ROUTES.pricing} className="text-primary hover:underline">
-                  {t("docs.related.pricing")}
-                </Link>
-              </li>
+              {DOCS_RELATED_LINKS.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-primary hover:underline">
+                    {t(item.labelKey)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </section>
         </div>

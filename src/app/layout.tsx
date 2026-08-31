@@ -11,12 +11,13 @@ import { getLocaleConfig } from "@/lib/locale/config";
 import { getActiveLocaleId } from "@/lib/locale/resolve";
 import { getSiteUrl } from "@/lib/site-url";
 import { googleSiteVerificationMetadata } from "@/lib/seo/google-site-verification";
+import { OG_IMAGE, TWITTER_IMAGE } from "@/lib/seo/page-metadata";
 import {
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
-  SITE_OG_TITLE,
+  SITE_KEYWORDS,
 } from "@/lib/seo/site-copy";
-import { SOCIAL_X_HANDLE } from "@/lib/seo/social";
+import { twitterSiteFields } from "@/lib/seo/social";
 
 /** Arabic-first typeface (Latin fallback for brand name, URLs, code). */
 const cairo = Cairo({
@@ -24,10 +25,11 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
-  // Preload only the files next/font selects as primary; extra weights still
-  // load via @font-face + swap and must remain available (no visual change).
+  // next/font preloads this family (swap + metric fallback keep CLS low).
+  // Keep 400–800 so existing font-* utilities do not change appearance.
   preload: true,
   adjustFontFallback: true,
+  fallback: ["Tahoma", "Arial", "sans-serif"],
 });
 
 const geistMono = Geist_Mono({
@@ -45,17 +47,7 @@ export const metadata: Metadata = {
     template: "%s · ConvAudit",
   },
   description: SITE_DESCRIPTION,
-  keywords: [
-    "تحليل متجر إلكتروني",
-    "تحسين صفحة المنتج",
-    "تحسين معدل التحويل",
-    "GEO SEO",
-    "تحليل متجر بالذكاء الاصطناعي",
-    "تحليل Shopify",
-    "سلة",
-    "زد",
-    "تحليل WooCommerce",
-  ],
+  keywords: [...SITE_KEYWORDS],
   authors: [{ name: "ConvAudit" }],
   creator: "ConvAudit",
   publisher: "ConvAudit",
@@ -64,25 +56,29 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon", sizes: "32x32", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
     ],
     apple: [
       { url: "/apple-icon", sizes: "180x180", type: "image/png" },
     ],
+    shortcut: "/favicon.ico",
   },
   openGraph: {
-    title: SITE_OG_TITLE,
+    title: SITE_DEFAULT_TITLE,
     description: SITE_DESCRIPTION,
+    // Canonical / OG url are set per public page so private routes do not inherit "/".
     siteName: "ConvAudit",
     type: "website",
     locale: getLocaleConfig(getActiveLocaleId()).ogLocale,
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    site: SOCIAL_X_HANDLE,
-    creator: SOCIAL_X_HANDLE,
-    title: SITE_OG_TITLE,
+    ...twitterSiteFields(),
+    title: SITE_DEFAULT_TITLE,
     description: SITE_DESCRIPTION,
+    images: [TWITTER_IMAGE],
   },
   robots: {
     index: true,

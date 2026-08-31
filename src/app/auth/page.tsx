@@ -25,6 +25,7 @@ import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase-browser
 import { mapAuthErrorMessage } from "@/lib/auth/map-auth-error";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { withTimeout } from "@/lib/with-timeout";
+import { absoluteUrl } from "@/lib/site-url";
 import { translate, useT, type TranslationKey } from "@/lib/i18n";
 
 type StatItem = { v: string; lKey: TranslationKey };
@@ -77,6 +78,7 @@ function AuthPageInner() {
   const [error, setError] = React.useState<string | null>(null);
   const [info, setInfo] = React.useState<string | null>(null);
   const [mounted, setMounted] = React.useState(false);
+  const inFlightRef = React.useRef(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -101,10 +103,10 @@ function AuthPageInner() {
 
   const redirectAfterAuth = React.useCallback(() => {
     router.replace(nextPath);
-    router.refresh();
   }, [nextPath, router]);
 
   const handleGoogle = async () => {
+    if (inFlightRef.current) return;
     setError(null);
     setInfo(null);
     if (!isSupabaseConfigured()) {
@@ -117,15 +119,16 @@ function AuthPageInner() {
       return;
     }
 
+    inFlightRef.current = true;
     setLoading(true);
-    const origin = window.location.origin;
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        redirectTo: absoluteUrl(`/auth/callback?next=${encodeURIComponent(nextPath)}`),
       },
     });
     if (oauthError) {
+      inFlightRef.current = false;
       setLoading(false);
       setError(mapAuthErrorMessage(oauthError, t));
     }
@@ -133,6 +136,7 @@ function AuthPageInner() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlightRef.current) return;
     setError(null);
     setInfo(null);
 
@@ -152,7 +156,9 @@ function AuthPageInner() {
       return;
     }
 
+    inFlightRef.current = true;
     setLoading(true);
+    let navigated = false;
     try {
       if (mode === "login") {
         const signInResult = await withTimeout(
@@ -171,6 +177,7 @@ function AuthPageInner() {
           setError(mapAuthErrorMessage(signInResult.error, t));
           return;
         }
+        navigated = true;
         redirectAfterAuth();
         return;
       }
@@ -186,7 +193,9 @@ function AuthPageInner() {
           password,
           options: {
             data: { full_name: fullName.trim() },
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+            emailRedirectTo: absoluteUrl(
+              `/auth/callback?next=${encodeURIComponent(nextPath)}`
+            ),
           },
         }),
         AUTH_REQUEST_MS,
@@ -201,6 +210,7 @@ function AuthPageInner() {
         return;
       }
       if (signUpResult.data.session) {
+        navigated = true;
         redirectAfterAuth();
         return;
       }
@@ -209,7 +219,10 @@ function AuthPageInner() {
       const message = err instanceof Error ? err.message : "";
       setError(mapAuthErrorMessage(message, t));
     } finally {
-      setLoading(false);
+      if (!navigated) {
+        inFlightRef.current = false;
+        setLoading(false);
+      }
     }
   };
 
@@ -298,10 +311,10 @@ function AuthPageInner() {
                   <Sparkles className="size-3" aria-hidden />
                   {t("auth.badge")}
                 </div>
-                <h1 className="font-display text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
+                <p className="font-display text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
                   {t("auth.headlineLead")}{" "}
                   <span className="gradient-text">{t("auth.headlineAccent")}</span>
-                </h1>
+                </p>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   {t("auth.subheadline")}
                 </p>

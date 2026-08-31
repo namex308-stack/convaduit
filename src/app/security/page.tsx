@@ -28,7 +28,7 @@ export default function SecurityPage() {
   return (
     <PageShell>
       <PageHeader
-        title="الأمان"
+        title="أمان المنتج والبيانات"
         subtitle="نهجنا الحالي في أمان المنتج — دون الادعاء بشهادات غير موثّقة."
         icon={Shield}
       />

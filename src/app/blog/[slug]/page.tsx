@@ -3,11 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
-import { motion } from "framer-motion";
 import { Clock, ArrowLeft, Share2, Twitter, Linkedin, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell, PageContent } from "@/components/app/page-shell";
 import { useT, type TranslationKey } from "@/lib/i18n";
+import { relatedBlogSlugs, getBlogPostMeta, visibleBlogDateLabel } from "@/lib/blog-posts";
 import { absoluteUrl } from "@/lib/site-url";
 
 type ContentBlock = {
@@ -143,7 +143,10 @@ const POSTS: readonly BlogPost[] = [
 ];
 
 function relatedFor(slug: string): readonly BlogPost[] {
-  return POSTS.filter((p) => p.slug !== slug).slice(0, 3);
+  return relatedBlogSlugs(slug).flatMap((relatedSlug) => {
+    const post = POSTS.find((p) => p.slug === relatedSlug);
+    return post ? [post] : [];
+  });
 }
 
 export default function BlogPostPage() {
@@ -159,6 +162,12 @@ export default function BlogPostPage() {
   const RELATED = relatedFor(slug);
   const pageUrl = absoluteUrl(`/blog/${POST.slug}`);
   const title = t(POST.titleKey);
+  const postMeta = getBlogPostMeta(POST.slug);
+  const visibleDate = postMeta
+    ? visibleBlogDateLabel(postMeta.publishedOn, t(POST.dateKey), (date) =>
+        t("blog.scheduledOn", { date })
+      )
+    : t(POST.dateKey);
 
   const copyPageUrl = async () => {
     try {
@@ -178,14 +187,14 @@ export default function BlogPostPage() {
         </Link>
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ background: POST.color }}>{t(POST.categoryKey)}</span>
-            <span className="text-xs text-muted-foreground flex items-center gap-2"><span>{t(POST.dateKey)}</span><span>·</span><Clock className="size-3" /> {t("blog.minRead", { count: POST.readTime })}</span>
+            <span className="text-xs text-muted-foreground flex items-center gap-2"><span>{visibleDate}</span><span>·</span><Clock className="size-3" /> {t("blog.minRead", { count: POST.readTime })}</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-balance">{t(POST.titleKey)}</h1>
           <p className="mt-3 text-lg text-muted-foreground text-pretty">{t(POST.excerptKey)}</p>
-        </motion.div>
+        </div>
 
         {/* Cover */}
         <div className="mt-6 aspect-[2/1] rounded-2xl gradient-brand-soft relative overflow-hidden">
@@ -199,39 +208,21 @@ export default function BlogPostPage() {
             switch (block.type) {
               case "h2":
                 return (
-                  <motion.h2
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="font-display text-xl font-bold mt-8"
-                  >
+                  <h2 key={i} className="font-display text-xl font-bold mt-8">
                     {t(block.textKey)}
-                  </motion.h2>
+                  </h2>
                 );
               case "h3":
                 return (
-                  <motion.h3
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="font-display text-lg font-semibold mt-6"
-                  >
+                  <h3 key={i} className="font-display text-lg font-semibold mt-6">
                     {t(block.textKey)}
-                  </motion.h3>
+                  </h3>
                 );
               case "p":
                 return (
-                  <motion.p
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-foreground/85 leading-relaxed"
-                  >
+                  <p key={i} className="text-foreground/85 leading-relaxed">
                     {t(block.textKey)}
-                  </motion.p>
+                  </p>
                 );
               default: {
                 const _exhaustive: never = block.type;

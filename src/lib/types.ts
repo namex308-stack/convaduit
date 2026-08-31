@@ -66,7 +66,7 @@ export interface PageSignals {
 
 /** Crawl / scrape provenance shown on the report. */
 export interface CrawlMetadata {
-  source: "firecrawl" | "fallback" | "none";
+  source: "firecrawl" | "fallback" | "none" | "load_test";
   scrapeMs?: number;
   pageType?: string;
   imageCount?: number;

@@ -1,10 +1,6 @@
-"use client";
-
 import { Zap, Search, Bot, ShieldCheck } from "lucide-react";
-import { StartAuditCta } from "@/components/common/start-audit-cta";
-import { Container, Section, SectionHeader, SurfaceCard } from "@/components/design-system/section";
-import { BlurFade } from "@/components/magicui/blur-fade";
-import { useT } from "@/lib/i18n";
+import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
+import { translate as t } from "@/lib/i18n";
 
 /** GEO leads — it is the core differentiator vs. generic CRO tools. */
 const PILLARS = [
@@ -63,7 +59,6 @@ const PILLARS = [
 ] as const;
 
 export function Features() {
-  const t = useT();
   return (
     <Section id="features">
       <Container>
@@ -71,25 +66,25 @@ export function Features() {
           eyebrow={t("features.eyebrow")}
           title={t("features.title")}
           description={t("features.subtitle")}
-          className="mb-12"
+          className="mb-8 sm:mb-10"
         />
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          {PILLARS.map((p, i) => (
-            <BlurFade key={p.eyebrow} delay={i * 0.06} className="h-full">
-              <SurfaceCard className="p-6 sm:p-7">
+        <BentoPanel>
+          <div className="grid sm:grid-cols-2 gap-px">
+            {PILLARS.map((p) => (
+              <BentoCell key={p.eyebrow}>
                 <div className="flex items-start justify-between mb-5">
-                  <div
-                    className="size-12 rounded-xl grid place-items-center"
+                  <IconWell
+                    className="size-11 rounded-xl"
                     style={{ background: `${p.color}1a`, color: p.color }}
                   >
-                    <p.icon className="size-6" aria-hidden />
-                  </div>
+                    <p.icon className="size-5" aria-hidden />
+                  </IconWell>
                   <span className="font-display text-2xl font-bold opacity-20" style={{ color: p.color }}>
                     {p.eyebrow}
                   </span>
                 </div>
-                <h3 className="font-display text-xl font-semibold">{t(p.nameKey)}</h3>
+                <h3 className="font-display text-lg sm:text-xl font-semibold">{t(p.nameKey)}</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t(p.descKey)}</p>
                 <ul className="mt-5 space-y-2.5">
                   {p.pointKeys.map((ptKey) => (
@@ -99,17 +94,10 @@ export function Features() {
                     </li>
                   ))}
                 </ul>
-              </SurfaceCard>
-            </BlurFade>
-          ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <StartAuditCta className="font-semibold h-11 px-7">
-            {t("features.cta")}
-          </StartAuditCta>
-          <p className="mt-3 text-xs text-muted-foreground">{t("features.ctaSub")}</p>
-        </div>
+              </BentoCell>
+            ))}
+          </div>
+        </BentoPanel>
       </Container>
     </Section>
   );

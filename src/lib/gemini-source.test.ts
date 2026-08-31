@@ -38,4 +38,12 @@ describe("audit analysis source labeling", () => {
     const recSources = (audit.recommendations ?? []).map((r) => r.source);
     expect(recSources.some((s) => s === "gemini")).toBe(false);
   });
+
+  it("forceHeuristic skips Gemini even when an API key is present", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "fake-key-for-load-test");
+    const audit = await runAudit(page(), null, null, { forceHeuristic: true });
+    expect(audit.demoMode).toBe(true);
+    const recSources = (audit.recommendations ?? []).map((r) => r.source);
+    expect(recSources.some((s) => s === "gemini")).toBe(false);
+  });
 });

@@ -204,6 +204,22 @@ export function isOnboardingPath(pathname: string): boolean {
   return pathname === "/onboarding" || pathname.startsWith("/onboarding/");
 }
 
+/**
+ * Send incomplete users off `/onboarding` in one hop (middleware), so the
+ * index page does not issue a second getUser() + redirect to the resume step.
+ */
+export function onboardingIndexResumeRedirect(
+  pathname: string,
+  completed: boolean,
+  resumePath: string
+): string | null {
+  if (completed) return null;
+  if (pathname !== "/onboarding") return null;
+  if (resumePath === pathname) return null;
+  if (!resumePath.startsWith("/onboarding")) return null;
+  return resumePath;
+}
+
 export function platformLabel(value: string): string {
   const match = PLATFORM_OPTIONS.find((o) => o.value === value);
   return match?.label ?? (value ? value : "—");

@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
-import { translate } from "@/lib/locale/t";
 import { ROUTES } from "@/lib/routes";
 
-const TITLE = "أسعار الباقات";
-const DESCRIPTION = translate("pricing.subtitle");
+const TITLE = "أسعار تدقيق المتاجر";
+const DESCRIPTION =
+  "باقات ConvAudit لتدقيق المتاجر الإلكترونية: تحويل، SEO، وGEO. ابدأ مجاناً — الأسعار بالجنيه المصري عبر Paymob.";
 
 export const metadata: Metadata = publicPageMetadata({
   title: TITLE,

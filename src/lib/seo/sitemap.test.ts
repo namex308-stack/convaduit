@@ -12,7 +12,7 @@ describe("sitemap", () => {
     const entries = sitemap();
     const urls = entries.map((e) => e.url);
 
-    expect(urls).toContain("https://www.convaudit.com");
+    expect(urls).toContain("https://www.convaudit.com/");
     expect(urls).toContain("https://www.convaudit.com/pricing");
     expect(urls).toContain("https://www.convaudit.com/docs");
     expect(urls).toContain("https://www.convaudit.com/blog");
@@ -62,7 +62,7 @@ describe("sitemap", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com");
 
     const urls = sitemap().map((e) => e.url);
-    expect(urls).toContain("https://www.convaudit.com");
+    expect(urls).toContain("https://www.convaudit.com/");
     expect(urls).toContain("https://www.convaudit.com/pricing");
     expect(urls.some((u) => new URL(u).hostname === "convaudit.com")).toBe(false);
 

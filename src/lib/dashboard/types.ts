@@ -41,6 +41,34 @@ export type DashboardTopIssue = {
   auditId: string | null;
 };
 
+export type DashboardMetricDirection = "up" | "down" | "flat";
+
+export type DashboardMetricSource =
+  | "audits"
+  | "reports"
+  | "audit_scores"
+  | "usage_events"
+  | "recommendations"
+  | "geo_signals"
+  | "audit_pages";
+
+export type DashboardMetric = {
+  value: number | null;
+  previous: number | null;
+  delta: number | null;
+  direction: DashboardMetricDirection | null;
+  source: DashboardMetricSource;
+  asOf: string | null;
+};
+
+export type DashboardPillars = {
+  overall: number | null;
+  seo: number | null;
+  geo: number | null;
+  conversion: number | null;
+  trust: number | null;
+};
+
 /** Payload for GET /api/dashboard — shared by API and client. */
 export type DashboardPayload = {
   plan: PlanLimits;
@@ -48,6 +76,7 @@ export type DashboardPayload = {
     avgScore: number | null;
     totalAudits: number;
     auditsThisMonth: number;
+    auditsLastMonth: number;
     auditsLimit: number | null;
     geoScore: number | null;
     openRecommendations: number;
@@ -55,7 +84,18 @@ export type DashboardPayload = {
     latestStoreScore: number | null;
     pagesScanned: number;
     pagesThisMonth: number;
+    completedCount: number;
   };
+  kpis: {
+    overall: DashboardMetric;
+    seo: DashboardMetric;
+    geo: DashboardMetric;
+    conversion: DashboardMetric;
+    trust: DashboardMetric;
+    audits: DashboardMetric;
+  };
+  latestPillars: DashboardPillars | null;
+  previousPillars: DashboardPillars | null;
   latestAudit: {
     id: string;
     productName: string;

@@ -42,6 +42,11 @@ import {
 } from "@/lib/db/onboarding-repository";
 import { normalizeAppLocale } from "@/lib/locale";
 import type { OnboardingAnswers } from "@/lib/types";
+import {
+  loadTestSignalFromHeaders,
+  resolveLoadTestMode,
+} from "@/lib/load-test/mode";
+import { buildLoadTestNormalizedPage } from "@/lib/load-test/mock-page";
 
 /** Allow crawl + Gemini + persist to finish inside `after()` on Vercel. */
 export const runtime = "nodejs";
@@ -87,6 +92,7 @@ async function runAuditPipeline(input: {
   onboarding: OnboardingAnswers | null;
   onboardingState: OnboardingState;
   usageEventId: string | null;
+  useLoadTestMocks: boolean;
 }): Promise<void> {
   const {
     auditId,
@@ -99,6 +105,7 @@ async function runAuditPipeline(input: {
     onboarding,
     onboardingState,
     usageEventId,
+    useLoadTestMocks,
   } = input;
 
   try {
@@ -110,12 +117,27 @@ async function runAuditPipeline(input: {
       source: "none" as const,
     };
 
-    const [productResult, competitorResult] = await Promise.all([
-      crawlWithFallback(primaryUrl),
-      resolvedCompetitorUrl
-        ? crawlWithFallback(resolvedCompetitorUrl)
-        : Promise.resolve(emptyCompetitor),
-    ]);
+    const [productResult, competitorResult] = useLoadTestMocks
+      ? [
+          {
+            page: buildLoadTestNormalizedPage(primaryUrl),
+            errorCode: null,
+            source: "load_test" as const,
+          },
+          resolvedCompetitorUrl
+            ? {
+                page: buildLoadTestNormalizedPage(resolvedCompetitorUrl),
+                errorCode: null,
+                source: "load_test" as const,
+              }
+            : emptyCompetitor,
+        ]
+      : await Promise.all([
+          crawlWithFallback(primaryUrl),
+          resolvedCompetitorUrl
+            ? crawlWithFallback(resolvedCompetitorUrl)
+            : Promise.resolve(emptyCompetitor),
+        ]);
 
     const product = productResult.page;
     const competitor = competitorResult.page;
@@ -142,6 +164,7 @@ async function runAuditPipeline(input: {
 
     const audit = await runAudit(product, competitor, onboarding, {
       outputLocale,
+      forceHeuristic: useLoadTestMocks,
       onAnalyzerStart: async (analyzer: AnalyzerName) => {
         const id = await startAnalysisRun(auditId, analyzer);
         if (id) runIds.set(analyzer, id);
@@ -159,7 +182,7 @@ async function runAuditPipeline(input: {
       ...withGeo,
       storeUrl: resolvedStoreUrl || withGeo.storeUrl,
       competitorUrl: resolvedCompetitorUrl || withGeo.competitorUrl,
-      demoMode: withGeo.demoMode ?? !isGeminiConfigured(),
+      demoMode: useLoadTestMocks || (withGeo.demoMode ?? !isGeminiConfigured()),
       crawlMetadata: {
         source: productResult.source,
         scrapeMs: product.scrapeMs,
@@ -171,7 +194,9 @@ async function runAuditPipeline(input: {
             ? productResult.errorMessage
             : usedFallback && !isFirecrawlConfigured()
               ? FIRECRAWL_NOT_CONFIGURED_MESSAGE
-              : undefined,
+              : useLoadTestMocks
+                ? "Load-test mock (development/test only)."
+                : undefined,
         scrapedAt: new Date().toISOString(),
       },
     };
@@ -211,6 +236,32 @@ async function runAuditPipeline(input: {
 
 export async function POST(req: NextRequest) {
   try {
+    const loadTestMode = resolveLoadTestMode(
+      loadTestSignalFromHeaders(req.headers, req.nextUrl)
+    );
+    switch (loadTestMode) {
+      case "rejected":
+        return NextResponse.json(
+          {
+            error: "Load-test mocks are disabled in this environment.",
+            code: "LOAD_TEST_REJECTED",
+          },
+          { status: 403 }
+        );
+      case "mock":
+      case "off":
+        break;
+      default: {
+        const _exhaustive: never = loadTestMode;
+        void _exhaustive;
+        return NextResponse.json(
+          { error: "Load-test mocks are disabled in this environment.", code: "LOAD_TEST_REJECTED" },
+          { status: 403 }
+        );
+      }
+    }
+    const useLoadTestMocks = loadTestMode === "mock";
+
     const auth = await requireApiUser();
     if (!auth.ok) return auth.response;
 
@@ -245,12 +296,13 @@ export async function POST(req: NextRequest) {
     const competitorCandidate =
       competitorUrlInput || onboardingState.competitorUrl || undefined;
 
-    const urlError =
-      (await validateCrawlUrl(productUrlInput ? "رابط المنتج" : "رابط المتجر", primaryUrl)) ||
-      (resolvedStoreUrl && resolvedStoreUrl !== primaryUrl
-        ? await validateCrawlUrl("رابط المتجر", resolvedStoreUrl)
-        : null) ||
-      (competitorCandidate ? await validateCrawlUrl("رابط المنافس", competitorCandidate) : null);
+    const urlError = useLoadTestMocks
+      ? null
+      : (await validateCrawlUrl(productUrlInput ? "رابط المنتج" : "رابط المتجر", primaryUrl)) ||
+        (resolvedStoreUrl && resolvedStoreUrl !== primaryUrl
+          ? await validateCrawlUrl("رابط المتجر", resolvedStoreUrl)
+          : null) ||
+        (competitorCandidate ? await validateCrawlUrl("رابط المنافس", competitorCandidate) : null);
     if (urlError) {
       return NextResponse.json({ error: urlError, code: "BLOCKED_URL" }, { status: 400 });
     }
@@ -266,7 +318,9 @@ export async function POST(req: NextRequest) {
     const plan = await getPlanForWorkspace(workspaceId);
 
     const rateKey = `user:${auth.user.id}`;
-    const { success, remaining, limit } = await checkRateLimit(rateKey, plan.planId);
+    const { success, remaining, limit } = useLoadTestMocks
+      ? { success: true, remaining: Number.POSITIVE_INFINITY, limit: Number.POSITIVE_INFINITY }
+      : await checkRateLimit(rateKey, plan.planId);
     if (!success) {
       return NextResponse.json(
         { error: "تم تجاوز الحد المسموح. حاول لاحقاً أو قم بترقية باقتك." },
@@ -386,6 +440,7 @@ export async function POST(req: NextRequest) {
         onboarding,
         onboardingState,
         usageEventId,
+        useLoadTestMocks,
       })
     );
 
@@ -403,9 +458,10 @@ export async function POST(req: NextRequest) {
         workspaceId,
         accepted: true,
         demoMode: {
-          firecrawl: !isFirecrawlConfigured(),
-          gemini: !isGeminiConfigured(),
+          firecrawl: useLoadTestMocks || !isFirecrawlConfigured(),
+          gemini: useLoadTestMocks || !isGeminiConfigured(),
         },
+        loadTest: useLoadTestMocks,
       },
     });
   } catch (err) {
@@ -425,6 +481,6 @@ export async function GET() {
       locale: "ar (optional — reserved for future Arabic dialect variants)",
     },
     notes:
-      "Provide at least one of productUrl or storeUrl. Onboarding context is loaded from the user profile (required before audit). Returns auditId immediately; crawl/AI continue in the background — poll GET /api/audit/:id or open /scanning.",
+      "Provide at least one of productUrl or storeUrl. Onboarding context is loaded from the user profile (required before audit). Returns auditId immediately; crawl/AI continue in the background — poll GET /api/audit/:id or open /scanning. Development/test only: send header X-Load-Test: true (or ?loadTest=true) to skip Firecrawl and Gemini. Production rejects that signal with 403.",
   });
 }

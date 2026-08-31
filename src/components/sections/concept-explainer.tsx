@@ -1,16 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   Link2, Cpu, Zap, Search, Bot, ShieldCheck, FileSearch,
   ArrowRight, Check, Sparkles, TrendingUp, Play, Pause,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StartAuditCta } from "@/components/common/start-audit-cta";
+import { Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { FloatingOrbs } from "@/components/common/visual-effects";
 
 const PHASES = [
   {
@@ -45,33 +45,34 @@ const PHASES = [
 
 export function ConceptExplainer() {
   const t = useT();
+  const reduceMotion = useReducedMotion();
   const [phase, setPhase] = React.useState(0);
   const [playing, setPlaying] = React.useState(true);
 
   React.useEffect(() => {
-    if (!playing) return;
+    if (reduceMotion) setPlaying(false);
+  }, [reduceMotion]);
+
+  React.useEffect(() => {
+    if (!playing || reduceMotion) return;
     const interval = setInterval(() => setPhase((p) => (p + 1) % PHASES.length), 4200);
     return () => clearInterval(interval);
-  }, [playing]);
+  }, [playing, reduceMotion]);
 
   const current = PHASES[phase];
 
   return (
-    <section id="how" className="py-20 sm:py-28 relative overflow-hidden">
-      <FloatingOrbs count={2} />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-sm font-semibold uppercase tracking-wider text-primary">{t("concept.eyebrow")}</span>
-          <h2 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-balance">
-            {t("concept.title")}
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground text-pretty">
-            {t("concept.subtitle")}
-          </p>
-        </div>
+    <Section id="how" className="relative overflow-hidden">
+      <Container>
+        <SectionHeader
+          align="center"
+          eyebrow={t("concept.eyebrow")}
+          title={t("concept.title")}
+          description={t("concept.subtitle")}
+          className="mb-10 sm:mb-12"
+        />
 
         <div className="grid lg:grid-cols-[1fr_1.3fr] gap-8 items-center">
-          {/* Left: phase list */}
           <div className="space-y-2.5 order-2 lg:order-1">
             {PHASES.map((p, i) => {
               const active = i === phase;
@@ -79,34 +80,44 @@ export function ConceptExplainer() {
               return (
                 <button
                   key={p.id}
+                  type="button"
+                  aria-pressed={active}
+                  aria-controls="concept-visual"
                   onClick={() => { setPhase(i); setPlaying(false); }}
                   className={cn(
-                    "w-full flex items-start gap-3.5 rounded-2xl border p-4 text-start transition-all duration-300",
-                    active ? "border-primary/50 bg-primary/5 shadow-glow" : "border-border/60 bg-card hover:border-primary/30"
+                    "w-full flex items-start gap-3.5 rounded-xl border p-4 text-start transition-colors duration-200 motion-reduce:transition-none",
+                    "focus-visible:ring-2 focus-visible:ring-ring",
+                    active ? "border-primary/50 bg-primary/5 shadow-[var(--shadow-card)]" : "border-border/60 bg-card hover:border-primary/30"
                   )}
                 >
-                  <span className={cn(
-                    "size-11 rounded-xl grid place-items-center shrink-0 transition-colors",
-                    active ? "gradient-brand text-white" : done ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                  )}>
+                  <IconWell
+                    className={cn(
+                      "size-11 rounded-xl",
+                      active ? "gradient-brand text-white bg-transparent" : done ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                    )}
+                  >
                     {done ? <Check className="size-5" /> : <p.icon className="size-5" />}
-                  </span>
+                  </IconWell>
                   <div className="flex-1 min-w-0">
-                    <div className="font-display font-bold text-sm sm:text-base">{t(p.titleKey)}</div>
+                    <div className="font-display font-semibold text-sm sm:text-base">{t(p.titleKey)}</div>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{t(p.descKey)}</p>
                   </div>
-                  {active && (
-                    <motion.span
-                      layoutId="explainer-active"
-                      className="size-2 rounded-full bg-primary mt-2 shrink-0"
-                    />
-                  )}
+                  {active ? (
+                    <span className="size-2 rounded-full bg-primary mt-2 shrink-0" />
+                  ) : null}
                 </button>
               );
             })}
 
-            <div className="flex items-center gap-2 pt-2">
-              <Button size="sm" variant="outline" onClick={() => setPlaying((p) => !p)} className="rounded-full">
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                onClick={() => setPlaying((p) => !p)}
+                className="rounded-full"
+                aria-pressed={playing}
+              >
                 {playing ? <Pause className="size-3.5 me-1.5" /> : <Play className="size-3.5 me-1.5" />}
                 {playing ? t("concept.pause") : t("concept.play")}
               </Button>
@@ -116,29 +127,27 @@ export function ConceptExplainer() {
             </div>
           </div>
 
-          {/* Right: animated visual */}
-          <div className="order-1 lg:order-2 relative">
-            <div className="absolute -inset-4 gradient-brand opacity-10 blur-3xl rounded-3xl" />
-            <div className="relative rounded-2xl border border-border/60 bg-card shadow-2xl overflow-hidden min-h-[420px]">
+          <div className="order-1 lg:order-2 relative min-w-0">
+            <div className="relative rounded-xl border border-border/60 bg-card shadow-[var(--shadow-elevated)] overflow-hidden min-h-[420px]">
               {/* browser chrome */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-border/60 bg-muted/40">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5 border-b border-border/60 bg-muted/40">
+                <div className="flex items-center gap-1.5 shrink-0" aria-hidden>
                   <span className="size-2.5 rounded-full bg-muted-foreground/30" />
                   <span className="size-2.5 rounded-full bg-muted-foreground/30" />
                   <span className="size-2.5 rounded-full bg-muted-foreground/30" />
                 </div>
-                <span className="text-xs font-mono text-muted-foreground">convaudit.com/audit</span>
-                <span className="text-xs text-muted-foreground">{phase + 1} / {PHASES.length}</span>
+                <span className="text-xs font-mono text-muted-foreground truncate min-w-0">convaudit.com/audit</span>
+                <span className="text-xs text-muted-foreground shrink-0 tabular-nums">{phase + 1} / {PHASES.length}</span>
               </div>
 
-              <div className="p-6 sm:p-8 min-h-[380px] flex items-center justify-center">
+              <div id="concept-visual" className="p-6 sm:p-8 min-h-[380px] flex items-center justify-center" aria-live="polite">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={current.id}
-                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -16, scale: 0.98 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    exit={reduceMotion === true ? undefined : { opacity: 0, y: -16, scale: 0.98 }}
+                    transition={{ duration: reduceMotion === true ? 0 : 0.4, ease: [0.16, 1, 0.3, 1] }}
                     className="w-full"
                   >
                     {current.visual === "input" && <InputVisual />}
@@ -151,8 +160,8 @@ export function ConceptExplainer() {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
 

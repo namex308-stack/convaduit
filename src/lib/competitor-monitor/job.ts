@@ -67,7 +67,7 @@ async function resolvePage(target: DueCompetitorTarget): Promise<{
 
   return {
     page: null,
-    source: crawled.source,
+    source: crawled.source === "load_test" ? "none" : crawled.source,
     errorMessage: crawled.errorMessage || "فشل جلب صفحة المنافس.",
   };
 }

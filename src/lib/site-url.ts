@@ -189,3 +189,22 @@ export function absoluteUrl(pathOrUrl: string = "/"): string {
   const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
   return `${base}${path}`;
 }
+
+/**
+ * HTML canonical / OG url for a public path.
+ * Home uses the official origin with a trailing slash
+ * (`https://www.convaudit.com/`); other paths stay slash-normalized.
+ */
+export function canonicalPageUrl(pathOrUrl: string = "/"): string {
+  const trimmed = pathOrUrl.trim();
+  const isHome =
+    !trimmed ||
+    trimmed === "/" ||
+    trimmed === getSiteUrl() ||
+    trimmed === `${getSiteUrl()}/`;
+  if (isHome) {
+    const origin = getSiteUrl();
+    return origin.endsWith("/") ? origin : `${origin}/`;
+  }
+  return absoluteUrl(trimmed);
+}

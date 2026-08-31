@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/json-ld";
-import { getBlogPostMeta } from "@/lib/blog-posts";
+import { BLOG_SLUGS, blogPostMetaDescription, getBlogPostMeta } from "@/lib/blog-posts";
 import { translate } from "@/lib/locale/t";
 import { ROUTES } from "@/lib/routes";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildBlogArticleJsonLd } from "@/lib/seo/structured-data";
+
+export function generateStaticParams() {
+  return BLOG_SLUGS.map((slug) => ({ slug }));
+}
+
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
@@ -19,7 +25,8 @@ export async function generateMetadata({
   if (!post) notFound();
 
   const title = translate(post.titleKey);
-  const description = translate(post.excerptKey);
+  const excerpt = translate(post.excerptKey);
+  const description = blogPostMetaDescription(post, excerpt);
   const url = ROUTES.blogPost(slug);
 
   return publicPageMetadata({
@@ -46,7 +53,7 @@ export default async function BlogPostLayout({
       <JsonLd
         data={buildBlogArticleJsonLd({
           title: translate(post.titleKey),
-          description: translate(post.excerptKey),
+          description: blogPostMetaDescription(post, translate(post.excerptKey)),
           path: ROUTES.blogPost(slug),
           publishedOn: post.publishedOn,
         })}

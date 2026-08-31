@@ -1,10 +1,6 @@
-"use client";
-
 import { Flame, TrendingUp, Sparkles } from "lucide-react";
-import { StartAuditCta } from "@/components/common/start-audit-cta";
-import { Container, Section, SectionHeader, SurfaceCard } from "@/components/design-system/section";
-import { BlurFade } from "@/components/magicui/blur-fade";
-import { useT, type TranslationKey } from "@/lib/i18n";
+import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
+import { translate as t, type TranslationKey } from "@/lib/i18n";
 
 const PRIORITIES: {
   icon: typeof Flame;
@@ -41,7 +37,6 @@ const PRIORITIES: {
 ];
 
 export function DecisionEngine() {
-  const t = useT();
   return (
     <Section id="decision-engine" tone="bordered">
       <Container>
@@ -50,20 +45,20 @@ export function DecisionEngine() {
           eyebrow={t("decision.eyebrow")}
           title={t("decision.title")}
           description={t("decision.subtitle")}
-          className="mb-12"
+          className="mb-8 sm:mb-10"
         />
 
-        <div className="grid md:grid-cols-3 gap-4">
-          {PRIORITIES.map((tier, i) => (
-            <BlurFade key={tier.titleKey} delay={i * 0.06} className="h-full">
-              <SurfaceCard className="p-6 sm:p-7">
+        <BentoPanel>
+          <div className="grid md:grid-cols-3 gap-px">
+            {PRIORITIES.map((tier) => (
+              <BentoCell key={tier.titleKey}>
                 <div className="flex items-start justify-between mb-5">
-                  <span
-                    className="size-11 rounded-xl grid place-items-center"
+                  <IconWell
+                    className="size-11 rounded-xl"
                     style={{ background: `${tier.accent}1a`, color: tier.accent }}
                   >
                     <tier.icon className="size-5" aria-hidden />
-                  </span>
+                  </IconWell>
                   <span
                     className="font-display text-2xl font-bold opacity-20"
                     style={{ color: tier.accent }}
@@ -71,7 +66,7 @@ export function DecisionEngine() {
                     {tier.badge}
                   </span>
                 </div>
-                <h3 className="font-display text-xl font-semibold">{t(tier.titleKey)}</h3>
+                <h3 className="font-display text-lg sm:text-xl font-semibold">{t(tier.titleKey)}</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t(tier.descKey)}</p>
                 <ul className="mt-5 space-y-2.5">
                   {tier.itemKeys.map((key) => (
@@ -85,17 +80,10 @@ export function DecisionEngine() {
                     </li>
                   ))}
                 </ul>
-              </SurfaceCard>
-            </BlurFade>
-          ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <StartAuditCta className="font-semibold h-11 px-7">
-            {t("decision.cta")}
-          </StartAuditCta>
-          <p className="mt-3 text-xs text-muted-foreground">{t("decision.ctaSub")}</p>
-        </div>
+              </BentoCell>
+            ))}
+          </div>
+        </BentoPanel>
       </Container>
     </Section>
   );

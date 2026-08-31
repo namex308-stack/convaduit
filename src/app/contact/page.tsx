@@ -7,6 +7,7 @@ import { SurfaceCard } from "@/components/design-system/section";
 import { SocialLinks } from "@/components/layout/social-links";
 import { ContactEmailActions } from "@/components/contact/email-actions";
 import { CONTACT_EMAIL, contactMailto } from "@/lib/seo/contact";
+import { SOCIAL_PROFILES } from "@/lib/seo/social";
 import { ROUTES } from "@/lib/routes";
 
 const TOPICS = [
@@ -18,7 +19,7 @@ const TOPICS = [
   },
   {
     title: "الفوترة والاشتراك",
-    body: "مدفوعات Kashier، ترقية الباقة، أو معرّف عملية الدفع.",
+    body: "مدفوعات Paymob، ترقية الباقة، أو معرّف عملية الدفع.",
     href: contactMailto("فوترة واشتراك — ConvAudit"),
     icon: CreditCard,
   },
@@ -93,15 +94,17 @@ export default function ContactPage() {
           </SurfaceCard>
         </div>
 
-        <SurfaceCard className="p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
-          <div>
-            <h2 className="font-display font-semibold">الحسابات الرسمية</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              تابع ConvAudit على X وLinkedIn للأخبار وتحديثات المنتج. الدعم يتم عبر البريد أعلاه.
-            </p>
-          </div>
-          <SocialLinks className="mt-4 sm:mt-0 shrink-0" />
-        </SurfaceCard>
+        {SOCIAL_PROFILES.length > 0 ? (
+          <SurfaceCard className="p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
+            <div>
+              <h2 className="font-display font-semibold">الحسابات الرسمية</h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                تابع ConvAudit على X وLinkedIn للأخبار وتحديثات المنتج. الدعم يتم عبر البريد أعلاه.
+              </p>
+            </div>
+            <SocialLinks className="mt-4 sm:mt-0 shrink-0" />
+          </SurfaceCard>
+        ) : null}
       </PageContent>
     </PageShell>
   );

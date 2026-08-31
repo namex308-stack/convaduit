@@ -12,6 +12,17 @@ import type { PlanId, UsageMetric } from "@/lib/db/types";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
 import { parseImpact, parseSeverity } from "@/lib/audits/parse";
 import { buildScoreTrend } from "@/lib/dashboard/trend";
+import {
+  buildMetric,
+  mergePillarSnapshot,
+  pickLatestReportByAudit,
+  previousMonthPeriod,
+  scoresBySlugForAudit,
+  sortCompletedByRecency,
+  type AuditScoreRow,
+  type CategoryRow,
+  type ReportPillarRow,
+} from "@/lib/dashboard/metrics";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
 import { sanitizeDisplayName } from "@/lib/auth/display-user";
 import {
@@ -30,6 +41,7 @@ export type {
   DashboardPayload,
   DashboardPriorityIssue,
   DashboardTopIssue,
+  DashboardMetric,
   PlanLimits,
   UsageCounts,
 } from "@/lib/dashboard/types";
@@ -291,28 +303,38 @@ export async function getShellForUser(userId: string): Promise<ShellPayload> {
 export async function getDashboardForUser(userId: string): Promise<DashboardPayload> {
   const monthStart = startOfMonth().toISOString();
   const monthEnd = endOfMonth().toISOString();
-  const [plan, audits, counts, profileName] = await Promise.all([
-    getPlanForUser(userId),
-    listAuditsForUser(userId, 50),
-    getUsageCountsForUser(userId, monthStart, monthEnd),
-    getProfileDisplayName(userId),
-  ]);
-  const completed = audits.filter((a) => a.status === "completed" && a.overallScore != null);
+  const lastMonth = previousMonthPeriod();
+  const [plan, audits, counts, lastMonthCounts, profileName, auditCounts, notificationCount] =
+    await Promise.all([
+      getPlanForUser(userId),
+      listAuditsForUser(userId, 50),
+      getUsageCountsForUser(userId, monthStart, monthEnd),
+      getUsageCountsForUser(userId, lastMonth.start, lastMonth.end),
+      getProfileDisplayName(userId),
+      countAuditsForUser(userId),
+      countUnreadNotificationsForUser(userId),
+    ]);
+
+  const completed = sortCompletedByRecency(
+    audits.filter((a) => a.status === "completed" && a.overallScore != null)
+  );
   const latest = completed[0] ?? null;
+  const previous = completed[1] ?? null;
 
   const scores = completed.map((a) => a.overallScore as number);
   const avgScore =
     scores.length > 0 ? Math.round(scores.reduce((s, n) => s + n, 0) / scores.length) : null;
 
   const auditsThisMonth = counts.audit;
-  // Prefer completed audits with real scores for the recent table; fill with others.
+  const auditsLastMonth = lastMonthCounts.audit;
   const recent = [
     ...audits.filter((a) => a.status === "completed" && a.overallScore != null),
     ...audits.filter((a) => !(a.status === "completed" && a.overallScore != null)),
   ].slice(0, 5);
   const trend = buildScoreTrend(completed, { locale: "ar", limit: 24 });
 
-  const statsAuditIds = new Set(audits.slice(0, 20).map((a) => a.id));
+  const listedIds = audits.map((a) => a.id);
+  const listedIdSet = new Set(listedIds);
   const monthStartTs = startOfMonth().getTime();
   const auditsThisMonthIds = new Set(
     audits
@@ -322,17 +344,84 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
       })
       .map((a) => a.id)
   );
+  const completedIds = completed.map((a) => a.id);
 
-  const [geoBundle, decision, recRows, pageRows] = await Promise.all([
-    getLatestGeoBundle(latest?.id ?? null),
-    getDecisionRecommendations(latest?.id ?? null),
-    fetchRecommendationRows(audits.map((a) => a.id)),
-    fetchAuditPageRows(audits.map((a) => a.id)),
-  ]);
+  const [geoBundle, decision, recRows, pageRows, reportRows, scoreRows, categories, geoByAudit] =
+    await Promise.all([
+      getLatestGeoBundle(latest?.id ?? null),
+      getDecisionRecommendations(latest?.id ?? null),
+      fetchRecommendationRows(listedIds),
+      fetchAuditPageRows(listedIds),
+      fetchReportPillarRows(completedIds),
+      fetchAuditScoreRows(completedIds),
+      fetchAnalysisCategories(),
+      fetchAuditGeoScores(completedIds.slice(0, 2)),
+    ]);
 
-  const recStats = recommendationStatsFromRows(recRows, statsAuditIds);
-  const topIssues = topIssuesFromRows(recRows, statsAuditIds);
+  const recStats = recommendationStatsFromRows(recRows, listedIdSet);
+  const topIssues = topIssuesFromRows(recRows, listedIdSet);
   const pageStats = pageStatsFromRows(pageRows, recRows, auditsThisMonthIds);
+  const reportsByAudit = pickLatestReportByAudit(reportRows);
+
+  const latestMerged = latest
+    ? mergePillarSnapshot({
+        overallFromAudit: latest.overallScore,
+        geoFromAudit: geoByAudit.get(latest.id) ?? geoBundle.geoScore,
+        report: reportsByAudit.get(latest.id) ?? null,
+        scoresBySlug: scoresBySlugForAudit(latest.id, scoreRows, categories),
+      })
+    : null;
+  const previousMerged = previous
+    ? mergePillarSnapshot({
+        overallFromAudit: previous.overallScore,
+        geoFromAudit: geoByAudit.get(previous.id) ?? null,
+        report: reportsByAudit.get(previous.id) ?? null,
+        scoresBySlug: scoresBySlugForAudit(previous.id, scoreRows, categories),
+      })
+    : null;
+
+  const latestPillars = latestMerged?.pillars ?? null;
+  const previousPillars = previousMerged?.pillars ?? null;
+  const asOf = latest?.completedAt ?? latest?.createdAt ?? null;
+
+  const kpis: DashboardPayload["kpis"] = {
+    overall: buildMetric({
+      value: latestPillars?.overall ?? null,
+      previous: previousPillars?.overall ?? null,
+      source: latestMerged?.sources.overall ?? "audits",
+      asOf,
+    }),
+    seo: buildMetric({
+      value: latestPillars?.seo ?? null,
+      previous: previousPillars?.seo ?? null,
+      source: latestMerged?.sources.seo ?? "reports",
+      asOf,
+    }),
+    geo: buildMetric({
+      value: latestPillars?.geo ?? geoBundle.geoScore,
+      previous: previousPillars?.geo ?? null,
+      source: latestMerged?.sources.geo ?? "audits",
+      asOf,
+    }),
+    conversion: buildMetric({
+      value: latestPillars?.conversion ?? null,
+      previous: previousPillars?.conversion ?? null,
+      source: latestMerged?.sources.conversion ?? "reports",
+      asOf,
+    }),
+    trust: buildMetric({
+      value: latestPillars?.trust ?? null,
+      previous: previousPillars?.trust ?? null,
+      source: latestMerged?.sources.trust ?? "reports",
+      asOf,
+    }),
+    audits: buildMetric({
+      value: auditCounts.total,
+      previous: null,
+      source: "audits",
+      asOf: null,
+    }),
+  };
 
   const recentEnriched = recent.map((r) => ({
     ...r,
@@ -346,22 +435,27 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
     plan,
     stats: {
       avgScore,
-      totalAudits: audits.length,
+      totalAudits: auditCounts.total,
       auditsThisMonth,
+      auditsLastMonth,
       auditsLimit: plan.auditsPerMonth,
-      geoScore: geoBundle.geoScore,
+      geoScore: latestPillars?.geo ?? geoBundle.geoScore,
       openRecommendations: recStats.open,
       totalRecommendations: recStats.total,
-      latestStoreScore: latest?.overallScore ?? null,
+      latestStoreScore: latestPillars?.overall ?? latest?.overallScore ?? null,
       pagesScanned: pageStats.totalPages,
       pagesThisMonth: pageStats.pagesThisMonth,
+      completedCount: auditCounts.completed,
     },
+    kpis,
+    latestPillars,
+    previousPillars,
     latestAudit: latest
       ? {
           id: latest.id,
           productName: decodeHtmlEntities(latest.productName),
           storeName: decodeHtmlEntities(latest.storeName),
-          overallScore: latest.overallScore,
+          overallScore: latestPillars?.overall ?? latest.overallScore,
           completedAt: latest.completedAt,
         }
       : null,
@@ -371,7 +465,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
     topIssues,
     trend,
     recent: recentEnriched,
-    notificationCount: recStats.open,
+    notificationCount,
     usagePct: usagePct(auditsThisMonth, plan.auditsPerMonth),
     displayName: profileName,
   };
@@ -587,6 +681,101 @@ async function fetchAuditPageRows(auditIds: string[]): Promise<{ audit_id: strin
     return [];
   }
   return data as { audit_id: string }[];
+}
+
+async function countAuditsForUser(
+  userId: string
+): Promise<{ total: number; completed: number }> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return { total: 0, completed: 0 };
+  const ids = await workspaceIdsForUser(userId);
+  if (!ids.length) return { total: 0, completed: 0 };
+
+  const [{ count: total }, { count: completed }] = await Promise.all([
+    sb.from("audits").select("id", { count: "exact", head: true }).in("workspace_id", ids),
+    sb
+      .from("audits")
+      .select("id", { count: "exact", head: true })
+      .in("workspace_id", ids)
+      .eq("status", "completed"),
+  ]);
+
+  return { total: total ?? 0, completed: completed ?? 0 };
+}
+
+async function fetchReportPillarRows(auditIds: string[]): Promise<ReportPillarRow[]> {
+  if (!auditIds.length) return [];
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+
+  const { data, error } = await sb
+    .from("reports")
+    .select(
+      "audit_id, version, overall_score, geo_score, seo_score, conversion_score, trust_score"
+    )
+    .in("audit_id", auditIds);
+
+  if (error || !data) {
+    if (error) console.error("[dashboard] reports failed:", error.message);
+    return [];
+  }
+  return data as ReportPillarRow[];
+}
+
+async function fetchAuditScoreRows(auditIds: string[]): Promise<AuditScoreRow[]> {
+  if (!auditIds.length) return [];
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+
+  const { data, error } = await sb
+    .from("audit_scores")
+    .select("audit_id, category_id, subject, score")
+    .in("audit_id", auditIds)
+    .eq("subject", "self");
+
+  if (error || !data) {
+    if (error) console.error("[dashboard] audit_scores failed:", error.message);
+    return [];
+  }
+  return data as AuditScoreRow[];
+}
+
+async function fetchAnalysisCategories(): Promise<CategoryRow[]> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+
+  const { data, error } = await sb.from("analysis_categories").select("id, slug");
+  if (error || !data) {
+    if (error) console.error("[dashboard] analysis_categories failed:", error.message);
+    return [];
+  }
+  return data as CategoryRow[];
+}
+
+async function fetchAuditGeoScores(auditIds: string[]): Promise<Map<string, number | null>> {
+  const map = new Map<string, number | null>();
+  if (!auditIds.length) return map;
+  const sb = getSupabaseAdmin();
+  if (!sb) return map;
+
+  const { data, error } = await sb
+    .from("audits")
+    .select("id, geo_score")
+    .in("id", auditIds);
+
+  if (error || !data) {
+    if (error) console.error("[dashboard] audit geo_score failed:", error.message);
+    return map;
+  }
+
+  for (const row of data) {
+    const score = row.geo_score;
+    map.set(
+      String(row.id),
+      score != null && Number.isFinite(Number(score)) ? Math.round(Number(score)) : null
+    );
+  }
+  return map;
 }
 
 export async function getUsageSummaryForUser(userId: string): Promise<UsagePayload> {

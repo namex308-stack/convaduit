@@ -25,7 +25,7 @@ export function ScoreTrendChart({ data }: { data: ScoreTrendPoint[] }) {
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
         <defs>
-          <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="dashboardScoreFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.28} />
             <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
           </linearGradient>
@@ -71,7 +71,7 @@ export function ScoreTrendChart({ data }: { data: ScoreTrendPoint[] }) {
           dataKey="score"
           stroke="var(--chart-1)"
           strokeWidth={2.5}
-          fill="url(#scoreFill)"
+          fill="url(#dashboardScoreFill)"
           activeDot={{ r: 5, fill: "var(--chart-1)", stroke: "var(--card)", strokeWidth: 2 }}
         />
       </AreaChart>

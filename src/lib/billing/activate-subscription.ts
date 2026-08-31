@@ -7,9 +7,10 @@ import { ensurePersonalWorkspace } from "@/lib/db/audit-repository";
 type Plan = PlanId;
 
 /**
- * Activate a paid plan after Kashier payment (or demo checkout).
+ * Activate a paid plan after Paymob payment (or demo checkout).
  * Idempotent on orderId. Updates workspace.plan_id + subscriptions.
  * Fail-closed when writes fail.
+ * Payment reference is stored in subscriptions.kashier_subscription_id (existing column).
  */
 export async function activateSubscription(
   userId: string,
@@ -35,7 +36,7 @@ export async function activateSubscription(
     return { activated: false, alreadyProcessed: false };
   }
 
-  // Idempotency: same Kashier order already applied
+  // Idempotency: same payment reference already applied (column name unchanged).
   const { data: byOrder, error: byOrderError } = await sb
     .from("subscriptions")
     .select("id, status, workspace_id")
@@ -63,7 +64,7 @@ export async function activateSubscription(
 
     await sb.from("billing_events").insert({
       workspace_id: wsId,
-      provider: "kashier",
+      provider: "paymob",
       event_type: "subscription.activated.replay",
       external_id: orderId,
       payload: { planId, period, userId },
@@ -139,7 +140,7 @@ export async function activateSubscription(
 
   await sb.from("billing_events").insert({
     workspace_id: workspaceId,
-    provider: "kashier",
+    provider: "paymob",
     event_type: "subscription.activated",
     external_id: orderId,
     payload: { planId, period, userId },

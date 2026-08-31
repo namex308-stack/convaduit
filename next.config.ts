@@ -1,6 +1,10 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 import { APEX_TO_WWW_REDIRECTS } from "./src/lib/apex-www-redirects";
 import { PRIVATE_APP_PATHS } from "./src/lib/seo/private-app-paths";
+
+const repoRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -52,13 +56,14 @@ const nextConfig: NextConfig = {
   // then onBuildComplete fails with ENOENT. Keep standalone for local/Docker;
   // Vercel traces the deployment itself.
   output: process.env.VERCEL ? undefined : "standalone",
+  outputFileTracingRoot: repoRoot,
   poweredByHeader: false,
   // `next dev` binds as localhost. Chromium on http://127.0.0.1:3000 sends
   // Origin: 127.0.0.1 for scripts with crossorigin=""; Next then 403s those
   // chunks unless this host is allowlisted.
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   turbopack: {
-    root: process.cwd(),
+    root: repoRoot,
   },
   reactStrictMode: true,
   experimental: {
@@ -74,7 +79,7 @@ const nextConfig: NextConfig = {
     // 1920/2048/3840 keeps srcset and the `src` fallback at viewport size.
     deviceSizes: [640, 750, 828, 1080, 1200],
     remotePatterns: [{ protocol: "https", hostname: "**" }],
-    minimumCacheTTL: 60 * 60 * 24,
+    minimumCacheTTL: 60 * 60 * 24 * 7,
   },
   compress: true,
   async redirects() {

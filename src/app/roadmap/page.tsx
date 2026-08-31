@@ -14,7 +14,7 @@ export default function RoadmapPage() {
   return (
     <PageShell>
       <PageHeader
-        title="خارطة الطريق"
+        title="خارطة طريق المنتج"
         subtitle="أولويات توجيهية — ليست تعهدات أو مواعيد تسليم."
         icon={Map}
       />

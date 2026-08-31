@@ -178,9 +178,25 @@
     letter-spacing: normal;
   }
   html { scroll-behavior: smooth; }
+  html, body { overflow-x: clip; }
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .animate-shiny-text,
+    .animate-marquee,
+    .animate-marquee-vertical,
+    .animate-shine,
+    .animate-float,
+    .animate-float-slow,
+    .animate-shimmer,
+    .animate-gradient,
+    .border-conic::before,
+    .hero-glow {
+      animation: none !important;
+    }
   }
   ::selection {
     background: oklch(0.68 0.19 55 / 0.25);
@@ -258,11 +274,26 @@
   .shadow-glow {
     box-shadow: 0 0 0 1px oklch(0.68 0.19 55 / 0.18), 0 8px 30px oklch(0.68 0.19 55 / 0.22);
   }
+  .shadow-glow:hover {
+    box-shadow: 0 0 0 1px oklch(0.68 0.19 55 / 0.28), 0 10px 36px oklch(0.68 0.19 55 / 0.28);
+  }
   .shadow-glow-gold {
     box-shadow: 0 0 0 1px oklch(0.97 0.13 95 / 0.35), 0 8px 30px oklch(0.97 0.13 95 / 0.25);
   }
-  .shadow-glow-lg {
-    box-shadow: 0 0 0 1px oklch(0.68 0.19 55 / 0.15), 0 20px 60px oklch(0.68 0.19 55 / 0.3);
+  .hero-glow {
+    background:
+      radial-gradient(ellipse at 30% 40%, oklch(0.68 0.19 55 / 0.22), transparent 58%),
+      radial-gradient(ellipse at 70% 70%, oklch(0.77 0.16 58 / 0.12), transparent 62%);
+    animation: hero-glow-pulse 8s ease-in-out infinite;
+  }
+  .dark .hero-glow {
+    background:
+      radial-gradient(ellipse at 30% 40%, oklch(0.72 0.18 55 / 0.28), transparent 58%),
+      radial-gradient(ellipse at 70% 70%, oklch(0.8 0.15 58 / 0.16), transparent 62%);
+  }
+  @keyframes hero-glow-pulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
   }
 
   /* Glass surfaces */

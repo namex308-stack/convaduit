@@ -4,18 +4,15 @@ import {
   buildOrderId,
   createCheckoutUrl,
   getCheckoutEnvironmentError,
-  getKashierMode,
-  isKashierConfigured,
-} from "@/lib/kashier";
+  getPaymobMode,
+  isPaymobConfigured,
+  isPaymobPaymentMethodId,
+  type PaymobPaymentMethodId,
+} from "@/lib/paymob";
 import { requireApiUser } from "@/lib/auth/require-api-user";
 import { getCheckoutPrice } from "@/lib/billing/plans";
 import { activateSubscription } from "@/lib/billing/activate-subscription";
 import { buildPostPaymentPath } from "@/lib/billing/upgrade-flow";
-import {
-  getKashierAllowedMethod,
-  isKashierPaymentMethodId,
-  type KashierPaymentMethodId,
-} from "@/lib/kashier/methods";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
 
 const Body = z.object({
@@ -39,6 +36,7 @@ export async function POST(req: NextRequest) {
 
     const { planId, period, paymentMethod: methodId } = parsed.data;
     const appUrl = getSiteUrl();
+    // Authoritative price — ignore any client-sent amount.
     const amount = getCheckoutPrice(planId, period);
     const orderId = buildOrderId(user.id, planId, period);
 
@@ -49,18 +47,18 @@ export async function POST(req: NextRequest) {
       amount,
       orderId,
       appUrl,
-      kashierMode: getKashierMode(),
+      paymobMode: getPaymobMode(),
       methodId: methodId ?? null,
-      configured: isKashierConfigured(),
+      configured: isPaymobConfigured(),
     });
 
-    if (!isKashierConfigured()) {
+    if (!isPaymobConfigured()) {
       // NODE_ENV !== "production" is required in addition to the mode checks below
-      // so a stray KASHIER_MODE=test left set in a production environment can never
+      // so a stray PAYMOB_MODE=test left set in a production environment can never
       // auto-activate a paid plan without payment.
       const allowDemo =
         process.env.NODE_ENV !== "production" &&
-        (process.env.NODE_ENV === "development" || process.env.KASHIER_MODE === "test");
+        (process.env.NODE_ENV === "development" || process.env.PAYMOB_MODE === "test");
       if (allowDemo) {
         console.info("[api/checkout] demo mode activation", { userId: user.id, orderId, planId });
         const demo = await activateSubscription(user.id, planId, period, orderId);
@@ -71,12 +69,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           url: buildPostPaymentPath(planId, { orderId, appUrl }),
           demoMode: true,
-          message: "لم يتم تهيئة Kashier — تم تفعيل الخطة في الوضع التجريبي.",
+          message: "لم يتم تهيئة Paymob — تم تفعيل الخطة في الوضع التجريبي.",
         });
       }
       return NextResponse.json(
         {
-          error: "بوابة الدفع غير مهيأة. أضف KASHIER_MERCHANT_ID وKASHIER_API_KEY.",
+          error:
+            "بوابة الدفع غير مهيأة. أضف PAYMOB_API_KEY وPAYMOB_INTEGRATION_ID وPAYMOB_IFRAME_ID وPAYMOB_HMAC_SECRET.",
         },
         { status: 503 }
       );
@@ -88,21 +87,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: envError }, { status: 503 });
     }
 
-    if (methodId && !isKashierPaymentMethodId(methodId)) {
+    if (methodId && !isPaymobPaymentMethodId(methodId)) {
       return NextResponse.json({ error: "طريقة دفع غير صالحة" }, { status: 400 });
     }
 
-    const kashierMethod = methodId
-      ? getKashierAllowedMethod(methodId as KashierPaymentMethodId)
-      : undefined;
-    // Canonical webhook path (HMAC + amount map 399→pro / 999→business)
-    const callbackUrl = absoluteUrl("/api/webhook/kashier");
+    const callbackUrl = absoluteUrl("/api/webhook/paymob");
     const successUrl = buildPostPaymentPath(planId, { orderId, appUrl });
     const failureUrl = absoluteUrl(
       `/checkout?plan=${planId}&period=${period}&error=payment_failed`
     );
 
-    console.info("[api/checkout] creating Kashier URL", {
+    console.info("[api/checkout] creating Paymob URL", {
       orderId,
       callbackUrl,
       webhookUrl: callbackUrl,
@@ -123,7 +118,7 @@ export async function POST(req: NextRequest) {
       failureUrl,
       callbackUrl,
       webhookUrl: callbackUrl,
-      paymentMethod: kashierMethod,
+      paymentMethod: methodId as PaymobPaymentMethodId | undefined,
     });
 
     if (!url) {

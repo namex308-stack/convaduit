@@ -13,9 +13,15 @@ describe("llms.txt", () => {
   it("names ConvAudit, the official site, and real analysis limits", () => {
     const text = buildLlmsTxt();
     expect(text).toContain("# ConvAudit");
+    expect(text).toContain(
+      "ConvAudit is an AI-powered ecommerce audit and visibility platform that analyzes SEO, conversion, AI visibility, and trust signals for online stores."
+    );
     expect(text).toContain("https://www.convaudit.com");
     expect(text).toMatch(/does not query ChatGPT, Perplexity/);
+    expect(text).toMatch(/SEO audit/);
+    expect(text).toMatch(/competitor analysis/);
     expect(text).not.toMatch(/StorePulse/);
+    expect(text).not.toMatch(/CONVADUIT|conva-aduit/);
     expect(text).not.toMatch(/cited in ChatGPT/);
   });
 

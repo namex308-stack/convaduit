@@ -23,7 +23,7 @@ export function buildCheckoutPath(
 }
 
 /**
- * Destination after Kashier success / demo activation.
+ * Destination after Paymob success / demo activation.
  * Always dashboard so users are not sent back to billing’s Upgrade button.
  */
 export function buildPostPaymentPath(

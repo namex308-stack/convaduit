@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/lib/blog-posts";
 import { ROUTES } from "@/lib/routes";
-import { absoluteUrl } from "@/lib/site-url";
+import { canonicalPageUrl } from "@/lib/site-url";
 
 /**
  * Canonical public URLs only.
@@ -32,13 +32,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((r) => ({
-    url: absoluteUrl(r.path),
+    url: canonicalPageUrl(r.path),
     changeFrequency: r.changeFreq,
     priority: r.priority,
   }));
 
   const blogEntries: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
-    url: absoluteUrl(ROUTES.blogPost(post.slug)),
+    url: canonicalPageUrl(ROUTES.blogPost(post.slug)),
     changeFrequency: "monthly",
     priority: 0.6,
   }));

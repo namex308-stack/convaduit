@@ -3,7 +3,7 @@ export type BillingPeriod = "monthly" | "yearly";
 
 export const PLAN_IDS = ["free", "pro", "business"] as const;
 
-/** Kashier checkout amounts in EGP — authoritative paid-plan prices. */
+/** Checkout amounts in EGP — authoritative paid-plan prices. */
 export const PLAN_PRICES: Record<
   Exclude<PlanId, "free">,
   Record<BillingPeriod, number>
@@ -39,8 +39,8 @@ export function getCheckoutPrice(planId: Exclude<PlanId, "free">, period: Billin
 }
 
 /**
- * Map Kashier paid amount (EGP) → plan + period.
- * Used by webhook when amount is present (399→pro, 999→business).
+ * Map paid amount (EGP) → plan + period.
+ * Used as a secondary check (399→pro, 999→business).
  */
 export function mapAmountToPlan(amount: number): {
   plan: Exclude<PlanId, "free">;

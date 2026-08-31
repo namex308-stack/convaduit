@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { usePathname, useRouter } from "next/navigation";
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useAppStore } from "@/lib/store";
 import { PROFILE_UPDATED_EVENT } from "@/lib/auth/display-user";
-import { withTimeout } from "@/lib/with-timeout";
 import { clearCachedShell } from "@/lib/app/shell-cache";
+import { ROUTES } from "@/lib/routes";
 
 type AuthContextValue = {
   user: User | null;
@@ -17,6 +18,51 @@ type AuthContextValue = {
 };
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
+
+type OnboardingPayload = {
+  onboarding?: { completed?: boolean; resumePath?: string };
+};
+
+/**
+ * Production fallback: Supabase Site URL can land OAuth on `/` with a session
+ * already in the browser. Middleware handles cookie-based redirects; this
+ * covers client-established sessions without a full document reload.
+ */
+function AuthedMarketingRedirect({
+  user,
+  loading,
+}: {
+  user: User | null;
+  loading: boolean;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const redirectedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (loading || !user || redirectedRef.current || pathname !== ROUTES.home) {
+      return;
+    }
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).has("code")) return;
+
+    redirectedRef.current = true;
+    void fetch("/api/onboarding")
+      .then((res) => (res.ok ? (res.json() as Promise<OnboardingPayload>) : null))
+      .then((data) => {
+        if (data?.onboarding?.completed) {
+          router.replace(ROUTES.dashboard);
+          return;
+        }
+        router.replace(data?.onboarding?.resumePath ?? ROUTES.onboarding);
+      })
+      .catch(() => {
+        router.replace(ROUTES.onboarding);
+      });
+  }, [loading, pathname, router, user]);
+
+  return null;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
@@ -36,37 +82,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
     let subscription: { unsubscribe: () => void } | null = null;
 
-    void withTimeout(
-      supabase.auth.getSession().then((r) => r.data.session),
-      4_000,
-      null
-    )
-      .then((nextSession) => {
-        if (!mounted) return;
-        setSession(nextSession);
-        setUser(nextSession?.user ?? null);
-        setLoading(false);
-      })
-      .catch(() => {
-        // If Supabase/network fails, keep the app usable (marketing + guest flows).
-        if (!mounted) return;
-        setSession(null);
-        setUser(null);
-        setLoading(false);
-      });
+    const settle = () => {
+      if (mounted) setLoading(false);
+    };
+    const settleTimer = window.setTimeout(settle, 4_000);
 
     try {
       const {
         data: { subscription: nextSubscription },
       } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        if (!mounted) return;
+        window.clearTimeout(settleTimer);
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
         setLoading(false);
       });
       subscription = nextSubscription;
     } catch {
-      // auth listener setup failed; don't block the UI
-      setLoading(false);
+      window.clearTimeout(settleTimer);
+      settle();
     }
 
     const onProfileUpdated = () => {
@@ -87,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      window.clearTimeout(settleTimer);
       subscription?.unsubscribe();
       window.removeEventListener(PROFILE_UPDATED_EVENT, onProfileUpdated);
     };
@@ -113,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
       }}
     >
+      <AuthedMarketingRedirect user={user} loading={loading} />
       {children}
     </AuthContext.Provider>
   );

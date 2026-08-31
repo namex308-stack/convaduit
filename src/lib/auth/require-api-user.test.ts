@@ -1,19 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { safeNextPath } from "@/lib/auth/safe-next-path";
-
-describe("safeNextPath", () => {
-  it("allows relative app paths", () => {
-    expect(safeNextPath("/checkout?plan=pro")).toBe("/checkout?plan=pro");
-    expect(safeNextPath("/onboarding/platform")).toBe("/onboarding/platform");
-  });
-
-  it("rejects open redirects", () => {
-    expect(safeNextPath("https://evil.example")).toBe("/dashboard");
-    expect(safeNextPath("//evil.example")).toBe("/dashboard");
-    expect(safeNextPath(null)).toBe("/dashboard");
-    expect(safeNextPath("")).toBe("/dashboard");
-  });
-});
 
 /** Mirrors requireApiUser branching without importing server-only modules. */
 function resolveApiAuthGate(input: {

@@ -42,7 +42,7 @@ export type CrawlResult = {
   page: NormalizedPage | null;
   errorCode: ScrapeErrorCode;
   errorMessage?: string;
-  source: "firecrawl" | "fallback" | "none";
+  source: "firecrawl" | "fallback" | "none" | "load_test";
 };
 
 type FallbackAttempt = {

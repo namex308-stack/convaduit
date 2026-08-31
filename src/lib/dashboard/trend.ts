@@ -86,7 +86,7 @@ export function buildScoreTrend(
 
 /** Filter trend points to the last N calendar months. */
 export function filterTrendByMonths(
-  trend: TrendPoint[],
+  trend: readonly TrendPoint[],
   months: 3 | 6 | 12
 ): TrendPoint[] {
   if (!trend.length) return [];
@@ -94,10 +94,8 @@ export function filterTrendByMonths(
   cutoff.setHours(0, 0, 0, 0);
   cutoff.setMonth(cutoff.getMonth() - months);
   const cutoffTs = cutoff.getTime();
-  const filtered = trend.filter((p) => {
+  return trend.filter((p) => {
     const ts = new Date(p.date).getTime();
     return Number.isFinite(ts) && ts >= cutoffTs;
   });
-  // Keep chart usable when all points fall outside the window.
-  return filtered.length >= 2 ? filtered : trend.slice(-Math.min(trend.length, 8));
 }

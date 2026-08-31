@@ -15,6 +15,15 @@ export const PRIVATE_PAGE_ROBOTS = {
   },
 } as const satisfies NonNullable<Metadata["robots"]>;
 
+/** Document title for private surfaces — not the public marketing headline. */
+export const PRIVATE_PAGE_TITLE = "ConvAudit";
+
+/**
+ * Non-marketing description so a leaked private URL is not a duplicate of `/`.
+ */
+export const PRIVATE_PAGE_DESCRIPTION =
+  "صفحة حساب ConvAudit — تتطلّب تسجيلاً وليست مخصصة لفهرسة محركات البحث.";
+
 /**
  * Shared metadata for private App Router segment layouts.
  * Pair with `PRIVATE_APP_PATHS` / `robots.ts` disallow — meta is what keeps
@@ -23,8 +32,27 @@ export const PRIVATE_PAGE_ROBOTS = {
 export function privatePageMetadata(
   extras: Omit<Metadata, "robots"> = {}
 ): Metadata {
+  const title = extras.title ?? { absolute: PRIVATE_PAGE_TITLE };
+  const description = extras.description ?? PRIVATE_PAGE_DESCRIPTION;
+  const socialTitle =
+    typeof title === "string" ? title : PRIVATE_PAGE_TITLE;
+
   return {
     ...extras,
+    title,
+    description,
+    keywords: [],
     robots: PRIVATE_PAGE_ROBOTS,
+    openGraph: {
+      title: socialTitle,
+      description,
+      ...extras.openGraph,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description,
+      ...extras.twitter,
+    },
   };
 }

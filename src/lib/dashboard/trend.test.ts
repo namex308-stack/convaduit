@@ -63,4 +63,21 @@ describe("filterTrendByMonths", () => {
     const filtered = filterTrendByMonths(trend, 3);
     expect(filtered.map((p) => p.label)).toEqual(["recent", "latest"]);
   });
+
+  it("returns the in-window points only, even if that is fewer than two", () => {
+    const now = Date.now();
+    const trend = [
+      {
+        label: "old",
+        score: 50,
+        date: new Date(now - 200 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        label: "latest",
+        score: 95,
+        date: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+    expect(filterTrendByMonths(trend, 3).map((p) => p.label)).toEqual(["latest"]);
+  });
 });

@@ -1,8 +1,6 @@
-"use client";
-
 import { Marquee } from "@/components/magicui/marquee";
 import { Container } from "@/components/design-system/section";
-import { useT, type TranslationKey } from "@/lib/i18n";
+import { translate as t, type TranslationKey } from "@/lib/i18n";
 
 /** Supported platforms — not customer logos. Brand names stay Latin. */
 const PLATFORM_KEYS: readonly TranslationKey[] = [
@@ -14,23 +12,32 @@ const PLATFORM_KEYS: readonly TranslationKey[] = [
   "logos.customStorefronts",
 ];
 
-export function LogosStrip() {
-  const t = useT();
+function PlatformName({ messageKey }: { messageKey: TranslationKey }) {
   return (
-    <section id="platforms" className="py-10 border-y border-border/50 bg-muted/20" aria-label={t("logos.title")}>
+    <span className="font-display text-sm sm:text-base font-semibold tracking-wide text-muted-foreground/70 whitespace-nowrap">
+      {t(messageKey)}
+    </span>
+  );
+}
+
+export function LogosStrip() {
+  return (
+    <section id="platforms" className="py-7 sm:py-9 border-y border-border/40 bg-muted/15" aria-label={t("logos.title")}>
       <Container>
-        <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-6">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-5">
           {t("logos.title")}
         </p>
-        <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 motion-safe:hidden">
+          {PLATFORM_KEYS.map((key) => (
+            <li key={key}>
+              <PlatformName messageKey={key} />
+            </li>
+          ))}
+        </ul>
+        <div className="relative hidden overflow-hidden motion-safe:block [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <Marquee pauseOnHover className="[--duration:36s] [--gap:3rem]">
             {PLATFORM_KEYS.map((key) => (
-              <span
-                key={key}
-                className="font-display text-base sm:text-lg font-semibold text-muted-foreground/70 whitespace-nowrap"
-              >
-                {t(key)}
-              </span>
+              <PlatformName key={key} messageKey={key} />
             ))}
           </Marquee>
         </div>

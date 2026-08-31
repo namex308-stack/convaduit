@@ -6,10 +6,12 @@ import {
   ROBOTS_DISALLOW_PATHS,
 } from "@/lib/seo/private-app-paths";
 import {
+  PRIVATE_PAGE_DESCRIPTION,
   PRIVATE_PAGE_ROBOTS,
+  PRIVATE_PAGE_TITLE,
   privatePageMetadata,
 } from "@/lib/seo/private-page-metadata";
-import { publicPageMetadata } from "@/lib/seo/page-metadata";
+import { PUBLIC_PAGE_ROBOTS, publicPageMetadata } from "@/lib/seo/page-metadata";
 import { ROUTES } from "@/lib/routes";
 import { BLOG_SLUGS } from "@/lib/blog-posts";
 
@@ -32,6 +34,13 @@ describe("private page robots contract", () => {
   it("emits noindex, nofollow for private surfaces including googleBot", () => {
     const meta = privatePageMetadata();
     expect(meta.robots).toEqual(PRIVATE_PAGE_ROBOTS);
+    expect(meta.title).toEqual({ absolute: PRIVATE_PAGE_TITLE });
+    expect(meta.description).toBe(PRIVATE_PAGE_DESCRIPTION);
+    expect(meta.keywords).toEqual([]);
+    expect(meta.openGraph).toMatchObject({
+      title: PRIVATE_PAGE_TITLE,
+      description: PRIVATE_PAGE_DESCRIPTION,
+    });
     expect(PRIVATE_PAGE_ROBOTS).toMatchObject({
       index: false,
       follow: false,
@@ -60,7 +69,7 @@ describe("private page robots contract", () => {
         description: "d",
         path: pathName,
       });
-      expect(meta.robots).toEqual({ index: true, follow: true });
+      expect(meta.robots).toEqual(PUBLIC_PAGE_ROBOTS);
     }
   });
 });

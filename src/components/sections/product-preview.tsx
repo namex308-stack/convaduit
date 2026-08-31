@@ -1,11 +1,9 @@
-"use client";
-
 import Image from "next/image";
 import { ArrowRight, LayoutDashboard, Link2 } from "lucide-react";
 import { StartAuditCta } from "@/components/common/start-audit-cta";
-import { Container, Section, SectionHeader } from "@/components/design-system/section";
-import { BlurFade } from "@/components/magicui/blur-fade";
-import { useT } from "@/lib/i18n";
+import { MotionLift } from "@/components/common/motion-lift";
+import { AppFrame, Container, Section, SectionHeader } from "@/components/design-system/section";
+import { translate as t } from "@/lib/i18n";
 
 /**
  * Display width of each screenshot in the homepage grid:
@@ -15,7 +13,7 @@ import { useT } from "@/lib/i18n";
 const PRODUCT_PREVIEW_SIZES =
   "(min-width: 1280px) 596px, (min-width: 768px) 45vw, 92vw";
 
-/** Intrinsic size of `/public/product/*.png` (1119×653). */
+/** Intrinsic size of `/public/product/*.png` (1119×653 ≈ 1.713). */
 const PRODUCT_SHOT_SIZE = { width: 1119, height: 653 } as const;
 
 const SHOTS = [
@@ -35,8 +33,6 @@ const SHOTS = [
 
 /** Real product screenshots — no mockups, no fabricated scores. */
 export function ProductPreview() {
-  const t = useT();
-
   return (
     <Section id="product-preview" tone="muted">
       <Container>
@@ -45,42 +41,43 @@ export function ProductPreview() {
           eyebrow={t("productPreview.eyebrow")}
           title={t("productPreview.title")}
           description={t("productPreview.subtitle")}
-          className="mb-12"
+          className="mb-8 sm:mb-10"
         />
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {SHOTS.map((shot, i) => (
-            <BlurFade key={shot.src} delay={i * 0.08} className="h-full">
-              <figure className="h-full flex flex-col">
-                <div className="relative rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-elevated)] overflow-hidden">
-                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/60 bg-muted/40">
-                    <shot.icon className="size-4 text-primary shrink-0" aria-hidden />
-                    <span className="text-sm font-semibold truncate">{t(shot.titleKey)}</span>
-                  </div>
-                  <div className="relative aspect-[16/10]">
-                    <Image
-                      src={shot.src}
-                      alt={t(shot.titleKey)}
-                      width={PRODUCT_SHOT_SIZE.width}
-                      height={PRODUCT_SHOT_SIZE.height}
-                      sizes={PRODUCT_PREVIEW_SIZES}
-                      className="absolute inset-0 size-full object-cover object-top"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-                <figcaption className="mt-3 text-sm text-muted-foreground leading-relaxed">
+        <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+          {SHOTS.map((shot) => (
+            <MotionLift key={shot.src}>
+              <figure className="h-full flex flex-col min-w-0">
+                <AppFrame
+                  label={
+                    <span className="inline-flex items-center gap-2">
+                      <shot.icon className="size-3.5 text-primary shrink-0" aria-hidden />
+                      {t(shot.titleKey)}
+                    </span>
+                  }
+                >
+                  <Image
+                    src={shot.src}
+                    alt={t(shot.titleKey)}
+                    width={PRODUCT_SHOT_SIZE.width}
+                    height={PRODUCT_SHOT_SIZE.height}
+                    sizes={PRODUCT_PREVIEW_SIZES}
+                    className="h-auto w-full"
+                    loading="lazy"
+                  />
+                </AppFrame>
+                <figcaption className="mt-3 px-0.5 text-sm text-muted-foreground leading-relaxed">
                   {t(shot.captionKey)}
                 </figcaption>
               </figure>
-            </BlurFade>
+            </MotionLift>
           ))}
         </div>
 
         <div className="mt-10 text-center">
           <StartAuditCta className="font-semibold h-11 px-7 rounded-full shadow-glow group">
             {t("productPreview.cta")}
-            <ArrowRight className="size-4 ms-0.5 rtl:rotate-180 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="size-4 ms-0.5 rtl:rotate-180 group-hover:translate-x-0.5 motion-reduce:transition-none transition-transform" />
           </StartAuditCta>
           <p className="mt-3 text-xs text-muted-foreground">{t("productPreview.ctaSub")}</p>
         </div>

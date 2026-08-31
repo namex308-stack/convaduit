@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Navbar } from "@/components/layout/navbar";
+import { SkipToContent } from "@/components/layout/skip-link";
 import { Footer } from "@/components/layout/footer";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
@@ -30,8 +31,9 @@ function MarketingShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background" dir={dir} lang={lang}>
+      <SkipToContent />
       <Navbar />
-      <main className="flex-1 flex flex-col pt-16">{children}</main>
+      <main id="main-content" className="flex-1 flex flex-col pt-16">{children}</main>
       <Footer />
     </div>
   );
@@ -114,6 +116,7 @@ function ProductShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background" dir={dir} lang={lang}>
+      <SkipToContent />
       <AppSidebar
         latestAuditId={latestAuditId}
         mobileOpen={mobileOpen}
@@ -130,7 +133,7 @@ function ProductShell({ children }: { children: React.ReactNode }) {
           onMenuOpen={() => setMobileOpen(true)}
           compactGreeting={compactGreeting}
         />
-        <main className="flex-1 flex flex-col min-w-0 w-full">{children}</main>
+        <main id="main-content" className="flex-1 flex flex-col min-w-0 w-full">{children}</main>
       </div>
     </div>
   );

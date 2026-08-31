@@ -183,6 +183,8 @@ export async function runAudit(
     onAnalyzerComplete?: (analyzer: AnalyzerName, result: AnalyzerJsonResult) => Promise<void> | void;
     /** UI locale — when "ar", all findings/recommendations must be Arabic. */
     outputLocale?: AppLocale | string | null;
+    /** Skip Gemini; use deterministic modules. Load-test / mock path only. */
+    forceHeuristic?: boolean;
   }
 ): Promise<AuditData> {
   const primary = toNormalized(page);
@@ -213,7 +215,9 @@ export async function runAudit(
     await options?.onAnalyzerStart?.(name);
   }
 
-  const batch = await runBatchedPillarAnalysis(primary, comp, onboarding, outputLocale);
+  const batch = await runBatchedPillarAnalysis(primary, comp, onboarding, outputLocale, {
+    forceHeuristic: Boolean(options?.forceHeuristic),
+  });
   results.conversion = batch.perPillarResults.conversion;
   results.seo = batch.perPillarResults.seo;
   results.trust = batch.perPillarResults.trust;
@@ -241,10 +245,14 @@ export async function runBatchedPillarAnalysis(
   page: NormalizedPage,
   competitor: NormalizedPage | null,
   onboarding: OnboardingAnswers | null,
-  outputLocale: AppLocale | string | null = "ar"
+  outputLocale: AppLocale | string | null = "ar",
+  batchOptions?: { forceHeuristic?: boolean }
 ): Promise<BatchedPillarAnalysis> {
   const locale = normalizeAppLocale(outputLocale);
   const heuristic = heuristicBatchedPillarAnalysis(page, competitor);
+  if (batchOptions?.forceHeuristic) {
+    return heuristic;
+  }
   const client = getClient();
   if (!client) {
     console.info(

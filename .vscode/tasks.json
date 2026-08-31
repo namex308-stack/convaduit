@@ -1,0 +1,98 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: dev",
+      "type": "shell",
+      "command": "npm run dev",
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: build",
+      "type": "shell",
+      "command": "npm run build",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: start",
+      "type": "shell",
+      "command": "npm start",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: start:standalone",
+      "type": "shell",
+      "command": "npm run start:standalone",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: lint",
+      "type": "shell",
+      "command": "npm run lint",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: typecheck",
+      "type": "shell",
+      "command": "npm run typecheck",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test",
+      "type": "shell",
+      "command": "npm test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:watch",
+      "type": "shell",
+      "command": "npm run test:watch",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:e2e",
+      "type": "shell",
+      "command": "npm run test:e2e",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:e2e:smoke",
+      "type": "shell",
+      "command": "npm run test:e2e:smoke",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:e2e:all",
+      "type": "shell",
+      "command": "npm run test:e2e:all",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:load",
+      "type": "shell",
+      "command": "npm run test:load",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "npm: test:load:audit",
+      "type": "shell",
+      "command": "npm run test:load:audit",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

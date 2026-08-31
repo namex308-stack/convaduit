@@ -17,7 +17,7 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 | **Audit engine** | Conversion · SEO · GEO · Trust pillars with actionable recommendations |
 | **AI Studio** | Arabic-first titles, descriptions, FAQ, meta, and ad copy (plan-gated) |
 | **Competitor tools** | In-audit comparison (Pro+) and scheduled monitoring (Business) |
-| **Billing** | Free / Pro / Business plans via Kashier (EGP), entitlements enforced server-side |
+| **Billing** | Free / Pro / Business plans via Paymob (EGP), entitlements enforced server-side |
 | **Workspace isolation** | Supabase Auth + RLS; quotas enforced in API and Postgres |
 
 ---
@@ -27,7 +27,7 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 - **Framework:** Next.js (App Router) · React 19 · TypeScript
 - **Data / Auth:** Supabase (PostgreSQL, Auth, RLS)
 - **AI / scrape:** Google Gemini · Firecrawl
-- **Payments:** Kashier
+- **Payments:** Paymob
 - **Rate limits:** Upstash Redis
 - **Deploy:** Vercel (`standalone` output)
 
@@ -86,7 +86,7 @@ Copy [`.env.example`](.env.example). Never commit real secrets.
 - `GEMINI_API_KEY` / `GEMINI_MODEL`
 - `FIRECRAWL_API_KEY`
 - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
-- Kashier: `KASHIER_MERCHANT_ID`, `KASHIER_API_KEY`, `KASHIER_SECRET_KEY`, `KASHIER_WEBHOOK_SECRET`, `KASHIER_MODE`
+- Paymob: `PAYMOB_API_KEY`, `PAYMOB_INTEGRATION_ID`, `PAYMOB_IFRAME_ID`, `PAYMOB_HMAC_SECRET`, `PAYMOB_MODE`
 - Optional: `GOOGLE_SITE_VERIFICATION`, Resend, Google OAuth
 
 ---
@@ -95,7 +95,7 @@ Copy [`.env.example`](.env.example). Never commit real secrets.
 
 ```
 src/app/            App Router (marketing, auth, product, API)
-src/lib/billing/    Plans, entitlements, quotas, Kashier mapping
+src/lib/billing/    Plans, entitlements, quotas, Paymob mapping
 src/lib/audit/      Scoring + GEO analysis
 src/lib/db/         Repositories + workspace stats
 supabase/migrations PostgreSQL schema, RLS, plan_catalog

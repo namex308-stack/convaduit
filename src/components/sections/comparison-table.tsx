@@ -1,9 +1,7 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Check, X, Minus, Building2, User, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n";
+import { translate as t } from "@/lib/i18n";
+import { Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
 
 const COLS = [
   { key: "diy", nameKey: "compTable.diy", icon: User, tone: "muted" },
@@ -48,104 +46,156 @@ const ROWS: { labelKey: "compTable.row1" | "compTable.row2" | "compTable.row3" |
   },
 ] as const;
 
-export function ComparisonTable() {
-  const t = useT();
+function ComparisonValue({ cell, brand }: { cell: Cell; brand?: boolean }) {
   return (
-    <section className="py-20 sm:py-28">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-sm font-semibold uppercase tracking-wider text-primary">{t("compTable.eyebrow")}</span>
-          <h2 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-balance">
-            {t("compTable.title")}
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground text-pretty">
-            {t("compTable.subtitle")}
-          </p>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="rounded-2xl border border-border/60 bg-card overflow-hidden"
+    <span className="flex flex-col items-center justify-center gap-1 min-w-0">
+      <CellIcon v={cell.v} brand={brand} />
+      {cell.textKey ? (
+        <span
+          className={cn(
+            "text-[10px] sm:text-xs leading-snug text-pretty",
+            cell.v === "yes" ? "text-primary font-medium" : "text-muted-foreground"
+          )}
         >
-          {/* header */}
-          <div className="grid grid-cols-[1.4fr_1fr_1fr_1.1fr] sm:grid-cols-[2fr_1fr_1fr_1.2fr]">
-            <div className="p-4 sm:p-5" />
-            {COLS.map((c) => (
-              <div
-                key={c.key}
-                className={cn(
-                  "p-4 sm:p-5 border-s border-border/50 flex flex-col items-center justify-center gap-1.5 text-center",
-                  c.tone === "brand" && "bg-primary/5"
-                )}
-              >
-                <span className={cn(
-                  "size-9 rounded-xl grid place-items-center",
-                  c.tone === "brand" ? "gradient-brand text-white" : "bg-muted text-muted-foreground"
-                )}>
-                  <c.icon className="size-5" />
-                </span>
-                <span className={cn(
-                  "text-xs sm:text-sm font-semibold",
-                  c.tone === "brand" && "text-primary"
-                )}>
-                  {t(c.nameKey)}
-                </span>
-              </div>
-            ))}
-          </div>
+          {t(cell.textKey)}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
-          {/* rows */}
-          {ROWS.map((row, i) => (
-            <div
-              key={i}
-              className={cn(
-                "grid grid-cols-[1.4fr_1fr_1fr_1.1fr] sm:grid-cols-[2fr_1fr_1fr_1.2fr] border-t border-border/50",
-                i % 2 === 1 && "bg-muted/20"
-              )}
+export function ComparisonTable() {
+  return (
+    <Section>
+      <Container className="max-w-5xl overflow-x-hidden">
+        <SectionHeader
+          align="center"
+          eyebrow={t("compTable.eyebrow")}
+          title={t("compTable.title")}
+          description={t("compTable.subtitle")}
+          className="mb-10 sm:mb-12"
+        />
+
+        {/* Mobile: stacked criterion cards — full data, no page overflow */}
+        <ul className="md:hidden space-y-3">
+          {ROWS.map((row) => (
+            <li
+              key={row.labelKey}
+              className="rounded-xl border border-border/50 bg-card p-3.5 shadow-[var(--shadow-card)]"
             >
-              <div className="p-3.5 sm:p-4 text-xs sm:text-sm font-medium text-foreground/80">
+              <p className="text-sm font-semibold text-foreground text-pretty mb-3">
                 {t(row.labelKey)}
-              </div>
-              {COLS.map((c) => {
-                const cell = row.cells[c.key];
-                return (
-                  <div
+              </p>
+              <ul className="grid grid-cols-3 gap-1.5">
+                {COLS.map((c) => {
+                  const cell = row.cells[c.key];
+                  return (
+                    <li
+                      key={c.key}
+                      className={cn(
+                        "flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center",
+                        c.tone === "brand" && "bg-primary/5"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold leading-tight text-pretty",
+                          c.tone === "brand" ? "text-primary" : "text-muted-foreground"
+                        )}
+                      >
+                        {t(c.nameKey)}
+                      </span>
+                      <ComparisonValue cell={cell} brand={c.tone === "brand"} />
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          ))}
+        </ul>
+
+        <div className="hidden md:block rounded-xl border border-border/50 bg-card overflow-hidden shadow-[var(--shadow-card)]">
+          <table className="w-full table-fixed border-collapse">
+            <caption className="sr-only">{t("compTable.title")}</caption>
+            <thead>
+              <tr>
+                <th scope="col" className="w-[28%] p-4 lg:p-5 text-start font-medium" />
+                {COLS.map((c) => (
+                  <th
                     key={c.key}
+                    scope="col"
                     className={cn(
-                      "p-3.5 sm:p-4 border-s border-border/50 flex flex-col items-center justify-center text-center gap-1",
+                      "p-4 lg:p-5 border-s border-border/50 text-center font-medium",
                       c.tone === "brand" && "bg-primary/5"
                     )}
                   >
-                    <CellIcon v={cell.v} brand={c.tone === "brand"} />
-                    {cell.textKey && (
-                      <span className={cn(
-                        "text-[10px] sm:text-xs",
-                        cell.v === "yes" ? "text-primary font-medium" : "text-muted-foreground"
-                      )}>
-                        {t(cell.textKey)}
+                    <span className="flex flex-col items-center justify-center gap-1.5">
+                      <IconWell
+                        className={cn(
+                          "size-9 rounded-xl",
+                          c.tone === "brand" ? "gradient-brand text-white bg-transparent" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        <c.icon className="size-4" aria-hidden />
+                      </IconWell>
+                      <span
+                        className={cn(
+                          "text-xs lg:text-sm font-semibold text-pretty",
+                          c.tone === "brand" && "text-primary"
+                        )}
+                      >
+                        {t(c.nameKey)}
                       </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ROWS.map((row, i) => (
+                <tr
+                  key={row.labelKey}
+                  className={cn("border-t border-border/50", i % 2 === 1 && "bg-muted/20")}
+                >
+                  <th
+                    scope="row"
+                    className="p-3.5 lg:p-4 text-start text-xs lg:text-sm font-medium text-foreground/80 text-pretty"
+                  >
+                    {t(row.labelKey)}
+                  </th>
+                  {COLS.map((c) => {
+                    const cell = row.cells[c.key];
+                    return (
+                      <td
+                        key={c.key}
+                        className={cn(
+                          "p-3.5 lg:p-4 border-s border-border/50 text-center",
+                          c.tone === "brand" && "bg-primary/5"
+                        )}
+                      >
+                        <ComparisonValue cell={cell} brand={c.tone === "brand"} />
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Container>
+    </Section>
   );
 }
 
 function CellIcon({ v, brand }: { v: Cell["v"]; brand?: boolean }) {
   if (v === "yes") {
     return (
-      <span className={cn(
-        "size-6 rounded-full grid place-items-center",
-        brand ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
-      )}>
+      <span
+        className={cn(
+          "size-6 rounded-full grid place-items-center",
+          brand ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"
+        )}
+      >
         <Check className="size-3.5" strokeWidth={3} />
       </span>
     );

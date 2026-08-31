@@ -10,9 +10,10 @@ export function ScrollProgress() {
     damping: 30,
     restDelta: 0.001,
   });
+
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 h-[3px] gradient-brand origin-left rtl:origin-right z-[60]"
+      className="fixed top-0 left-0 right-0 h-[3px] gradient-brand origin-left rtl:origin-right z-[60] motion-reduce:hidden"
       style={{ scaleX }}
       aria-hidden
     />

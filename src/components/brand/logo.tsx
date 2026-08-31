@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -13,6 +14,10 @@ export function Logo({
   showTagline = true,
   size = 36,
 }: LogoProps) {
+  const uid = useId().replace(/:/g, "");
+  const brandGrad = `logo-brand-${uid}`;
+  const goldGrad = `logo-gold-${uid}`;
+
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <svg
@@ -25,17 +30,17 @@ export function Logo({
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="sp-grad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <linearGradient id={brandGrad} x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
             <stop stopColor="#FF6600" />
             <stop offset="0.55" stopColor="#cc5200" />
             <stop offset="1" stopColor="#cc5200" />
           </linearGradient>
-          <linearGradient id="sp-gold" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <linearGradient id={goldGrad} x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
             <stop stopColor="#ffffa1" />
             <stop offset="1" stopColor="#ff983f" />
           </linearGradient>
         </defs>
-        <rect width="48" height="48" rx="13" fill="url(#sp-grad)" />
+        <rect width="48" height="48" rx="13" fill={`url(#${brandGrad})`} />
         <circle cx="24" cy="24" r="15" stroke="white" strokeOpacity="0.18" strokeWidth="1.5" />
         <circle cx="24" cy="24" r="10" stroke="white" strokeOpacity="0.35" strokeWidth="1.5" />
         <path
@@ -45,7 +50,7 @@ export function Logo({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="39" cy="24.5" r="3.4" fill="url(#sp-gold)" />
+        <circle cx="39" cy="24.5" r="3.4" fill={`url(#${goldGrad})`} />
         <circle cx="39" cy="24.5" r="3.4" stroke="white" strokeOpacity="0.5" strokeWidth="1" />
       </svg>
       {showWordmark && (

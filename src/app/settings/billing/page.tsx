@@ -2,12 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { CreditCard, Crown, Loader2 } from "lucide-react";
+import { CreditCard, Crown } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
+import { SettingsFrame } from "@/components/app/settings-nav";
 import { ApiLoadError } from "@/components/runtime/api-load-error";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n";
 import {
   resolveBillingPaymentState,
@@ -83,144 +85,159 @@ export default function BillingPage() {
 
   return (
     <PageShell>
-      <PageHeader title={t("billing.title")} subtitle={t("billing.subtitle")} icon={CreditCard} back="/settings" />
-      <PageContent className="space-y-6 max-w-3xl">
-        {!usage && !error && (
-          <div className="py-16 text-center">
-            <Loader2 className="size-8 animate-spin mx-auto text-primary" />
-          </div>
-        )}
-
-        {error && (
-          <ApiLoadError
-            message={error}
-            needsAuth={needsAuth}
-            onRetry={() => {
-              setUsage(null);
-              setRetryKey((k) => k + 1);
-            }}
-          />
-        )}
-
-        {usage && (
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/5 to-transparent p-6"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h2 className="font-display text-xl font-bold">{usage.plan.displayName}</h2>
-                    <Badge className="rounded-full gradient-brand text-white">
-                      {usage.plan.planId}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {t("billing.planLimits", {
-                      audits:
-                        usage.plan.auditsPerMonth == null
-                          ? "∞"
-                          : String(usage.plan.auditsPerMonth),
-                      stores:
-                        usage.plan.storesLimit == null
-                          ? "∞"
-                          : String(usage.plan.storesLimit),
-                    })}
-                  </p>
-                </div>
-                {showUpgradeCta && (
-                  <Button asChild className="rounded-full shadow-glow">
-                    <Link href="/pricing">
-                      <Crown className="size-4 me-1 text-brand" /> {t("dashboard.upgrade")}
-                    </Link>
-                  </Button>
-                )}
-              </div>
-              <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground">{t("billing.auditsRemaining")}</div>
-                  <div className="font-display text-xl font-bold mt-1 tabular-nums">
-                    {remaining != null && auditsLimit != null
-                      ? `${remaining} / ${auditsLimit}`
-                      : `${auditsUsed} / ∞`}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{t("billing.renewsOn")}</div>
-                  <div className="font-display text-xl font-bold mt-1 text-base sm:text-xl">
-                    {periodEnd}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{t("billing.usedThisPeriod")}</div>
-                  <div className="font-display text-xl font-bold mt-1 tabular-nums">{auditsUsed}</div>
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="rounded-2xl border border-border/50 bg-card p-6">
-              <h2 className="font-display text-lg font-bold mb-4">{t("billing.paymentMethod")}</h2>
-              <div className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-muted/20">
-                <span className="size-10 rounded-lg bg-background grid place-items-center text-muted-foreground">
-                  <CreditCard className="size-5" />
-                </span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{t("billing.noPayment")}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {paymentState === "free_needs_subscribe"
-                      ? t("billing.noPaymentDesc")
-                      : t("billing.paidNoPaymentDesc")}
-                  </div>
-                </div>
-                <Button asChild variant="outline" size="sm" className="rounded-full">
-                  <Link href="/pricing">
-                    {paymentState === "free_needs_subscribe"
-                      ? t("billing.addCard")
-                      : t("billing.managePlan")}
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-border/50">
-                <h2 className="font-display text-lg font-bold">{t("billing.invoices")}</h2>
-              </div>
-              {usage.billingEvents.length === 0 ? (
-                <div className="px-6 py-8 text-center text-sm text-muted-foreground">
-                  {t("billing.noEvents")}
-                </div>
-              ) : (
-                <ul className="divide-y divide-border/50">
-                  {usage.billingEvents.map((ev) => (
-                    <li key={ev.id} className="px-6 py-3.5 flex items-center justify-between gap-3 text-sm">
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{ev.eventType}</div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {ev.provider}
-                          {ev.externalId ? ` · ${ev.externalId}` : ""}
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(ev.createdAt).toLocaleDateString()}
-                      </div>
-                    </li>
+      <PageHeader title={t("billing.title")} subtitle={t("billing.subtitle")} icon={CreditCard} />
+      <PageContent>
+        <SettingsFrame>
+          {!usage && !error && (
+            <div className="space-y-6" aria-busy="true">
+              <Card className="p-6">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="mt-3 h-4 w-56" />
+                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-14 w-full" />
                   ))}
-                </ul>
-              )}
+                </div>
+              </Card>
+              <Card className="p-6">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="mt-4 h-16 w-full rounded-xl" />
+              </Card>
             </div>
+          )}
 
-            <div className="rounded-2xl border border-border/50 bg-card p-6">
-              <h2 className="font-display text-lg font-bold mb-2">{t("dashboard.storesLimit")}</h2>
-              <p className="text-sm text-muted-foreground">
-                {usage.storeCount}
-                {usage.plan.storesLimit != null ? ` / ${usage.plan.storesLimit}` : ""}
-              </p>
-            </div>
-          </>
-        )}
+          {error && (
+            <ApiLoadError
+              message={error}
+              needsAuth={needsAuth}
+              onRetry={() => {
+                setUsage(null);
+                setRetryKey((k) => k + 1);
+              }}
+            />
+          )}
+
+          {usage && (
+            <>
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5 sm:p-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="mb-1 flex items-center gap-2">
+                      <h2 className="font-display text-xl font-bold">{usage.plan.displayName}</h2>
+                      <Badge className="gradient-brand rounded-full text-white">{usage.plan.planId}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("billing.planLimits", {
+                        audits:
+                          usage.plan.auditsPerMonth == null
+                            ? "∞"
+                            : String(usage.plan.auditsPerMonth),
+                        stores:
+                          usage.plan.storesLimit == null ? "∞" : String(usage.plan.storesLimit),
+                      })}
+                    </p>
+                  </div>
+                  {showUpgradeCta && (
+                    <Button asChild className="rounded-xl shadow-glow">
+                      <Link href="/pricing">
+                        <Crown className="size-4 me-1 text-brand" /> {t("dashboard.upgrade")}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <div>
+                    <div className="text-xs text-muted-foreground">{t("billing.auditsRemaining")}</div>
+                    <div className="mt-1 font-display text-xl font-bold tabular-nums">
+                      {remaining != null && auditsLimit != null
+                        ? `${remaining} / ${auditsLimit}`
+                        : `${auditsUsed} / ∞`}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">{t("billing.renewsOn")}</div>
+                    <div className="mt-1 font-display text-base font-bold sm:text-xl">{periodEnd}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">{t("billing.usedThisPeriod")}</div>
+                    <div className="mt-1 font-display text-xl font-bold tabular-nums">{auditsUsed}</div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle>{t("billing.paymentMethod")}</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border/50 bg-muted/20 p-4">
+                    <span className="grid size-10 place-items-center rounded-lg bg-background text-muted-foreground">
+                      <CreditCard className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium">{t("billing.noPayment")}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {paymentState === "free_needs_subscribe"
+                          ? t("billing.noPaymentDesc")
+                          : t("billing.paidNoPaymentDesc")}
+                      </div>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="rounded-xl">
+                      <Link href="/pricing">
+                        {paymentState === "free_needs_subscribe"
+                          ? t("billing.addCard")
+                          : t("billing.managePlan")}
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="overflow-hidden">
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle>{t("billing.invoices")}</CardTitle>
+                </CardHeader>
+                {usage.billingEvents.length === 0 ? (
+                  <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    {t("billing.noEvents")}
+                  </CardContent>
+                ) : (
+                  <ul className="divide-y divide-border/50">
+                    {usage.billingEvents.map((ev) => (
+                      <li
+                        key={ev.id}
+                        className="flex items-center justify-between gap-3 px-5 py-3.5 text-sm sm:px-6"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate font-medium">{ev.eventType}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {ev.provider}
+                            {ev.externalId ? ` · ${ev.externalId}` : ""}
+                          </div>
+                        </div>
+                        <div className="whitespace-nowrap text-xs text-muted-foreground">
+                          {new Date(ev.createdAt).toLocaleDateString("ar")}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+
+              <Card>
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle>{t("dashboard.storesLimit")}</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <p className="text-sm tabular-nums text-muted-foreground">
+                    {usage.storeCount}
+                    {usage.plan.storesLimit != null ? ` / ${usage.plan.storesLimit}` : ""}
+                  </p>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </SettingsFrame>
       </PageContent>
     </PageShell>
   );

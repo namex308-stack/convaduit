@@ -3,10 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Check, Sparkles, ShieldCheck, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BentoPanel, Container, SectionHeader } from "@/components/design-system/section";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useT, type TranslationKey } from "@/lib/i18n";
@@ -104,22 +104,17 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
   };
 
   return (
-    <section id="pricing" className={cn("w-full", variant === "landing" && "py-20 sm:py-24", className)} aria-labelledby="pricing-heading">
+    <section id="pricing" className={cn("w-full scroll-mt-24", variant === "landing" && "py-14 sm:py-20 lg:py-28", className)} aria-labelledby="pricing-heading">
+      <Container className={variant === "landing" ? undefined : "px-0 sm:px-0 lg:px-0 max-w-none"}>
       {variant === "landing" ? (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10 text-center">
-          <span className="text-sm font-semibold uppercase tracking-wider text-primary">
-            {t("landingPricing.eyebrow")}
-          </span>
-          <h2
-            id="pricing-heading"
-            className="mt-3 font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance"
-          >
-            {t("landingPricing.title")}
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-            {t("landingPricing.subtitle")}
-          </p>
-        </div>
+        <SectionHeader
+          align="center"
+          eyebrow={t("landingPricing.eyebrow")}
+          title={t("landingPricing.title")}
+          description={t("landingPricing.subtitle")}
+          className="mb-10"
+          titleId="pricing-heading"
+        />
       ) : (
         <h2 id="pricing-heading" className="sr-only">
           {t("pricing.title")}
@@ -131,14 +126,14 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
         <div
           role="group"
           aria-label={t("pricing.billingInterval")}
-          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card p-1 shadow-sm"
+          className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-muted/40 p-1 shadow-[var(--shadow-card)]"
         >
           <button
             type="button"
             onClick={() => setInterval("monthly")}
             aria-pressed={!isYearly}
             className={cn(
-              "px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200",
+              "px-5 py-2 text-sm font-semibold rounded-full transition-colors duration-200 motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring",
               !isYearly
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -151,7 +146,7 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
             onClick={() => setInterval("yearly")}
             aria-pressed={isYearly}
             className={cn(
-              "px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200 flex items-center gap-2",
+              "px-5 py-2 text-sm font-semibold rounded-full transition-colors duration-200 motion-reduce:transition-none flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring",
               isYearly
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -172,8 +167,9 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
       </div>
 
       {/* Plan cards */}
-      <ul className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto list-none p-0">
-        {MARKETING_PLANS.map((plan, index) => {
+      <BentoPanel className="mt-10 max-w-6xl mx-auto">
+      <ul className="grid grid-cols-1 md:grid-cols-3 gap-px list-none p-0 m-0">
+        {MARKETING_PLANS.map((plan) => {
           const meta = PLAN_META[plan.id];
           const isFree = plan.id === "free";
           const isPro = plan.id === "pro";
@@ -182,21 +178,17 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
 
           return (
             <li key={plan.id} className="flex">
-              <motion.article
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.45, delay: index * 0.08 }}
+              <article
                 className={cn(
-                  "relative flex flex-col w-full rounded-2xl border p-6 sm:p-7 transition-shadow",
+                  "relative flex flex-col w-full bg-card p-6 sm:p-8 transition-colors duration-200 motion-reduce:transition-none",
                   isPro
-                    ? "border-primary/60 bg-gradient-to-b from-primary/8 via-card to-card shadow-glow md:-mt-2 md:mb-2 ring-1 ring-primary/20"
-                    : "border-border/60 bg-card hover:shadow-md"
+                    ? "bg-primary/[0.04]"
+                    : "hover:bg-muted/30"
                 )}
               >
                 {isPro && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-                    <Badge className="rounded-full px-3.5 py-1 gap-1.5 border-0 shadow-md">
+                  <div className="mb-4">
+                    <Badge className="rounded-full px-3 py-1 gap-1.5 border-0">
                       <Sparkles className="size-3.5" aria-hidden />
                       {t("plan.mostPopular")}
                     </Badge>
@@ -312,13 +304,14 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
                     </li>
                   ))}
                 </ul>
-              </motion.article>
+              </article>
             </li>
           );
         })}
       </ul>
+      </BentoPanel>
 
-      {/* Kashier trust footer */}
+      {/* Paymob trust footer */}
       <footer className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <ShieldCheck className="size-3.5 text-primary shrink-0" aria-hidden />
@@ -335,10 +328,11 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
         <span className="hidden sm:inline text-border" aria-hidden>
           ·
         </span>
-        <Link href="/pricing" className="hover:text-foreground underline-offset-2 hover:underline">
+        <Link href="/pricing" className="hover:text-foreground underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
           {t("landingPricing.cancelAnytime")}
         </Link>
       </footer>
+      </Container>
     </section>
   );
 }

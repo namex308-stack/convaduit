@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   return (
     <PageShell>
       <PageHeader
-        title="الخصوصية"
+        title="سياسة الخصوصية"
         subtitle="ما نجمعه، لماذا نجمعه، وكيف تطلب حذفه."
         icon={Lock}
       />

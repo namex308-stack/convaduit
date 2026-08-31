@@ -1,10 +1,6 @@
-"use client";
-
 import { EyeOff, FileWarning, ShieldAlert, Swords } from "lucide-react";
-import { StartAuditCta } from "@/components/common/start-audit-cta";
-import { Container, Section, SectionHeader, SurfaceCard } from "@/components/design-system/section";
-import { BlurFade } from "@/components/magicui/blur-fade";
-import { useT } from "@/lib/i18n";
+import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
+import { translate as t } from "@/lib/i18n";
 
 const PROBLEMS = [
   {
@@ -34,7 +30,6 @@ const PROBLEMS = [
 ] as const;
 
 export function WhyLoseSales() {
-  const t = useT();
   return (
     <Section id="why-lose-sales">
       <Container>
@@ -42,34 +37,26 @@ export function WhyLoseSales() {
           eyebrow={t("whyLose.eyebrow")}
           title={t("whyLose.title")}
           description={t("whyLose.subtitle")}
-          className="mb-12"
+          className="mb-8 sm:mb-10"
         />
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PROBLEMS.map((item, i) => (
-            <BlurFade key={item.titleKey} delay={i * 0.06} className="h-full">
-              <SurfaceCard className="p-5 sm:p-6">
-                <span
-                  className="size-10 rounded-lg grid place-items-center"
-                  style={{ background: `${item.color}1a`, color: item.color }}
-                >
+        <BentoPanel>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px">
+            {PROBLEMS.map((item) => (
+              <BentoCell key={item.titleKey}>
+                <IconWell style={{ background: `${item.color}1a`, color: item.color }}>
                   <item.icon className="size-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-lg font-semibold">{t(item.titleKey)}</h3>
+                </IconWell>
+                <h3 className="mt-4 font-display text-base sm:text-lg font-semibold text-balance">
+                  {t(item.titleKey)}
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed flex-1">
                   {t(item.descKey)}
                 </p>
-              </SurfaceCard>
-            </BlurFade>
-          ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <StartAuditCta className="font-semibold h-11 px-7 rounded-full shadow-glow">
-            {t("whyLose.cta")}
-          </StartAuditCta>
-          <p className="mt-3 text-xs text-muted-foreground">{t("whyLose.ctaSub")}</p>
-        </div>
+              </BentoCell>
+            ))}
+          </div>
+        </BentoPanel>
       </Container>
     </Section>
   );

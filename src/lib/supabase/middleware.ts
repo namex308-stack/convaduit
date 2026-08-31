@@ -2,15 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { buildLoginRedirectTarget } from "@/lib/auth/login-redirect";
 import {
+  PROFILE_GATE_SELECT,
+  resolveAppEntryFromProfile,
+  type ProfileGateRow,
+} from "@/lib/auth/profile-gate";
+import { safeNextPath } from "@/lib/auth/safe-next-path";
+import {
   computeResumeStep,
   isOnboardingGatedPath,
   isOnboardingPath,
+  onboardingIndexResumeRedirect,
   onboardingPathForStep,
 } from "@/lib/onboarding/constants";
 import {
   AUTH_APP_PATHS,
   PROTECTED_APP_PATHS,
 } from "@/lib/seo/private-app-paths";
+import { ROUTES } from "@/lib/routes";
 import {
   hasSupabaseSessionCookie,
   shouldRefreshAuthSession,
@@ -51,6 +59,16 @@ export async function updateSession(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
   const isAuthCallback = pathname === "/auth/callback";
+
+  // Supabase may fall back to Site URL (/) with ?code= when redirectTo is not allowlisted.
+  if (pathname === ROUTES.home && request.nextUrl.searchParams.has("code")) {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = "/auth/callback";
+    if (!callbackUrl.searchParams.get("next")) {
+      callbackUrl.searchParams.set("next", ROUTES.onboarding);
+    }
+    return NextResponse.redirect(callbackUrl);
+  }
 
   if (!url || !anonKey) {
     if (isProtected) {
@@ -133,39 +151,40 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isAuthPath && !isAuthCallback) {
-    const redirectTarget = request.nextUrl.searchParams.get("next");
-    const next =
-      redirectTarget && redirectTarget.startsWith("/") && !redirectTarget.startsWith("//")
-        ? redirectTarget
-        : "/dashboard";
+    const next = safeNextPath(request.nextUrl.searchParams.get("next"));
     return NextResponse.redirect(new URL(next, request.url));
+  }
+
+  if (user && pathname === ROUTES.home) {
+    try {
+      const profileResult = await withTimeout<{ data: ProfileGateRow | null }>(
+        Promise.resolve(
+          supabase
+            .from("profiles")
+            .select(PROFILE_GATE_SELECT)
+            .eq("id", user.id)
+            .maybeSingle()
+        ).then((r) => ({ data: (r.data as ProfileGateRow | null) ?? null })),
+        4000,
+        { data: null }
+      );
+      const entry = resolveAppEntryFromProfile(profileResult.data);
+      return NextResponse.redirect(new URL(entry, request.url));
+    } catch {
+      return NextResponse.redirect(new URL(ROUTES.onboarding, request.url));
+    }
   }
 
   // Mandatory onboarding gate — Supabase profile is the source of truth.
   if (user && (isOnboardingGatedPath(pathname) || isOnboardingPath(pathname))) {
     try {
-      type ProfileGate = {
-        onboarding_completed_at: string | null;
-        business_name: string | null;
-        store_url: string | null;
-        country: string | null;
-        primary_language: string | null;
-        platform: string | null;
-        store_size: string | null;
-        business_category: string | null;
-        primary_goal: string | null;
-        monthly_traffic: string | null;
-        monthly_orders: string | null;
-        main_challenge: string | null;
-      } | null;
+      type ProfileGate = ProfileGateRow | null;
 
       const profileResult = await withTimeout<{ data: ProfileGate }>(
         Promise.resolve(
           supabase
             .from("profiles")
-            .select(
-              "onboarding_completed_at, business_name, store_url, country, primary_language, platform, store_size, business_category, primary_goal, monthly_traffic, monthly_orders, main_challenge"
-            )
+            .select(PROFILE_GATE_SELECT)
             .eq("id", user.id)
             .maybeSingle()
         ).then((r) => ({ data: (r.data as ProfileGate) ?? null })),
@@ -189,9 +208,15 @@ export async function updateSession(request: NextRequest) {
         mainChallenge: row?.main_challenge ?? "",
       });
 
+      const resume = onboardingPathForStep(step);
+
       if (!completed && isOnboardingGatedPath(pathname)) {
-        const resume = onboardingPathForStep(step);
         return NextResponse.redirect(new URL(resume, request.url));
+      }
+
+      const indexResume = onboardingIndexResumeRedirect(pathname, completed, resume);
+      if (indexResume) {
+        return NextResponse.redirect(new URL(indexResume, request.url));
       }
 
       // Completed users who revisit the wizard (except /done celebration) go to dashboard.

@@ -1,31 +1,16 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { JsonLd } from "@/components/seo/json-ld";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
-import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
-import { translate } from "@/lib/locale/t";
 import { ROUTES } from "@/lib/routes";
-
-const TITLE = "مدونة التجارة الإلكترونية وGEO";
-const DESCRIPTION = translate("blog.subtitle");
+import { BLOG_INDEX_DESCRIPTION, BLOG_INDEX_TITLE } from "@/app/blog/copy";
 
 export const metadata: Metadata = publicPageMetadata({
-  title: TITLE,
-  description: DESCRIPTION,
+  title: BLOG_INDEX_TITLE,
+  description: BLOG_INDEX_DESCRIPTION,
   path: ROUTES.blog,
 });
 
+/** Shared chrome only — index JSON-LD lives on `page.tsx` so posts do not inherit it. */
 export default function BlogLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <JsonLd
-        data={buildMarketingPageJsonLd({
-          name: TITLE,
-          path: ROUTES.blog,
-          description: DESCRIPTION,
-        })}
-      />
-      {children}
-    </>
-  );
+  return children;
 }

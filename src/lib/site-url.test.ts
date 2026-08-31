@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   absoluteUrl,
+  canonicalPageUrl,
   getSiteUrl,
   PRODUCTION_CANONICAL_ORIGIN,
   wwwRedirectLocation,
@@ -128,6 +129,26 @@ describe("absoluteUrl", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://www.convaudit.com");
     expect(absoluteUrl("https://schema.org")).toBe("https://schema.org");
+  });
+});
+
+describe("canonicalPageUrl", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses a trailing slash for the official home canonical", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://www.convaudit.com");
+    expect(canonicalPageUrl("/")).toBe("https://www.convaudit.com/");
+    expect(canonicalPageUrl("")).toBe("https://www.convaudit.com/");
+    expect(canonicalPageUrl("/pricing")).toBe("https://www.convaudit.com/pricing");
+  });
+
+  it("rewrites apex APP_URL to the www home canonical", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://convaudit.com");
+    expect(canonicalPageUrl("/")).toBe("https://www.convaudit.com/");
   });
 });
 

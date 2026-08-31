@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   ORGANIZATION_SAME_AS,
-  SOCIAL_LINKEDIN_URL,
+  SOCIAL_PROFILES,
   SOCIAL_X_HANDLE,
-  SOCIAL_X_URL,
+  twitterSiteFields,
 } from "@/lib/seo/social";
 
 describe("official social profiles", () => {
-  it("uses https X and LinkedIn URLs", () => {
-    expect(SOCIAL_X_URL).toBe("https://x.com/CONVADUIT6k");
-    expect(SOCIAL_LINKEDIN_URL).toBe("https://www.linkedin.com/in/conva-aduit-1044883a8");
-    expect(SOCIAL_X_HANDLE).toBe("@CONVADUIT6k");
-    expect(ORGANIZATION_SAME_AS).toEqual([SOCIAL_X_URL, SOCIAL_LINKEDIN_URL]);
+  it("does not advertise non-ConvAudit handles as the live identity", () => {
+    expect(SOCIAL_PROFILES).toEqual([]);
+    expect(ORGANIZATION_SAME_AS).toEqual([]);
+    expect(SOCIAL_X_HANDLE).toBeUndefined();
+    expect(twitterSiteFields()).toEqual({});
+    expect(JSON.stringify({ SOCIAL_PROFILES, ORGANIZATION_SAME_AS })).not.toMatch(
+      /CONVADUIT|conva-aduit|StorePulse/i
+    );
   });
 });

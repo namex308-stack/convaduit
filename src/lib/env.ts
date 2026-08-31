@@ -5,7 +5,7 @@ export type ServiceKey =
   | "google"
   | "gemini"
   | "firecrawl"
-  | "kashier"
+  | "paymob"
   | "redis";
 
 export interface ServiceStatus {
@@ -22,10 +22,11 @@ type KnownEnvVar =
   | "SUPABASE_SERVICE_ROLE_KEY"
   | "GEMINI_API_KEY"
   | "FIRECRAWL_API_KEY"
-  | "KASHIER_MERCHANT_ID"
-  | "KASHIER_API_KEY"
-  | "KASHIER_SECRET_KEY"
-  | "KASHIER_MODE"
+  | "PAYMOB_API_KEY"
+  | "PAYMOB_INTEGRATION_ID"
+  | "PAYMOB_IFRAME_ID"
+  | "PAYMOB_HMAC_SECRET"
+  | "PAYMOB_MODE"
   | "UPSTASH_REDIS_REST_URL"
   | "UPSTASH_REDIS_REST_TOKEN";
 
@@ -51,10 +52,16 @@ const CHECKS: Record<ServiceKey, { name: string; vars: KnownEnvVar[]; docs: stri
     vars: ["FIRECRAWL_API_KEY"],
     docs: "https://www.firecrawl.dev/",
   },
-  kashier: {
-    name: "Kashier",
-    vars: ["KASHIER_MERCHANT_ID", "KASHIER_API_KEY", "KASHIER_SECRET_KEY", "KASHIER_MODE"],
-    docs: "https://docs.kashier.io/",
+  paymob: {
+    name: "Paymob",
+    vars: [
+      "PAYMOB_API_KEY",
+      "PAYMOB_INTEGRATION_ID",
+      "PAYMOB_IFRAME_ID",
+      "PAYMOB_HMAC_SECRET",
+      "PAYMOB_MODE",
+    ],
+    docs: "https://docs.paymob.com/",
   },
   redis: {
     name: "Upstash Redis",
@@ -79,14 +86,16 @@ function readKnownEnv(name: KnownEnvVar): string | undefined {
       return process.env.GEMINI_API_KEY;
     case "FIRECRAWL_API_KEY":
       return process.env.FIRECRAWL_API_KEY;
-    case "KASHIER_MERCHANT_ID":
-      return process.env.KASHIER_MERCHANT_ID;
-    case "KASHIER_API_KEY":
-      return process.env.KASHIER_API_KEY;
-    case "KASHIER_SECRET_KEY":
-      return process.env.KASHIER_SECRET_KEY;
-    case "KASHIER_MODE":
-      return process.env.KASHIER_MODE;
+    case "PAYMOB_API_KEY":
+      return process.env.PAYMOB_API_KEY;
+    case "PAYMOB_INTEGRATION_ID":
+      return process.env.PAYMOB_INTEGRATION_ID;
+    case "PAYMOB_IFRAME_ID":
+      return process.env.PAYMOB_IFRAME_ID;
+    case "PAYMOB_HMAC_SECRET":
+      return process.env.PAYMOB_HMAC_SECRET;
+    case "PAYMOB_MODE":
+      return process.env.PAYMOB_MODE;
     case "UPSTASH_REDIS_REST_URL":
       return process.env.UPSTASH_REDIS_REST_URL;
     case "UPSTASH_REDIS_REST_TOKEN":
@@ -127,10 +136,11 @@ export function requireEnv(key: string): string {
       SUPABASE_SERVICE_ROLE_KEY: 1,
       GEMINI_API_KEY: 1,
       FIRECRAWL_API_KEY: 1,
-      KASHIER_MERCHANT_ID: 1,
-      KASHIER_API_KEY: 1,
-      KASHIER_SECRET_KEY: 1,
-      KASHIER_MODE: 1,
+      PAYMOB_API_KEY: 1,
+      PAYMOB_INTEGRATION_ID: 1,
+      PAYMOB_IFRAME_ID: 1,
+      PAYMOB_HMAC_SECRET: 1,
+      PAYMOB_MODE: 1,
       UPSTASH_REDIS_REST_URL: 1,
       UPSTASH_REDIS_REST_TOKEN: 1,
     }

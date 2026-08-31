@@ -24,9 +24,9 @@ import {
   buildPostPaymentPath,
 } from "@/lib/billing/upgrade-flow";
 import {
-  KASHIER_PAYMENT_METHODS,
-  type KashierPaymentMethodId,
-} from "@/lib/kashier/payment-methods";
+  PAYMOB_PAYMENT_METHODS,
+  type PaymobPaymentMethodId,
+} from "@/lib/paymob/payment-methods";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -47,7 +47,7 @@ export default function CheckoutPage() {
     ? (periodParam as (typeof VALID_PERIODS)[number])
     : "monthly";
 
-  const [selected, setSelected] = React.useState<KashierPaymentMethodId | null>(null);
+  const [selected, setSelected] = React.useState<PaymobPaymentMethodId | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
   const amount = getCheckoutPrice(planId, period);
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
     }
   }, [searchParams, t]);
 
-  const payWithMethod = async (methodId: KashierPaymentMethodId) => {
+  const payWithMethod = async (methodId: PaymobPaymentMethodId) => {
     setSelected(methodId);
     setSubmitting(true);
     try {
@@ -146,7 +146,7 @@ export default function CheckoutPage() {
               <p className="text-sm text-muted-foreground mb-5">{t("checkout.chooseMethodDesc")}</p>
 
               <div className="grid sm:grid-cols-2 gap-3">
-                {KASHIER_PAYMENT_METHODS.map((method, index) => {
+                {PAYMOB_PAYMENT_METHODS.map((method, index) => {
                   const Icon = method.icon;
                   const isActive = selected === method.id;
                   const isLoading = submitting && isActive;

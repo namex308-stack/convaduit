@@ -1,29 +1,27 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Settings,
   User,
-  CreditCard,
-  BarChart3,
-  ArrowUpRight,
   Store,
   Loader2,
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
+import { SettingsFrame } from "@/components/app/settings-nav";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/providers/auth-provider";
 import { getUserInitials, notifyProfileUpdated } from "@/lib/auth/display-user";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import {
   CATEGORY_OPTIONS,
   CHALLENGE_OPTIONS,
@@ -66,26 +64,46 @@ const EMPTY_FORM: BizForm = {
   competitorUrl: "",
 };
 
+const SELECT_CLASS =
+  "flex h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+function Field({
+  label,
+  hint,
+  className,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("space-y-1.5", className)}>
+      <Label className="text-sm text-muted-foreground">{label}</Label>
+      {children}
+      {hint ? <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
+}
+
 function SelectField({
   label,
+  hint,
   value,
   onChange,
   options,
 }: {
   label: string;
+  hint?: string;
   value: string;
   onChange: (v: string) => void;
   options: readonly { value: string; label: string }[];
 }) {
   const t = useT();
   return (
-    <div className="space-y-1.5">
-      <Label className="text-sm text-muted-foreground">{label}</Label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
-      >
+    <Field label={label} hint={hint}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={SELECT_CLASS}>
         <option value="">{t("settings.selectPlaceholder")}</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -93,6 +111,66 @@ function SelectField({
           </option>
         ))}
       </select>
+    </Field>
+  );
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="col-span-full text-xs font-semibold tracking-wide text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function SavedBadge({ visible, label }: { visible: boolean; label: string }) {
+  if (!visible) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">
+      <CheckCircle2 className="size-3.5" /> {label}
+    </span>
+  );
+}
+
+function SettingsFormSkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-live="polite">
+      <Card>
+        <CardHeader className="border-b border-border/50 pb-4">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="mt-2 h-4 w-56" />
+        </CardHeader>
+        <CardContent className="pt-5">
+          <div className="mb-6 flex items-center gap-4">
+            <Skeleton className="size-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-3 w-44" />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="border-b border-border/50 pb-4">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="mt-2 h-4 w-64 max-w-full" />
+        </CardHeader>
+        <CardContent className="pt-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-11 w-full rounded-xl" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -243,231 +321,201 @@ export default function SettingsPage() {
         .join("") || authInitials
     : authInitials;
 
-  const SECTIONS = [
-    { href: "/settings/billing", icon: CreditCard, label: t("settings.billingSubscription"), desc: t("settings.billingDesc") },
-    { href: "/settings/usage", icon: BarChart3, label: t("settings.usage"), desc: t("settings.usageDesc") },
-  ];
+  const loading = loadingAccount || loadingBiz;
 
   return (
     <PageShell>
-      <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} icon={Settings} back="/dashboard" />
-      <PageContent className="space-y-6 max-w-3xl">
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <h2 className="font-display text-lg font-bold flex items-center gap-2">
-              <User className="size-5 text-primary" /> {t("settings.profile")}
-            </h2>
-            {savedAccount && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">
-                <CheckCircle2 className="size-3.5" /> {t("settings.saved")}
-              </span>
-            )}
-          </div>
-          {loadingAccount ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="size-6 animate-spin text-primary" />
-            </div>
+      <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} icon={Settings} />
+      <PageContent>
+        <SettingsFrame>
+          {loading ? (
+            <SettingsFormSkeleton />
           ) : (
             <>
-              <div className="flex items-center gap-4 mb-6">
-                <Avatar className="size-16">
-                  <AvatarFallback className="gradient-brand text-white text-xl font-bold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-semibold">{fullName || "—"}</div>
-                  <div className="text-sm text-muted-foreground">{email || "—"}</div>
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("settings.fullName")}</Label>
-                  <Input
-                    value={fullName}
-                    onChange={(e) => {
-                      setFullName(e.target.value);
-                      setSavedAccount(false);
-                    }}
-                    className="h-11 rounded-xl text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("settings.email")}</Label>
-                  <Input value={email} readOnly className="h-11 rounded-xl text-sm bg-muted/40" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("settings.localeLabel")}</Label>
-                  <Input
-                    value={t("settings.localeFixedValue")}
-                    readOnly
-                    className="h-11 rounded-xl text-sm bg-muted/40"
-                  />
-                  <p className="text-xs text-muted-foreground">{t("settings.languageDesc")}</p>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("settings.timezone")}</Label>
-                  <Input
-                    value={timezone}
-                    onChange={(e) => {
-                      setTimezone(e.target.value);
-                      setSavedAccount(false);
-                    }}
-                    placeholder="Africa/Cairo"
-                    className="h-11 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-              <div className="mt-5 flex justify-end">
-                <Button
-                  className="rounded-full"
-                  disabled={savingAccount}
-                  onClick={() => void saveAccount()}
-                >
-                  {savingAccount ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    t("settings.saveChanges")
-                  )}
-                </Button>
-              </div>
-            </>
-          )}
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-            <h2 className="font-display text-lg font-bold flex items-center gap-2">
-              <Store className="size-5 text-primary" /> {t("settings.businessProfile")}
-            </h2>
-            {savedBiz && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">
-                <CheckCircle2 className="size-3.5" /> {t("settings.saved")}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground mb-5">
-            {t("settings.businessProfileDesc")}
-          </p>
-          {loadingBiz ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="size-6 animate-spin text-primary" />
-            </div>
-          ) : (
-            <>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("settings.businessName")}</Label>
-                  <Input
-                    value={biz.businessName}
-                    onChange={(e) => setBizField("businessName", e.target.value)}
-                    className="h-11 rounded-xl text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("onboarding.store.url")}</Label>
-                  <Input
-                    value={biz.storeUrl}
-                    onChange={(e) => setBizField("storeUrl", e.target.value)}
-                    className="h-11 rounded-xl text-sm"
-                  />
-                </div>
-                <SelectField
-                  label={t("settings.country")}
-                  value={biz.country}
-                  onChange={(v) => setBizField("country", v)}
-                  options={COUNTRY_OPTIONS}
-                />
-                <div className="space-y-1.5">
-                  <SelectField
-                    label={t("settings.primaryLanguage")}
-                    value={biz.primaryLanguage}
-                    onChange={(v) => setBizField("primaryLanguage", v)}
-                    options={LANGUAGE_OPTIONS}
-                  />
-                  <p className="text-xs text-muted-foreground">{t("settings.storeLanguageDesc")}</p>
-                </div>
-                <SelectField
-                  label={t("settings.platform")}
-                  value={biz.platform}
-                  onChange={(v) => setBizField("platform", v)}
-                  options={PLATFORM_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.storeSize")}
-                  value={biz.storeSize}
-                  onChange={(v) => setBizField("storeSize", v)}
-                  options={STORE_SIZE_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.category")}
-                  value={biz.businessCategory}
-                  onChange={(v) => setBizField("businessCategory", v)}
-                  options={CATEGORY_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.primaryGoalLabel")}
-                  value={biz.primaryGoal}
-                  onChange={(v) => setBizField("primaryGoal", v)}
-                  options={GOAL_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.monthlyTraffic")}
-                  value={biz.monthlyTraffic}
-                  onChange={(v) => setBizField("monthlyTraffic", v)}
-                  options={TRAFFIC_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.monthlyOrders")}
-                  value={biz.monthlyOrders}
-                  onChange={(v) => setBizField("monthlyOrders", v)}
-                  options={ORDERS_OPTIONS}
-                />
-                <SelectField
-                  label={t("settings.mainChallenge")}
-                  value={biz.mainChallenge}
-                  onChange={(v) => setBizField("mainChallenge", v)}
-                  options={CHALLENGE_OPTIONS}
-                />
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">{t("auditNew.competitorUrl")}</Label>
-                  <Input
-                    value={biz.competitorUrl}
-                    onChange={(e) => setBizField("competitorUrl", e.target.value)}
-                    className="h-11 rounded-xl text-sm"
-                    placeholder="https://competitor.com"
-                  />
-                </div>
-              </div>
-              <div className="mt-5 flex justify-end">
-                <Button
-                  className="rounded-full"
-                  disabled={savingBiz}
-                  onClick={() => void saveBusinessProfile()}
-                >
-                  {savingBiz ? <Loader2 className="size-4 animate-spin" /> : t("settings.saveChanges")}
-                </Button>
-              </div>
-            </>
-          )}
-        </Card>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          {SECTIONS.map((s, i) => (
-            <motion.div key={s.href} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-              <Link href={s.href} className="block rounded-2xl border border-border/50 bg-card p-5 hover:border-primary/40 hover:shadow-[var(--shadow-card-hover)] transition-all">
-                <div className="flex items-center gap-3">
-                  <span className="size-10 rounded-xl bg-primary/10 text-primary grid place-items-center"><s.icon className="size-5" /></span>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm">{s.label}</div>
-                    <div className="text-xs text-muted-foreground">{s.desc}</div>
+              <Card>
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <User className="size-4 text-primary" />
+                        {t("settings.profile")}
+                      </CardTitle>
+                      <CardDescription className="mt-1.5">{t("settings.profileDesc")}</CardDescription>
+                    </div>
+                    <SavedBadge visible={savedAccount} label={t("settings.saved")} />
                   </div>
-                  <ArrowUpRight className="size-4 text-muted-foreground" />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="mb-6 flex items-center gap-4">
+                    <Avatar className="size-16 ring-2 ring-primary/15 ring-offset-2 ring-offset-background">
+                      <AvatarFallback className="gradient-brand text-xl font-bold text-white">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold">{fullName || "—"}</div>
+                      <div className="truncate text-sm text-muted-foreground">{email || "—"}</div>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label={t("settings.fullName")}>
+                      <Input
+                        value={fullName}
+                        onChange={(e) => {
+                          setFullName(e.target.value);
+                          setSavedAccount(false);
+                        }}
+                        autoComplete="name"
+                      />
+                    </Field>
+                    <Field label={t("settings.email")} hint={t("settings.emailReadOnly")}>
+                      <Input value={email} readOnly className="bg-muted/40" autoComplete="email" />
+                    </Field>
+                    <Field label={t("settings.localeLabel")} hint={t("settings.languageDesc")}>
+                      <Input value={t("settings.localeFixedValue")} readOnly className="bg-muted/40" />
+                    </Field>
+                    <Field label={t("settings.timezone")} hint={t("settings.timezoneHint")}>
+                      <Input
+                        value={timezone}
+                        onChange={(e) => {
+                          setTimezone(e.target.value);
+                          setSavedAccount(false);
+                        }}
+                        placeholder="Africa/Cairo"
+                        dir="ltr"
+                        className="text-left"
+                      />
+                    </Field>
+                  </div>
+                  <div className="mt-6 flex justify-end border-t border-border/50 pt-4">
+                    <Button
+                      className="rounded-xl"
+                      disabled={savingAccount}
+                      onClick={() => void saveAccount()}
+                    >
+                      {savingAccount ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        t("settings.saveChanges")
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Store className="size-4 text-primary" />
+                        {t("settings.businessProfile")}
+                      </CardTitle>
+                      <CardDescription className="mt-1.5">
+                        {t("settings.businessProfileDesc")}
+                      </CardDescription>
+                    </div>
+                    <SavedBadge visible={savedBiz} label={t("settings.saved")} />
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <GroupLabel>{t("settings.groupStore")}</GroupLabel>
+                    <Field label={t("settings.businessName")}>
+                      <Input
+                        value={biz.businessName}
+                        onChange={(e) => setBizField("businessName", e.target.value)}
+                      />
+                    </Field>
+                    <Field label={t("onboarding.store.url")}>
+                      <Input
+                        type="url"
+                        value={biz.storeUrl}
+                        onChange={(e) => setBizField("storeUrl", e.target.value)}
+                      />
+                    </Field>
+                    <SelectField
+                      label={t("settings.country")}
+                      value={biz.country}
+                      onChange={(v) => setBizField("country", v)}
+                      options={COUNTRY_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.primaryLanguage")}
+                      hint={t("settings.storeLanguageDesc")}
+                      value={biz.primaryLanguage}
+                      onChange={(v) => setBizField("primaryLanguage", v)}
+                      options={LANGUAGE_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.platform")}
+                      value={biz.platform}
+                      onChange={(v) => setBizField("platform", v)}
+                      options={PLATFORM_OPTIONS}
+                    />
+
+                    <GroupLabel>{t("settings.groupScale")}</GroupLabel>
+                    <SelectField
+                      label={t("settings.storeSize")}
+                      value={biz.storeSize}
+                      onChange={(v) => setBizField("storeSize", v)}
+                      options={STORE_SIZE_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.category")}
+                      value={biz.businessCategory}
+                      onChange={(v) => setBizField("businessCategory", v)}
+                      options={CATEGORY_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.monthlyTraffic")}
+                      value={biz.monthlyTraffic}
+                      onChange={(v) => setBizField("monthlyTraffic", v)}
+                      options={TRAFFIC_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.monthlyOrders")}
+                      value={biz.monthlyOrders}
+                      onChange={(v) => setBizField("monthlyOrders", v)}
+                      options={ORDERS_OPTIONS}
+                    />
+
+                    <GroupLabel>{t("settings.groupGoals")}</GroupLabel>
+                    <SelectField
+                      label={t("settings.primaryGoalLabel")}
+                      value={biz.primaryGoal}
+                      onChange={(v) => setBizField("primaryGoal", v)}
+                      options={GOAL_OPTIONS}
+                    />
+                    <SelectField
+                      label={t("settings.mainChallenge")}
+                      value={biz.mainChallenge}
+                      onChange={(v) => setBizField("mainChallenge", v)}
+                      options={CHALLENGE_OPTIONS}
+                    />
+                    <Field label={t("auditNew.competitorUrl")} className="sm:col-span-2">
+                      <Input
+                        type="url"
+                        value={biz.competitorUrl}
+                        onChange={(e) => setBizField("competitorUrl", e.target.value)}
+                        placeholder="https://competitor.com"
+                      />
+                    </Field>
+                  </div>
+                  <div className="mt-6 flex justify-end border-t border-border/50 pt-4">
+                    <Button
+                      className="rounded-xl"
+                      disabled={savingBiz}
+                      onClick={() => void saveBusinessProfile()}
+                    >
+                      {savingBiz ? <Loader2 className="size-4 animate-spin" /> : t("settings.saveChanges")}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </SettingsFrame>
       </PageContent>
     </PageShell>
   );

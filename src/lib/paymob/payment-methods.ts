@@ -8,12 +8,12 @@ import {
   Wallet,
 } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
-import type { KashierPaymentMethodId } from "@/lib/kashier/methods";
+import type { PaymobPaymentMethodId } from "@/lib/paymob/methods";
 
-export type { KashierPaymentMethodId };
+export type { PaymobPaymentMethodId };
 
-export interface KashierPaymentMethodOption {
-  id: KashierPaymentMethodId;
+export interface PaymobPaymentMethodOption {
+  id: PaymobPaymentMethodId;
   labelKey: TranslationKey;
   descKey: TranslationKey;
   icon: LucideIcon;
@@ -21,8 +21,8 @@ export interface KashierPaymentMethodOption {
   iconClass: string;
 }
 
-/** UI catalog for the checkout payment method picker. */
-export const KASHIER_PAYMENT_METHODS: readonly KashierPaymentMethodOption[] = [
+/** UI catalog for the checkout payment method picker — layout unchanged. */
+export const PAYMOB_PAYMENT_METHODS: readonly PaymobPaymentMethodOption[] = [
   {
     id: "credit_card",
     labelKey: "checkout.method.card",

@@ -1,10 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { SocialLinks } from "@/components/layout/social-links";
 import { ROUTES } from "@/lib/routes";
-import { useT, type TranslationKey } from "@/lib/i18n";
+import { translate as t, type TranslationKey } from "@/lib/i18n";
 
 /**
  * Public footer link inventory — real `href`s only (no JS-only destinations).
@@ -38,6 +36,12 @@ export const FOOTER_LINK_COLS: readonly {
     titleKey: "footer.col.resources",
     links: [
       { labelKey: "footer.blog", href: ROUTES.blog },
+      { labelKey: "footer.link.geoGuide", href: ROUTES.blogPost("geo-ai-visibility-guide") },
+      { labelKey: "footer.link.conversionGuide", href: ROUTES.blogPost("conversion-rate-optimization") },
+      { labelKey: "footer.link.competitorGuide", href: ROUTES.blogPost("competitor-analysis-strategy") },
+      { labelKey: "footer.link.trustGuide", href: ROUTES.blogPost("trust-signals-ecommerce") },
+      { labelKey: "footer.link.schemaGuide", href: ROUTES.blogPost("product-schema-markup") },
+      { labelKey: "footer.link.aiCopyGuide", href: ROUTES.blogPost("ai-product-descriptions") },
       { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
     ],
   },
@@ -53,10 +57,9 @@ export const FOOTER_LINK_COLS: readonly {
 ];
 
 export function Footer() {
-  const t = useT();
   return (
-    <footer className="mt-auto border-t border-border/60 bg-muted/20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+    <footer className="mt-auto border-t border-border/50 bg-muted/20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
           <div className="col-span-2 md:col-span-1">
             <Link href={ROUTES.home} className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-ring">
@@ -70,15 +73,15 @@ export function Footer() {
 
           {FOOTER_LINK_COLS.map((col) => (
             <div key={col.titleKey}>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/70">
                 {t(col.titleKey)}
-              </h4>
+              </h3>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((link) => (
                   <li key={`${link.labelKey}-${link.href}`}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
                     >
                       {t(link.labelKey)}
                     </Link>
@@ -89,7 +92,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             {t("footer.copyright", { year: new Date().getFullYear() })}
           </p>
