@@ -1,6 +1,6 @@
 import { Zap, Search, Bot, ShieldCheck } from "lucide-react";
 import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
 /** GEO leads — it is the core differentiator vs. generic CRO tools. */
 const PILLARS = [
@@ -58,7 +58,8 @@ const PILLARS = [
   },
 ] as const;
 
-export function Features() {
+export async function Features() {
+  const t = await getServerTranslate();
   return (
     <Section id="features">
       <Container>

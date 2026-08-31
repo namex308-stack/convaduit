@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale/resolve";
 const REPORT_FEATURES = [
   {
     id: "health",
@@ -118,6 +119,7 @@ export default function AuditNewPage() {
 
 function AuditNewPageInner() {
   const t = useT();
+  const { locale } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromOnboarding = searchParams.get("from") === "onboarding";
@@ -233,7 +235,7 @@ function AuditNewPageInner() {
           productUrl: normalizedProduct,
           storeUrl: normalizedStore || "",
           competitorUrl: normalizedCompetitor,
-          locale: "ar",
+          locale,
         }),
       });
 

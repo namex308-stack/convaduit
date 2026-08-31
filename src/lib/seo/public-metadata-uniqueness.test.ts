@@ -3,7 +3,7 @@ import { ABOUT_DESCRIPTION, ABOUT_TITLE } from "@/app/about/copy";
 import { BLOG_INDEX_DESCRIPTION, BLOG_INDEX_TITLE } from "@/app/blog/copy";
 import { BLOG_POSTS, BLOG_SLUGS, blogPostMetaDescription } from "@/lib/blog-posts";
 import { translate } from "@/lib/locale/t";
-import { CONTACT_EMAIL } from "@/lib/seo/contact";
+import { CONTACT_EMAIL, CONTACT_WHATSAPP_DISPLAY } from "@/lib/seo/contact";
 import { PUBLIC_PAGE_ROBOTS, publicPageMetadata, resolvePublicTitle } from "@/lib/seo/page-metadata";
 import { SITE_DEFAULT_TITLE, SITE_DESCRIPTION } from "@/lib/seo/site-copy";
 import { ROUTES } from "@/lib/routes";
@@ -14,15 +14,15 @@ const STATIC_PUBLIC_PAGES = [
   { path: ROUTES.home, title: SITE_DEFAULT_TITLE, description: SITE_DESCRIPTION, absoluteTitle: SITE_DEFAULT_TITLE },
   {
     path: ROUTES.pricing,
-    title: "أسعار تدقيق المتاجر",
+    title: "أسعار تدقيق وتحليل المتاجر في الخليج",
     description:
-      "باقات ConvAudit لتدقيق المتاجر الإلكترونية: تحويل، SEO، وGEO. ابدأ مجاناً — الأسعار بالجنيه المصري عبر Paymob.",
+      "باقات ConvAudit لتدقيق وتحليل المتاجر الإلكترونية: SEO وCRO وGEO Audit وتحليلات المتجر والمنافسين. للسعودية والإمارات وقطر والكويت والبحرين وعُمان — ابدأ مجاناً.",
   },
   {
     path: ROUTES.docs,
-    title: "دليل تدقيق المتاجر وGEO",
+    title: "دليل تدقيق وتحليل متاجر الخليج",
     description:
-      "كيف يعمل تدقيق الصفحة في ConvAudit: تحويل، SEO، GEO، حدود التحليل، ومولد المحتوى لمتاجر Shopify وWooCommerce وسلة وزد.",
+      "كيف يعمل تدقيق وتحليل صفحة المنتج: CRO وSEO وGEO Audit وتحليلات المتجر — Shopify وWooCommerce وسلة وزد والمتاجر المخصصة.",
   },
   { path: ROUTES.blog, title: BLOG_INDEX_TITLE, description: BLOG_INDEX_DESCRIPTION },
   {
@@ -33,7 +33,7 @@ const STATIC_PUBLIC_PAGES = [
   {
     path: ROUTES.contact,
     title: "اتصل بنا",
-    description: `تواصل مع ConvAudit عبر البريد الرسمي ${CONTACT_EMAIL} للاستفسارات العامة والفوترة وطلبات الاسترداد.`,
+    description: `تواصل مع ConvAudit عبر البريد الرسمي ${CONTACT_EMAIL} أو واتساب ${CONTACT_WHATSAPP_DISPLAY} للاستفسارات العامة والفوترة وطلبات الاسترداد.`,
   },
   {
     path: ROUTES.security,
@@ -59,7 +59,8 @@ const STATIC_PUBLIC_PAGES = [
   {
     path: ROUTES.roadmap,
     title: "خارطة طريق المنتج",
-    description: "أولويات توجيهية معلنة للمنتج — ليست تعهدات تعاقدية ولا مواعيد تسليم ملزمة.",
+    description:
+      "خارطة طريق ConvAudit لمتاجر في السعودية والإمارات وقطر والكويت والبحرين وعُمان: الآن والتالي ولاحقاً — دون تعهدات تسليم ملزمة.",
   },
 ] as const;
 

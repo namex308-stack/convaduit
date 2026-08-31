@@ -1,6 +1,7 @@
 import { Flame, TrendingUp, Sparkles } from "lucide-react";
 import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t, type TranslationKey } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
+import { type TranslationKey } from "@/lib/i18n";
 
 const PRIORITIES: {
   icon: typeof Flame;
@@ -36,7 +37,8 @@ const PRIORITIES: {
   },
 ];
 
-export function DecisionEngine() {
+export async function DecisionEngine() {
+  const t = await getServerTranslate();
   return (
     <Section id="decision-engine" tone="bordered">
       <Container>

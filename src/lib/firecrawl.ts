@@ -31,10 +31,10 @@ export const FIRECRAWL_CREDITS_MESSAGE =
   "رصيد Firecrawl منتهٍ. أضف رصيداً عبر https://firecrawl.dev/pricing — سيتم استخدام الجلب المدمج بدلاً من ذلك.";
 
 export const FIRECRAWL_CREDITS_BLOCKED_MESSAGE =
-  "Firecrawl is out of credits, and the built-in fetch could not open this store (bot protection or a locked shop). Top up Firecrawl at https://firecrawl.dev/pricing, then retry.";
+  "نفد رصيد Firecrawl، وتعذّر فتح المتجر عبر الجلب المدمج (حماية ضد الروبوتات أو متجر مقفول). أضف رصيداً عبر https://firecrawl.dev/pricing ثم أعد المحاولة.";
 
 export const STORE_LOCKED_402_MESSAGE =
-  "This store returned HTTP 402 (often a paused or unpaid Shopify plan). Reactivate the store or try a different public URL.";
+  "أعاد المتجر HTTP 402 (غالباً خطة Shopify متوقفة أو غير مدفوعة). فعّل المتجر أو جرّب رابطاً عاماً آخر.";
 
 export type ScrapeErrorCode = "NOT_CONFIGURED" | "CREDITS" | "FAILED" | "BLOCKED_URL" | null;
 
@@ -135,7 +135,7 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
         errorCode: credits ? "CREDITS" : "FAILED",
         errorMessage: credits
           ? composeCreditsFailureMessage(target, fallback)
-          : fallback.reason || "Could not reach the page, please check the URL.",
+          : fallback.reason || "تعذّر الوصول إلى الصفحة. تحقق من الرابط.",
         source: "none",
       };
     }
@@ -187,8 +187,8 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
       page: null,
       errorCode: "FAILED",
       errorMessage: timedOut
-        ? "The page took too long to load. Please try again."
-        : fallback.reason || "Could not reach the page, please check the URL.",
+        ? "استغرق تحميل الصفحة وقتاً طويلاً. حاول مرة أخرى."
+        : fallback.reason || "تعذّر الوصول إلى الصفحة. تحقق من الرابط.",
       source: "none",
     };
   }
@@ -201,7 +201,7 @@ function composeCreditsFailureMessage(url: string, fallback: FallbackAttempt): s
     }
   }
   if (fallback.httpStatus === 403) {
-    return `${FIRECRAWL_CREDITS_BLOCKED_MESSAGE} The site blocked direct fetch (HTTP 403 / bot challenge).`;
+    return `${FIRECRAWL_CREDITS_BLOCKED_MESSAGE} حظر الموقع الجلب المباشر (HTTP 403 / تحقق أمني).`;
   }
   if (fallback.reason) {
     return `${FIRECRAWL_CREDITS_BLOCKED_MESSAGE} ${fallback.reason}`;
@@ -244,7 +244,7 @@ async function fetchPageFallback(url: string): Promise<FallbackAttempt> {
           return {
             page: null,
             httpStatus: fetched.status,
-            reason: "The page redirected to a blocked host.",
+            reason: "أعادت الصفحة توجيهاً إلى نطاق محظور.",
           };
         }
         lastReason = fetched.reason;
@@ -259,8 +259,8 @@ async function fetchPageFallback(url: string): Promise<FallbackAttempt> {
           fetched.status === 402
             ? STORE_LOCKED_402_MESSAGE
             : fetched.status === 403
-              ? "The site blocked direct fetch (HTTP 403)."
-              : `Direct fetch failed (HTTP ${fetched.status}).`;
+              ? "حظر الموقع الجلب المباشر (HTTP 403)."
+              : `فشل الجلب المباشر (HTTP ${fetched.status}).`;
         // Retry with the next UA on challenge/forbidden; 402 from Shopify is usually final.
         if (fetched.status === 402) {
           return { page: null, httpStatus: 402, reason: STORE_LOCKED_402_MESSAGE };
@@ -275,20 +275,20 @@ async function fetchPageFallback(url: string): Promise<FallbackAttempt> {
         return {
           page: null,
           httpStatus: fetched.status,
-          reason: "The page redirected to a blocked host.",
+          reason: "أعادت الصفحة توجيهاً إلى نطاق محظور.",
         };
       }
 
       const htmlRaw = fetched.bodyText;
       if (!htmlRaw || htmlRaw.length < 50) {
-        lastReason = "The page returned empty HTML.";
+        lastReason = "أعادت الصفحة HTML فارغاً.";
         continue;
       }
 
       // Cloudflare challenge pages are not useful store content.
       if (/cf-mitigated|just a moment|challenge-platform|cdn-cgi\/challenge/i.test(htmlRaw)) {
         console.warn("[scrape-fallback] Cloudflare challenge page, trying next UA");
-        lastReason = "Cloudflare bot challenge blocked direct fetch.";
+        lastReason = "حظر Cloudflare الجلب المباشر بصفحة تحقق.";
         lastStatus = 403;
         continue;
       }
@@ -334,7 +334,7 @@ async function fetchPageFallback(url: string): Promise<FallbackAttempt> {
       };
     } catch (err) {
       console.error("[scrape-fallback] error:", err);
-      lastReason = "Direct fetch threw a network error.";
+      lastReason = "حدث خطأ شبكة أثناء الجلب المباشر.";
     }
   }
 

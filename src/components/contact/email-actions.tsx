@@ -21,7 +21,7 @@ export function ContactEmailActions() {
   return (
     <div className="mt-6 flex flex-wrap items-center gap-3">
       <Button asChild size="lg" className="rounded-full font-semibold shadow-glow">
-        <a href={contactMailto("طلب دعم ConvAudit")}>
+        <a href={contactMailto(t("contact.mailtoSubject"))}>
           <Mail className="size-4" />
           {t("contact.sendEmail")}
         </a>

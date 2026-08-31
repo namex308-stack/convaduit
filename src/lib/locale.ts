@@ -1,4 +1,4 @@
-/** Product UI / AI output locale — Arabic-only. */
+/** Product UI / AI output locale — Arabic only. */
 export type AppLocale = "ar";
 
 const ARABIC_SCRIPT = /[\u0600-\u06FF]/;
@@ -20,10 +20,7 @@ export function isArabicFacingText(text: string | null | undefined): boolean {
   return hasArabicScript(trimmed);
 }
 
-/**
- * Normalize any legacy/profile locale value to the only supported UI locale.
- * English (`en`) and unknown values are coerced to Arabic.
- */
+/** Normalize profile/API locale values — always Arabic in the product UI. */
 export function normalizeAppLocale(_value?: unknown): AppLocale {
   return "ar";
 }

@@ -4,44 +4,20 @@ import * as React from "react";
 import { Bell } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { AlertsView } from "@/components/app/alerts-view";
-import { ApiLoadError } from "@/components/runtime/api-load-error";
+import { ApiPageBody } from "@/components/runtime/api-page-body";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { useT } from "@/lib/i18n";
 import type { AlertsOverview } from "@/lib/alerts/types";
 
 export default function AlertsPage() {
   const t = useT();
-  const [overview, setOverview] = React.useState<AlertsOverview | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-  const [needsAuth, setNeedsAuth] = React.useState(false);
-  const [retryKey, setRetryKey] = React.useState(0);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    setNeedsAuth(false);
-    async function load() {
-      try {
-        const res = await fetch("/api/alerts");
-        if (!res.ok) {
-          if (!cancelled) {
-            setNeedsAuth(res.status === 401);
-            setError(
-              res.status === 401 ? t("alerts.signInRequired") : t("alerts.loadError")
-            );
-          }
-          return;
-        }
-        const data = (await res.json()) as { alerts: AlertsOverview };
-        if (!cancelled) setOverview(data.alerts);
-      } catch {
-        if (!cancelled) setError(t("alerts.loadError"));
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [t, retryKey]);
+  const { data: overview, setData, error, needsAuth, needsUpgrade, loading, retry } =
+    useApiQuery({
+      url: "/api/alerts",
+      parse: (json) => (json as { alerts: AlertsOverview }).alerts,
+      fallbackError: t("alerts.loadError"),
+      signInMessage: t("alerts.signInRequired"),
+    });
 
   const markRead = async (id: string) => {
     const res = await fetch(`/api/alerts/${id}`, {
@@ -51,7 +27,7 @@ export default function AlertsPage() {
     });
     if (!res.ok) return;
     const data = (await res.json()) as { alert: AlertsOverview["alerts"][number] };
-    setOverview((prev) => {
+    setData((prev) => {
       if (!prev) return prev;
       const alerts = prev.alerts.map((a) => (a.id === id ? data.alert : a));
       return {
@@ -69,7 +45,7 @@ export default function AlertsPage() {
       body: JSON.stringify({ action: "read_all" }),
     });
     if (!res.ok) return;
-    setOverview((prev) => {
+    setData((prev) => {
       if (!prev) return prev;
       const now = new Date().toISOString();
       return {
@@ -93,25 +69,21 @@ export default function AlertsPage() {
         back="/dashboard"
       />
       <PageContent className="max-w-4xl">
-        {error ? (
-          <ApiLoadError
-            message={error}
-            needsAuth={needsAuth}
-            onRetry={() => setRetryKey((k) => k + 1)}
-          />
-        ) : overview == null ? (
-          <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-28 animate-pulse rounded-2xl bg-muted/50" />
-            ))}
-          </div>
-        ) : (
-          <AlertsView
-            overview={overview}
-            onMarkRead={(id) => void markRead(id)}
-            onMarkAllRead={() => void markAllRead()}
-          />
-        )}
+        <ApiPageBody
+          error={error}
+          needsAuth={needsAuth}
+          needsUpgrade={needsUpgrade}
+          loading={loading}
+          onRetry={retry}
+        >
+          {overview && (
+            <AlertsView
+              overview={overview}
+              onMarkRead={(id) => void markRead(id)}
+              onMarkAllRead={() => void markAllRead()}
+            />
+          )}
+        </ApiPageBody>
       </PageContent>
     </PageShell>
   );

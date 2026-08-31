@@ -48,12 +48,12 @@ describe("weekly-report email template", () => {
     expect(html).toContain("مشاكل جديدة");
     expect(html).toContain("مشاكل تم حلها");
     expect(html).toContain("أعلى أولويات العمل");
-    expect(html).toContain("ملخص AI التنفيذي");
+    expect(html).toContain("ملخص تنفيذي بالذكاء الاصطناعي");
     expect(html).toContain("/reports/weekly/11111111-1111-1111-1111-111111111111");
     expect(html).toContain("متجر النور");
     expect(html).toContain("ConvAudit");
     expect(html).toContain("عرض التقرير الكامل");
-    expect(html).toContain("Privacy Policy");
+    expect(html).toContain("سياسة الخصوصية");
     expect(html).not.toMatch(/StorePulse/);
   });
 });

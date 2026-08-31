@@ -26,7 +26,16 @@ import { mapAuthErrorMessage } from "@/lib/auth/map-auth-error";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { withTimeout } from "@/lib/with-timeout";
 import { absoluteUrl } from "@/lib/site-url";
-import { translate, useT, type TranslationKey } from "@/lib/i18n";
+import { useT, type TranslationKey } from "@/lib/i18n";
+
+function AuthPageLoading() {
+  const t = useT();
+  return (
+    <div className="min-h-screen grid place-items-center px-4" aria-busy="true">
+      <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+    </div>
+  );
+}
 
 type StatItem = { v: string; lKey: TranslationKey };
 
@@ -48,11 +57,7 @@ const AUTH_REQUEST_MS = 12_000;
 export default function AuthPage() {
   return (
     <React.Suspense
-      fallback={
-        <div className="min-h-screen grid place-items-center px-4" aria-busy="true">
-          <p className="text-sm text-muted-foreground">{translate("common.loading")}</p>
-        </div>
-      }
+      fallback={<AuthPageLoading />}
     >
       <AuthPageInner />
     </React.Suspense>

@@ -58,6 +58,7 @@ describe("structured data", () => {
     expect(orgNodes[0]?.name).toBe(SITE_NAME);
     expect(orgNodes[0]?.url).toBe(CANONICAL);
     expect(orgNodes[0]?.description).toBe(SITE_OFFICIAL_DESCRIPTION);
+    expect(orgNodes[0]?.areaServed).toHaveLength(6);
     expect(orgNodes[0]?.sameAs).toBeUndefined();
 
     const website = graph["@graph"].find((n) => n["@type"] === "WebSite");
@@ -82,6 +83,7 @@ describe("structured data", () => {
     expect(software?.["@id"]).toBe(`${CANONICAL}/#software`);
     expect(software?.name).toBe("ConvAudit");
     expect(software?.url).toBe(CANONICAL);
+    expect(software?.areaServed).toHaveLength(6);
     const features = software?.featureList as string[];
     expect(features.join(" ")).not.toMatch(/استعلام حي داخل ChatGPT/);
     expect(features.some((f) => f.includes("بدون استعلام حي"))).toBe(true);

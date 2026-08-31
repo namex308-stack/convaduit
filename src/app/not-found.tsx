@@ -3,19 +3,26 @@ import Link from "next/link";
 import { Home, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { translate as t } from "@/lib/locale/t";
+import { getServerLocaleId } from "@/lib/locale/server";
+import { getServerTranslate } from "@/lib/locale/server-t";
+import { translate } from "@/lib/locale/t";
 
 /** Soft-404 guard — App Router still returns HTTP 404; robots meta blocks indexing if linked. */
-export const metadata: Metadata = {
-  title: "الصفحة غير موجودة",
-  robots: {
-    index: false,
-    follow: true,
-    googleBot: { index: false, follow: true },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocaleId();
+  return {
+    title: translate("notFound.title", undefined, locale),
+    robots: {
+      index: false,
+      follow: true,
+      googleBot: { index: false, follow: true },
+    },
+  };
+}
 
-export default function NotFound() {
+export default async function NotFound() {
+  const t = await getServerTranslate();
+
   return (
     <div className="min-h-[calc(100vh-4rem)] grid place-items-center px-4 py-16">
       <div className="max-w-md w-full text-center">

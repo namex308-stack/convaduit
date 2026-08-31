@@ -23,6 +23,12 @@ vi.mock("@/lib/db/weekly-report-repository", () => ({
   getWeeklyReportForUser: (...args: unknown[]) => getWeeklyReportForUser(...args),
 }));
 
+const ensureWeeklyReportsForUser = vi.fn();
+vi.mock("@/lib/weekly-report/ensure-for-user", () => ({
+  ensureWeeklyReportsForUser: (...args: unknown[]) =>
+    ensureWeeklyReportsForUser(...args),
+}));
+
 import { GET as listWeeklyReports } from "./route";
 import { GET as getWeeklyReport } from "./[id]/route";
 
@@ -80,6 +86,7 @@ describe("GET /api/weekly-report entitlement", () => {
     vi.clearAllMocks();
     requireApiUser.mockResolvedValue({ ok: true, user: USER });
     listWeeklyReportsForUser.mockResolvedValue([]);
+    ensureWeeklyReportsForUser.mockResolvedValue({ attempted: 0, generated: 0 });
   });
 
   it("blocks Free with WEEKLY_MONITORING_LOCKED", async () => {
@@ -108,6 +115,22 @@ describe("GET /api/weekly-report entitlement", () => {
     const body = await res.json();
     expect(body.reports).toEqual([{ id: "r1" }]);
     expect(listWeeklyReportsForUser).toHaveBeenCalledWith(USER.id, 30);
+    expect(ensureWeeklyReportsForUser).not.toHaveBeenCalled();
+  });
+
+  it("generates on first visit when Business list is empty", async () => {
+    getPlanForUser.mockResolvedValue(BUSINESS_PLAN);
+    listWeeklyReportsForUser
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: "r-new" }]);
+    ensureWeeklyReportsForUser.mockResolvedValue({ attempted: 1, generated: 1 });
+
+    const res = await listWeeklyReports();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.reports).toEqual([{ id: "r-new" }]);
+    expect(ensureWeeklyReportsForUser).toHaveBeenCalledWith(USER.id);
+    expect(listWeeklyReportsForUser).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -4,11 +4,12 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
+import { useLocale } from "@/lib/locale/resolve";
 import {
-  ABOUT_SECTIONS,
-  ABOUT_SUBTITLE,
-  ABOUT_TITLE,
   aboutParagraphParts,
+  getAboutSections,
+  getAboutSubtitle,
+  getAboutTitle,
   type AboutTextPart,
 } from "@/app/about/copy";
 
@@ -30,11 +31,14 @@ function AboutPart({ part }: { part: AboutTextPart }) {
 }
 
 export default function AboutPage() {
+  const { locale } = useLocale();
+  const sections = getAboutSections(locale);
+
   return (
     <PageShell>
-      <PageHeader title={ABOUT_TITLE} subtitle={ABOUT_SUBTITLE} icon={Building2} />
+      <PageHeader title={getAboutTitle(locale)} subtitle={getAboutSubtitle(locale)} icon={Building2} />
       <PageContent className="max-w-3xl space-y-4">
-        {ABOUT_SECTIONS.map((item) => (
+        {sections.map((item) => (
           <SurfaceCard key={item.t} className="p-5">
             <h2 className="font-display font-semibold text-sm">{item.t}</h2>
             {item.paragraphs.map((paragraph) => (

@@ -38,7 +38,13 @@ describe("public page metadata", () => {
 
     expect(meta.title).toBe("أسعار تدقيق المتاجر");
     expect(meta.description).toBe("وصف فريد للأسعار");
-    expect(meta.alternates).toEqual({ canonical: `${CANONICAL}${ROUTES.pricing}` });
+    expect(meta.alternates).toEqual({
+      canonical: `${CANONICAL}${ROUTES.pricing}`,
+      languages: {
+        ar: `${CANONICAL}${ROUTES.pricing}`,
+        "x-default": `${CANONICAL}${ROUTES.pricing}`,
+      },
+    });
     expect(meta.openGraph).toMatchObject({
       title: "أسعار تدقيق المتاجر",
       description: "وصف فريد للأسعار",
@@ -74,7 +80,13 @@ describe("public page metadata", () => {
       description: "وصف",
       path: ROUTES.about,
     });
-    expect(meta.alternates).toEqual({ canonical: `${CANONICAL}${ROUTES.about}` });
+    expect(meta.alternates).toEqual({
+      canonical: `${CANONICAL}${ROUTES.about}`,
+      languages: {
+        ar: `${CANONICAL}${ROUTES.about}`,
+        "x-default": `${CANONICAL}${ROUTES.about}`,
+      },
+    });
     expect(meta.openGraph).toMatchObject({ url: `${CANONICAL}${ROUTES.about}` });
   });
 
@@ -109,7 +121,13 @@ describe("public page metadata", () => {
       description: SITE_DESCRIPTION,
       path: ROUTES.home,
     });
-    expect(meta.alternates).toEqual({ canonical: `${CANONICAL}/` });
+    expect(meta.alternates).toEqual({
+      canonical: `${CANONICAL}/`,
+      languages: {
+        ar: `${CANONICAL}/`,
+        "x-default": `${CANONICAL}/`,
+      },
+    });
     expect(meta.openGraph).toMatchObject({
       title: SITE_DEFAULT_TITLE,
       description: SITE_DESCRIPTION,

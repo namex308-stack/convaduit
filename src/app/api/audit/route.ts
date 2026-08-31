@@ -61,7 +61,7 @@ const Body = z
     competitorUrl: OptionalHttpUrl,
     onboarding: z.record(z.string(), z.string()).optional(),
     /** Reserved for future locale variants (e.g. `ar-gulf`); output is always Arabic today. */
-    locale: z.literal("ar").optional(),
+    locale: z.enum(["ar"]).optional(),
   })
   .superRefine((data, ctx) => {
     const hasProduct = Boolean(data.productUrl?.trim());

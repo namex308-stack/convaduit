@@ -1,6 +1,6 @@
 import { Check, X, Minus, Building2, User, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 import { Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
 
 const COLS = [
@@ -46,25 +46,34 @@ const ROWS: { labelKey: "compTable.row1" | "compTable.row2" | "compTable.row3" |
   },
 ] as const;
 
-function ComparisonValue({ cell, brand }: { cell: Cell; brand?: boolean }) {
+function ComparisonValue({
+  cell,
+  brand,
+  label,
+}: {
+  cell: Cell;
+  brand?: boolean;
+  label?: string;
+}) {
   return (
     <span className="flex flex-col items-center justify-center gap-1 min-w-0">
       <CellIcon v={cell.v} brand={brand} />
-      {cell.textKey ? (
+      {label ? (
         <span
           className={cn(
             "text-[10px] sm:text-xs leading-snug text-pretty",
             cell.v === "yes" ? "text-primary font-medium" : "text-muted-foreground"
           )}
         >
-          {t(cell.textKey)}
+          {label}
         </span>
       ) : null}
     </span>
   );
 }
 
-export function ComparisonTable() {
+export async function ComparisonTable() {
+  const t = await getServerTranslate();
   return (
     <Section>
       <Container className="max-w-5xl overflow-x-hidden">
@@ -105,7 +114,11 @@ export function ComparisonTable() {
                       >
                         {t(c.nameKey)}
                       </span>
-                      <ComparisonValue cell={cell} brand={c.tone === "brand"} />
+                      <ComparisonValue
+                        cell={cell}
+                        brand={c.tone === "brand"}
+                        label={cell.textKey ? t(cell.textKey) : undefined}
+                      />
                     </li>
                   );
                 })}
@@ -173,7 +186,11 @@ export function ComparisonTable() {
                           c.tone === "brand" && "bg-primary/5"
                         )}
                       >
-                        <ComparisonValue cell={cell} brand={c.tone === "brand"} />
+                        <ComparisonValue
+                        cell={cell}
+                        brand={c.tone === "brand"}
+                        label={cell.textKey ? t(cell.textKey) : undefined}
+                      />
                       </td>
                     );
                   })}

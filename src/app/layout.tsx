@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Cairo, Geist_Mono } from "next/font/google";
@@ -7,14 +8,17 @@ import { DeferredGoogleAnalytics } from "@/components/analytics/deferred-google-
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { LocaleProvider } from "@/lib/locale/provider";
+import { LOCALE_COOKIE, parseEnabledLocale } from "@/lib/locale/cookie";
 import { getLocaleConfig } from "@/lib/locale/config";
-import { getActiveLocaleId } from "@/lib/locale/resolve";
+import { getServerLocaleId } from "@/lib/locale/server";
 import { getSiteUrl } from "@/lib/site-url";
 import { googleSiteVerificationMetadata } from "@/lib/seo/google-site-verification";
+import { impactSiteVerificationMetadata } from "@/lib/seo/impact-site-verification";
 import { OG_IMAGE, TWITTER_IMAGE } from "@/lib/seo/page-metadata";
 import {
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
+  getSiteDefaultTitle,
+  getSiteDescription,
   SITE_KEYWORDS,
 } from "@/lib/seo/site-copy";
 import { twitterSiteFields } from "@/lib/seo/social";
@@ -25,8 +29,6 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
-  // next/font preloads this family (swap + metric fallback keep CLS low).
-  // Keep 400–800 so existing font-* utilities do not change appearance.
   preload: true,
   adjustFontFallback: true,
   fallback: ["Tahoma", "Arial", "sans-serif"],
@@ -39,61 +41,65 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
-  ...googleSiteVerificationMetadata(),
-  title: {
-    default: SITE_DEFAULT_TITLE,
-    template: "%s · ConvAudit",
-  },
-  description: SITE_DESCRIPTION,
-  keywords: [...SITE_KEYWORDS],
-  authors: [{ name: "ConvAudit" }],
-  creator: "ConvAudit",
-  publisher: "ConvAudit",
-  // Canonical / OG url are set per public page so private routes do not inherit "/".
-  manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icon", sizes: "32x32", type: "image/png" },
-      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
-    ],
-    apple: [
-      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-  },
-  openGraph: {
-    title: SITE_DEFAULT_TITLE,
-    description: SITE_DESCRIPTION,
-    // Canonical / OG url are set per public page so private routes do not inherit "/".
-    siteName: "ConvAudit",
-    type: "website",
-    locale: getLocaleConfig(getActiveLocaleId()).ogLocale,
-    images: [OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    ...twitterSiteFields(),
-    title: SITE_DEFAULT_TITLE,
-    description: SITE_DESCRIPTION,
-    images: [TWITTER_IMAGE],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
-  category: "technology",
-  applicationName: "ConvAudit",
-  formatDetection: { telephone: false, email: false, address: false },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "ConvAudit",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const localeId = await getServerLocaleId();
+  const locale = getLocaleConfig(localeId);
+  const title = getSiteDefaultTitle(localeId);
+  const description = getSiteDescription(localeId);
+
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    ...googleSiteVerificationMetadata(),
+    ...impactSiteVerificationMetadata(),
+    title: {
+      default: title,
+      template: "%s · ConvAudit",
+    },
+    description,
+    keywords: [...SITE_KEYWORDS],
+    authors: [{ name: "ConvAudit" }],
+    creator: "ConvAudit",
+    publisher: "ConvAudit",
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+        { url: "/icon", sizes: "32x32", type: "image/png" },
+        { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      ],
+      apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+      shortcut: "/favicon.ico",
+    },
+    openGraph: {
+      title,
+      description,
+      siteName: "ConvAudit",
+      type: "website",
+      locale: locale.ogLocale,
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      ...twitterSiteFields(),
+      title,
+      description,
+      images: [TWITTER_IMAGE],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    },
+    category: "technology",
+    applicationName: "ConvAudit",
+    formatDetection: { telephone: false, email: false, address: false },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "ConvAudit",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -106,12 +112,16 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = getLocaleConfig(getActiveLocaleId());
+  const cookieStore = await cookies();
+  const cookieLocale = parseEnabledLocale(cookieStore.get(LOCALE_COOKIE)?.value);
+  const localeId = await getServerLocaleId();
+  const initialLocale = cookieLocale ?? localeId;
+  const locale = getLocaleConfig(initialLocale);
 
   return (
     <html
@@ -124,12 +134,14 @@ export default function RootLayout({
         className={`${cairo.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider>
-            {children}
-            <SonnerToaster position="top-center" richColors closeButton />
-            <Analytics />
-            <SpeedInsights />
-          </AuthProvider>
+          <LocaleProvider initialLocale={initialLocale}>
+            <AuthProvider>
+              {children}
+              <SonnerToaster position="top-center" richColors closeButton />
+              <Analytics />
+              <SpeedInsights />
+            </AuthProvider>
+          </LocaleProvider>
         </ThemeProvider>
         <DeferredGoogleAnalytics />
       </body>

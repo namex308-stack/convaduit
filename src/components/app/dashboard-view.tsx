@@ -9,7 +9,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Check,
-  ChevronRight,
   FileSearch,
   Gauge,
   Minus,
@@ -24,11 +23,15 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { ScoreTrendPoint } from "@/components/app/score-trend-chart";
-import { AuditRowActions } from "@/components/app/audit-row-actions";
+import { DashboardRecentAudits } from "@/components/app/dashboard-recent-audits";
+import { DashboardSummaryHeader } from "@/components/app/dashboard-summary-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { localizedPlanName } from "@/lib/billing/localized-plan-name";
+import type { PlanId } from "@/lib/billing/plans";
 import { useT, type TranslationKey } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale/resolve";
 import type {
   DashboardMetric,
   DashboardMetricSource,
@@ -41,9 +44,7 @@ import {
   trendSupportsRangeFilter,
 } from "@/lib/dashboard/metrics";
 import { filterTrendByMonths, labelTrendPoints } from "@/lib/dashboard/trend";
-import { displayHostFromUrl } from "@/lib/url-display";
 import { cn } from "@/lib/utils";
-import { isAuditInProgress } from "@/lib/audits/types";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
 
 const ScoreTrendChart = dynamic(
@@ -202,7 +203,6 @@ function KpiCard({
   label,
   value,
   meaning,
-  source,
   metric,
   emptyLabel,
   extra,
@@ -211,11 +211,11 @@ function KpiCard({
   iconClass,
   delay,
   reduceMotion,
+  emphasis = false,
 }: {
   label: string;
   value: string;
   meaning: string;
-  source: string;
   metric: DashboardMetric;
   emptyLabel: string;
   extra?: React.ReactNode;
@@ -224,21 +224,33 @@ function KpiCard({
   iconClass: string;
   delay: number;
   reduceMotion: boolean | null;
+  emphasis?: boolean;
 }) {
   return (
     <motion.div
       initial={reduceMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
+      className="h-full"
     >
-      <Card className="h-full p-4">
+      <Card
+        className={cn(
+          "h-full p-4 transition-colors hover:border-primary/20",
+          emphasis && "border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent"
+        )}
+      >
         <div className="flex items-start justify-between gap-2">
           <span className={cn("grid size-9 place-items-center rounded-xl", iconClass)}>
             <Icon className="size-4" />
           </span>
         </div>
         <p className="mt-3 text-xs font-medium text-muted-foreground">{label}</p>
-        <div className="mt-1 font-display text-2xl font-extrabold tracking-tight tabular-nums">
+        <div
+          className={cn(
+            "mt-1 font-display font-extrabold tracking-tight tabular-nums",
+            emphasis ? "text-3xl" : "text-2xl"
+          )}
+        >
           {value}
         </div>
         {hideDelta ? null : (
@@ -246,10 +258,40 @@ function KpiCard({
         )}
         {extra}
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{meaning}</p>
-        <p className="mt-1 text-[11px] text-muted-foreground/80">{source}</p>
       </Card>
     </motion.div>
   );
+}
+
+function severityBadgeClass(severity: "critical" | "warning" | "opportunity"): string {
+  switch (severity) {
+    case "critical":
+      return "bg-rose-500/15 text-rose-700";
+    case "warning":
+      return "bg-amber-500/15 text-amber-800";
+    case "opportunity":
+      return "bg-sky-500/15 text-sky-800";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+function severityLabel(
+  severity: "critical" | "warning" | "opportunity",
+  t: (key: TranslationKey) => string
+): string {
+  switch (severity) {
+    case "critical":
+      return t("severity.critical");
+    case "warning":
+      return t("severity.warning");
+    case "opportunity":
+      return t("severity.opportunity");
+    default: {
+      const _exhaustive: never = severity;
+      return _exhaustive;
+    }
+  }
 }
 
 const PILLAR_ROWS: Array<{
@@ -343,7 +385,9 @@ export function DashboardView({
   onRefresh: () => void;
 }) {
   const t = useT();
+  const { locale } = useLocale();
   const reduceMotion = useReducedMotion();
+  const planLabel = localizedPlanName(data.plan.displayName, t, data.plan.planId);
   const [range, setRange] = React.useState<"3" | "6" | "12">(() => defaultTrendRange(data.trend));
 
   const latestId = data.latestAudit?.id ?? null;
@@ -358,9 +402,9 @@ export function DashboardView({
     const filtered = showRangeFilter ? filterTrendByMonths(data.trend, months) : data.trend;
     return labelTrendPoints(
       filtered.map((p) => ({ score: p.score, date: p.date })),
-      "ar"
+      locale
     );
-  }, [data.trend, months, showRangeFilter]);
+  }, [data.trend, months, showRangeFilter, locale]);
 
   const hasTrendHistory = data.trend.length >= 2;
   const rangeHasChart = chartData.length >= 2;
@@ -393,8 +437,30 @@ export function DashboardView({
 
   const emptyWorkspace = data.stats.totalAudits === 0 && data.recent.length === 0;
   const needAudit = t("dashboard.kpiNeedAudit");
+  const auditsRemaining =
+    data.stats.auditsLimit != null
+      ? Math.max(0, data.stats.auditsLimit - data.stats.auditsThisMonth)
+      : null;
 
-  const kpiItems = [
+  const openIssuesMetric: DashboardMetric = {
+    value: data.stats.openRecommendations,
+    previous: null,
+    delta: null,
+    direction: null,
+    source: "recommendations",
+    asOf: data.latestAudit?.completedAt ?? null,
+  };
+
+  const pagesMetric: DashboardMetric = {
+    value: data.stats.pagesScanned,
+    previous: null,
+    delta: null,
+    direction: null,
+    source: "audit_pages",
+    asOf: data.latestAudit?.completedAt ?? null,
+  };
+
+  const primaryKpis = [
     {
       key: "overall" as const,
       label: t("dashboard.kpiScore"),
@@ -408,22 +474,26 @@ export function DashboardView({
       icon: Gauge,
       iconClass: "bg-primary/15 text-primary",
       hideDelta: false,
+      emphasis: true,
       extra: undefined as React.ReactNode,
     },
     {
-      key: "seo" as const,
-      label: t("dashboard.kpiSeo"),
-      metric: data.kpis.seo,
-      meaning: t("dashboard.kpiSeoHint"),
-      value:
-        data.kpis.seo.value != null
-          ? t("dashboard.kpiOutOf", { value: data.kpis.seo.value })
-          : t("dashboard.kpiEmptyValue"),
-      emptyLabel: needAudit,
-      icon: Search,
-      iconClass: "bg-brand/15 text-brand",
-      hideDelta: false,
-      extra: undefined as React.ReactNode,
+      key: "issues" as const,
+      label: t("dashboard.kpiIssues"),
+      metric: openIssuesMetric,
+      meaning: t("dashboard.kpiIssuesHint"),
+      value: String(data.stats.openRecommendations),
+      emptyLabel: t("dashboard.noOpenIssues"),
+      icon: AlertTriangle,
+      iconClass: "bg-rose-500/10 text-rose-600",
+      hideDelta: true,
+      emphasis: false,
+      extra:
+        data.stats.openRecommendations > 0 && latestId ? (
+          <Button asChild variant="link" size="sm" className="mt-1 h-auto px-0 text-xs">
+            <Link href={reportHref}>{t("dashboard.fixCta")}</Link>
+          </Button>
+        ) : undefined,
     },
     {
       key: "geo" as const,
@@ -438,7 +508,50 @@ export function DashboardView({
       icon: PieChart,
       iconClass: "bg-gold/25 text-gold-foreground",
       hideDelta: false,
+      emphasis: false,
       extra: undefined as React.ReactNode,
+    },
+    {
+      key: "quota" as const,
+      label: t("dashboard.auditsMonth"),
+      metric: data.kpis.audits,
+      meaning:
+        auditsRemaining != null
+          ? t("dashboard.remaining", { count: auditsRemaining })
+          : t("dashboard.kpiAuditsMeaning"),
+      value:
+        data.stats.auditsLimit != null
+          ? `${data.stats.auditsThisMonth} / ${data.stats.auditsLimit}`
+          : String(data.stats.auditsThisMonth),
+      emptyLabel: needAudit,
+      icon: TrendingUp,
+      iconClass: "bg-brand/10 text-brand",
+      hideDelta: true,
+      emphasis: false,
+      extra: (
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          {t("dashboard.monthVolumeCompare", {
+            current: data.stats.auditsThisMonth,
+            previous: data.stats.auditsLastMonth,
+          })}
+        </p>
+      ),
+    },
+  ];
+
+  const secondaryKpis = [
+    {
+      key: "seo" as const,
+      label: t("dashboard.kpiSeo"),
+      metric: data.kpis.seo,
+      meaning: t("dashboard.kpiSeoHint"),
+      value:
+        data.kpis.seo.value != null
+          ? t("dashboard.kpiOutOf", { value: data.kpis.seo.value })
+          : t("dashboard.kpiEmptyValue"),
+      emptyLabel: needAudit,
+      icon: Search,
+      iconClass: "bg-brand/15 text-brand",
     },
     {
       key: "conversion" as const,
@@ -452,8 +565,6 @@ export function DashboardView({
       emptyLabel: needAudit,
       icon: ShoppingBag,
       iconClass: "bg-primary/10 text-primary",
-      hideDelta: false,
-      extra: undefined as React.ReactNode,
     },
     {
       key: "trust" as const,
@@ -467,35 +578,24 @@ export function DashboardView({
       emptyLabel: needAudit,
       icon: ShieldCheck,
       iconClass: "bg-muted text-muted-foreground",
-      hideDelta: false,
-      extra: undefined as React.ReactNode,
     },
     {
-      key: "audits" as const,
-      label: t("dashboard.kpiAudits"),
-      metric: data.kpis.audits,
-      meaning: t("dashboard.kpiAuditsMeaning"),
-      value: String(data.kpis.audits.value ?? 0),
+      key: "pages" as const,
+      label: t("dashboard.kpiPages"),
+      metric: pagesMetric,
+      meaning: t("dashboard.pagesScannedHint"),
+      value: String(data.stats.pagesScanned),
       emptyLabel: needAudit,
-      icon: TrendingUp,
-      iconClass: "bg-brand/10 text-brand",
-      hideDelta: true,
-      extra: (
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          {t("dashboard.monthVolumeCompare", {
-            current: data.stats.auditsThisMonth,
-            previous: data.stats.auditsLastMonth,
-          })}
-          {" · "}
-          {t("dashboard.completedCount", { count: data.stats.completedCount })}
-        </p>
-      ),
+      icon: FileSearch,
+      iconClass: "bg-muted text-muted-foreground",
     },
   ];
 
   if (emptyWorkspace) {
     return (
-      <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
+      <div className="space-y-6">
+        <DashboardSummaryHeader data={data} />
+        <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-8">
           <WorkspaceEmpty t={t} />
         </div>
@@ -503,7 +603,7 @@ export function DashboardView({
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-display text-lg font-bold">{t("dashboard.yourPlan")}</h2>
             <Badge className="rounded-full border-0 bg-primary/15 font-semibold text-primary">
-              {data.plan.displayName}
+              {planLabel}
             </Badge>
           </div>
           <div className="mt-5 flex flex-col items-center">
@@ -516,6 +616,7 @@ export function DashboardView({
             <p className="mt-2 text-xs text-muted-foreground">{t("dashboard.renewsHint")}</p>
           </div>
         </Card>
+        </div>
       </div>
     );
   }
@@ -530,24 +631,45 @@ export function DashboardView({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 sm:gap-4">
-        {kpiItems.map((item, i) => (
-          <KpiCard
-            key={item.key}
-            label={item.label}
-            value={item.value}
-            meaning={item.meaning}
-            source={t(sourceKey(item.key === "audits" ? "audits" : item.metric.source))}
-            metric={item.metric}
-            emptyLabel={item.emptyLabel}
-            extra={item.extra}
-            hideDelta={item.hideDelta}
-            icon={item.icon}
-            iconClass={item.iconClass}
-            delay={reduceMotion ? 0 : i * 0.04}
-            reduceMotion={reduceMotion}
-          />
-        ))}
+      <DashboardSummaryHeader data={data} />
+
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
+          {primaryKpis.map((item, i) => (
+            <KpiCard
+              key={item.key}
+              label={item.label}
+              value={item.value}
+              meaning={item.meaning}
+              metric={item.metric}
+              emptyLabel={item.emptyLabel}
+              extra={item.extra}
+              hideDelta={item.hideDelta}
+              emphasis={item.emphasis}
+              icon={item.icon}
+              iconClass={item.iconClass}
+              delay={reduceMotion ? 0 : i * 0.04}
+              reduceMotion={reduceMotion}
+            />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
+          {secondaryKpis.map((item, i) => (
+            <KpiCard
+              key={item.key}
+              label={item.label}
+              value={item.value}
+              meaning={item.meaning}
+              metric={item.metric}
+              emptyLabel={item.emptyLabel}
+              hideDelta={false}
+              icon={item.icon}
+              iconClass={item.iconClass}
+              delay={reduceMotion ? 0 : (i + 4) * 0.04}
+              reduceMotion={reduceMotion}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="grid items-stretch gap-4 sm:gap-5 lg:grid-cols-12">
@@ -620,7 +742,7 @@ export function DashboardView({
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-display text-lg font-bold">{t("dashboard.yourPlan")}</h2>
             <Badge className="rounded-full border-0 bg-primary/15 font-semibold text-primary">
-              {data.plan.displayName}
+              {planLabel}
             </Badge>
           </div>
           <div className="mt-5 flex flex-col items-center">
@@ -652,7 +774,11 @@ export function DashboardView({
             ))}
           </ul>
           <Button asChild className="mt-5 h-11 w-full rounded-xl font-semibold shadow-glow">
-            <Link href="/pricing">{t("dashboard.upgradePlanCta")}</Link>
+            <Link href={data.plan.planId === "business" ? "/settings/billing" : "/pricing"}>
+              {data.plan.planId === "business"
+                ? t("dashboard.usage")
+                : t("dashboard.upgradePlanCta")}
+            </Link>
           </Button>
         </Card>
       </div>
@@ -742,107 +868,7 @@ export function DashboardView({
                 <Link href="/history">{t("dashboard.viewAll")}</Link>
               </Button>
             </div>
-            {data.recent.length === 0 ? (
-              <div className="p-10 text-center">
-                <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Search className="size-5" />
-                </span>
-                <p className="mt-4 font-display text-base font-bold">{t("dashboard.emptyRecentTitle")}</p>
-                <p className="mt-1.5 text-sm text-muted-foreground">{t("dashboard.emptyDecisionBody")}</p>
-                <Button asChild className="mt-4 rounded-xl">
-                  <Link href="/audit/new">{t("dashboard.runFirstAudit")}</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-start text-sm">
-                  <thead>
-                    <tr className="border-b border-border/50 text-start text-[11px] tracking-wider text-muted-foreground">
-                      <th className="px-5 py-3 text-start font-semibold sm:px-6">{t("dashboard.colAudit")}</th>
-                      <th className="px-3 py-3 text-start font-semibold">{t("dashboard.colScore")}</th>
-                      <th className="hidden px-3 py-3 text-start font-semibold sm:table-cell">
-                        {t("dashboard.colPages")}
-                      </th>
-                      <th className="px-3 py-3 text-start font-semibold">{t("dashboard.colIssues")}</th>
-                      <th className="px-3 py-3 text-start font-semibold">{t("dashboard.colDate")}</th>
-                      <th className="w-24 px-4 py-3 text-end" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.recent.slice(0, 4).map((r) => (
-                      <tr
-                        key={r.id}
-                        className="border-b border-border/50 transition-colors last:border-0 hover:bg-accent/30"
-                      >
-                        <td className="px-5 py-3.5 text-start sm:px-6">
-                          <Link
-                            href={
-                              isAuditInProgress(r.status) || r.status === "failed"
-                                ? `/audit/${r.id}/scanning`
-                                : `/audit/${r.id}/report`
-                            }
-                            className="flex min-w-0 items-center gap-3"
-                          >
-                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 font-display text-xs font-bold text-primary">
-                              {decodeHtmlEntities(r.storeName || r.productName)
-                                .slice(0, 2)
-                                .toUpperCase()}
-                            </span>
-                            <span className="min-w-0 text-start">
-                              <span className="block truncate font-semibold">
-                                {decodeHtmlEntities(r.productName)}
-                              </span>
-                              <span className="block truncate text-xs text-muted-foreground" dir="ltr">
-                                {displayHostFromUrl(r.productUrl) || decodeHtmlEntities(r.storeName)}
-                              </span>
-                            </span>
-                          </Link>
-                        </td>
-                        <td className="px-3 py-3.5 text-start">
-                          <span
-                            className={cn(
-                              "inline-grid size-9 place-items-center rounded-full text-xs font-bold tabular-nums",
-                              scoreTone(r.overallScore)
-                            )}
-                          >
-                            {r.overallScore ?? t("dashboard.kpiEmptyValue")}
-                          </span>
-                        </td>
-                        <td className="hidden px-3 py-3.5 text-start tabular-nums text-muted-foreground sm:table-cell">
-                          {r.pageCount ?? 0}
-                        </td>
-                        <td className="px-3 py-3.5 text-start font-medium tabular-nums text-primary">
-                          {r.openIssues ?? 0}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-3.5 text-start text-muted-foreground">
-                          {relativeDate(r.completedAt || r.createdAt, t)}
-                        </td>
-                        <td className="px-2 py-3.5 text-end">
-                          <div className="inline-flex items-center justify-end gap-0.5">
-                            <AuditRowActions
-                              auditId={r.id}
-                              status={r.status ?? "completed"}
-                              onDeleted={onRefresh}
-                            />
-                            <Link
-                              href={
-                                isAuditInProgress(r.status) || r.status === "failed"
-                                  ? `/audit/${r.id}/scanning`
-                                  : `/audit/${r.id}/report`
-                              }
-                              className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-                              aria-label={t("dashboard.viewReport")}
-                            >
-                              <ChevronRight className="size-4 rtl:rotate-180" />
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DashboardRecentAudits audits={data.recent} onDeleted={onRefresh} />
           </Card>
         </div>
 
@@ -851,13 +877,29 @@ export function DashboardView({
             <h2 className="font-display text-lg font-bold">{t("dashboard.insightsTitle")}</h2>
             {data.priorityIssue ? (
               <div className="mt-4 space-y-3">
-                <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
-                  {t("dashboard.priorityIssue")}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+                    {t("dashboard.priorityIssue")}
+                  </p>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "rounded-full text-[10px] font-semibold",
+                      severityBadgeClass(data.priorityIssue.severity)
+                    )}
+                  >
+                    {severityLabel(data.priorityIssue.severity, t)}
+                  </Badge>
+                </div>
                 <p className="text-sm font-medium leading-snug">{data.priorityIssue.problem}</p>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   {data.priorityIssue.solution}
                 </p>
+                {data.priorityIssue.projectedImpact ? (
+                  <p className="text-xs font-medium text-primary">
+                    {data.priorityIssue.projectedImpact}
+                  </p>
+                ) : null}
                 <Button asChild size="sm" className="rounded-xl">
                   <Link href={`/audit/${data.priorityIssue.auditId}/report`}>
                     {t("dashboard.fixCta")}
@@ -880,7 +922,10 @@ export function DashboardView({
                 ) : null}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground">{t("dashboard.noOpenIssues")}</p>
+              <div className="mt-4 rounded-xl border border-dashed border-border/60 bg-muted/20 p-6 text-center">
+                <p className="text-sm font-medium">{t("dashboard.noOpenIssues")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t("dashboard.emptyIssuesTitle")}</p>
+              </div>
             )}
           </Card>
 

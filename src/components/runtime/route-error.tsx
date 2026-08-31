@@ -4,7 +4,7 @@ import * as React from "react";
 import { AlertTriangle, RotateCcw, Home, Bug } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { translate as t } from "@/lib/locale/t";
+import { useT } from "@/lib/i18n";
 
 type RouteErrorProps = {
   error: Error & { digest?: string };
@@ -17,6 +17,7 @@ type RouteErrorProps = {
  * segment boundaries stay visually consistent without redesign.
  */
 export default function RouteError({ error, reset }: RouteErrorProps) {
+  const t = useT();
   React.useEffect(() => {
     console.error("[ConvAudit] Unhandled error:", error);
   }, [error]);

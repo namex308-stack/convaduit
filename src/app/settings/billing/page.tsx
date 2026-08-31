@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { localizedPlanName } from "@/lib/billing/localized-plan-name";
+import type { PlanId } from "@/lib/billing/plans";
 import { useT } from "@/lib/i18n";
 import {
   resolveBillingPaymentState,
   shouldShowBillingUpgradeCta,
 } from "@/lib/billing/plan-copy";
-import type { PlanId } from "@/lib/db/types";
 
 type UsageData = {
   plan: {
@@ -123,7 +124,13 @@ export default function BillingPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="mb-1 flex items-center gap-2">
-                      <h2 className="font-display text-xl font-bold">{usage.plan.displayName}</h2>
+                      <h2 className="font-display text-xl font-bold">
+                        {localizedPlanName(
+                          usage.plan.displayName,
+                          t,
+                          usage.plan.planId as PlanId
+                        )}
+                      </h2>
                       <Badge className="gradient-brand rounded-full text-white">{usage.plan.planId}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">

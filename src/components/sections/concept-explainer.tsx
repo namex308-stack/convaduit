@@ -204,7 +204,7 @@ function InputVisual() {
         <span className="gradient-brand text-white text-xs font-semibold px-3 py-1.5 rounded-lg">{t("concept.visual.auditButton")}</span>
       </motion.div>
       <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-        {["Shopify", "WooCommerce", "Salla", "Zid", "مخصص"].map((p) => (
+        {["Shopify", "WooCommerce", "Salla", "Zid", t("onboarding.platform.custom")].map((p) => (
           <span key={p} className="text-[10px] font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">{p}</span>
         ))}
       </div>

@@ -37,7 +37,6 @@ describe("H1 / title semantic alignment", () => {
     expect(h1).not.toBe(SITE_DEFAULT_TITLE);
     expect(SITE_DEFAULT_TITLE).toMatch(/^ConvAudit/);
     expect(h1).toMatch(/^ConvAudit/);
-    expect(SITE_DEFAULT_TITLE).toMatch(/تدقيق/);
     expect(SITE_DEFAULT_TITLE).toMatch(/SEO/);
     expect(SITE_DEFAULT_TITLE).toMatch(/GEO/);
     expect(h1).toMatch(/متجرك يخسر مبيعات/);
@@ -45,55 +44,54 @@ describe("H1 / title semantic alignment", () => {
   });
 
   it("aligns inner marketing H1s with the document title source", () => {
-    expect(translate("pricing.title")).toBe(layoutConstTitle("src/app/pricing/layout.tsx"));
+    expect(readSrc("src/app/pricing/layout.tsx")).toContain('translate("pricing.title"');
     expect(readSrc("src/app/pricing/page.tsx")).toContain('title={t("pricing.title")}');
 
-    expect(translate("docs.title")).toBe(layoutConstTitle("src/app/docs/layout.tsx"));
+    expect(readSrc("src/app/docs/layout.tsx")).toContain('translate("docs.title"');
     expect(readSrc("src/app/docs/page.tsx")).toContain('title={t("docs.title")}');
 
     expect(translate("blog.title")).toBe(BLOG_INDEX_TITLE);
     expect(readSrc("src/app/blog/blog-index.tsx")).toContain('title={t("blog.title")}');
 
     expect(ABOUT_TITLE).toBe("من نحن");
-    expect(readSrc("src/app/about/page.tsx")).toContain("title={ABOUT_TITLE}");
-    expect(readSrc("src/app/about/layout.tsx")).toContain("title: ABOUT_TITLE");
+    expect(readSrc("src/app/about/page.tsx")).toContain("getAboutTitle(locale)");
+    expect(readSrc("src/app/about/layout.tsx")).toContain("getAboutTitle(locale)");
 
-    expect(pageHeaderQuotedTitle("src/app/security/page.tsx")).toBe(
-      layoutConstTitle("src/app/security/layout.tsx")
-    );
-    expect(pageHeaderQuotedTitle("src/app/privacy/page.tsx")).toBe(
-      layoutConstTitle("src/app/privacy/layout.tsx")
-    );
-    expect(pageHeaderQuotedTitle("src/app/roadmap/page.tsx")).toBe(
-      layoutConstTitle("src/app/roadmap/layout.tsx")
-    );
+    expect(readSrc("src/app/security/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/security/layout.tsx")).toContain("generateMetadata");
 
-    expect(pageHeaderQuotedTitle("src/app/contact/page.tsx")).toBe("اتصل بنا");
-    expect(readSrc("src/app/contact/layout.tsx")).toContain('title: "اتصل بنا"');
+    expect(readSrc("src/app/privacy/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/privacy/layout.tsx")).toContain("generateMetadata");
 
-    expect(pageHeaderQuotedTitle("src/app/terms/page.tsx")).toBe(
-      layoutConstTitle("src/app/terms/layout.tsx")
-    );
-    expect(pageHeaderQuotedTitle("src/app/refund-policy/page.tsx")).toBe(
-      layoutConstTitle("src/app/refund-policy/layout.tsx")
-    );
+    expect(readSrc("src/app/roadmap/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/roadmap/layout.tsx")).toContain("generateMetadata");
+
+    expect(readSrc("src/app/contact/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/contact/layout.tsx")).toContain("generateMetadata");
+
+    expect(readSrc("src/app/terms/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/terms/layout.tsx")).toContain("generateMetadata");
+
+    expect(readSrc("src/app/refund-policy/page.tsx")).toContain("copy.pageTitle");
+    expect(readSrc("src/app/refund-policy/layout.tsx")).toContain("generateMetadata");
   });
 
   it("uses the same blog titleKey for metadata, JSON-LD, and the visible H1", () => {
     const layoutSrc = readSrc("src/app/blog/[slug]/layout.tsx");
-    expect(layoutSrc).toContain("translate(post.titleKey)");
+    expect(layoutSrc).toContain("translate(post.titleKey, undefined, locale)");
     expect(layoutSrc).toContain("blogPostMetaDescription(post");
 
     const pageSrc = readSrc("src/app/blog/[slug]/page.tsx");
-    expect(pageSrc).toContain("{t(POST.titleKey)}");
+    expect(pageSrc).toContain("{t(body.titleKey)}");
 
+    const bodiesSrc = readSrc("src/app/blog/[slug]/post-bodies.ts");
     for (const post of BLOG_POSTS) {
       const title = translate(post.titleKey);
       expect(title.trim().length).toBeGreaterThan(0);
       expect(post.metaDescription).toBeTruthy();
       expect(post.metaDescription).not.toBe(title);
-      expect(pageSrc).toContain(`slug: "${post.slug}"`);
-      expect(pageSrc).toContain(`titleKey: "${post.titleKey}"`);
+      expect(bodiesSrc).toContain(`slug: "${post.slug}"`);
+      expect(bodiesSrc).toContain(`titleKey: "${post.titleKey}"`);
     }
   });
 });

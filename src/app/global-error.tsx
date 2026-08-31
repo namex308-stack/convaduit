@@ -1,13 +1,19 @@
 "use client";
 
 import * as React from "react";
+import { getLocaleConfig } from "@/lib/locale/config";
 
 /**
  * Root-layout failure boundary. Must stay self-contained — when this renders,
- * the root layout (providers, fonts, Tailwind) may have already crashed, so we
- * avoid shared UI / i18n imports and use inline styles + hardcoded Arabic copy
- * that matches `globalError.*` message keys.
+ * the root layout (providers, fonts, Tailwind) may have already crashed.
  */
+const GLOBAL_ERROR_COPY = {
+  title: "خطأ في التطبيق",
+  desc: "حدث خطأ حرج ويحتاج التطبيق لإعادة التشغيل. بياناتك بأمان — حاول إعادة التحميل.",
+  errorId: "رقم الخطأ:",
+  reload: "إعادة تحميل التطبيق",
+} as const;
+
 export default function GlobalError({
   error,
   reset,
@@ -19,8 +25,11 @@ export default function GlobalError({
     console.error("[ConvAudit] Global error:", error);
   }, [error]);
 
+  const { htmlLang, dir } = getLocaleConfig("ar");
+  const copy = GLOBAL_ERROR_COPY;
+
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={htmlLang} dir={dir}>
       <head>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
@@ -62,7 +71,7 @@ export default function GlobalError({
               !
             </div>
             <h1 style={{ fontSize: 24, fontWeight: 800, margin: "0 0 8px" }}>
-              خطأ في التطبيق
+              {copy.title}
             </h1>
             <p
               style={{
@@ -72,7 +81,7 @@ export default function GlobalError({
                 lineHeight: 1.5,
               }}
             >
-              حدث خطأ حرج ويحتاج التطبيق لإعادة التشغيل. بياناتك بأمان — حاول إعادة التحميل.
+              {copy.desc}
             </p>
             {error.digest && (
               <p
@@ -83,7 +92,7 @@ export default function GlobalError({
                   marginBottom: 16,
                 }}
               >
-                رقم الخطأ: {error.digest}
+                {copy.errorId} {error.digest}
               </p>
             )}
             <button
@@ -100,7 +109,7 @@ export default function GlobalError({
                 fontSize: 14,
               }}
             >
-              إعادة تحميل التطبيق
+              {copy.reload}
             </button>
           </div>
         </div>

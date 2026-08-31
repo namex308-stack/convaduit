@@ -10,7 +10,8 @@ const CATALOGS: Record<LocaleId, Partial<Record<MessageKey, string>>> = {
   "ar-gulf": arGulfMessages,
 };
 
-/** Messages for a locale, to be merged over the `ar` baseline by the caller. */
+/** Arabic message catalog (default and only enabled UI locale). */
 export function getMessages(locale: LocaleId): Partial<Record<MessageKey, string>> {
+  if (locale === "ar") return arMessages;
   return CATALOGS[locale] ?? arMessages;
 }

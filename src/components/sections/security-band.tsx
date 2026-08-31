@@ -1,6 +1,7 @@
 import { ShieldCheck, Lock, Server, FileCheck2, Eye, KeyRound } from "lucide-react";
 import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t, type TranslationKey } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
+import { type TranslationKey } from "@/lib/i18n";
 
 const ITEMS = [
   { icon: ShieldCheck, titleKey: "security.s1.title" as const, descKey: "security.s1.desc" as const },
@@ -19,7 +20,8 @@ const POSTURE_KEYS: readonly TranslationKey[] = [
   "security.posture.auditLogging",
 ];
 
-export function SecurityBand() {
+export async function SecurityBand() {
+  const t = await getServerTranslate();
   return (
     <Section id="security" tone="muted">
       <Container>

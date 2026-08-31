@@ -6,8 +6,8 @@ import { normalizeAppLocale } from "@/lib/locale";
 
 const PatchBody = z.object({
   fullName: z.string().trim().max(120).optional(),
-  /** Accepted for backward compatibility; always persisted as Arabic. */
-  locale: z.string().trim().max(16).optional(),
+  /** UI locale — Arabic only. */
+  locale: z.enum(["ar"]).optional(),
   timezone: z.string().trim().max(64).optional(),
   businessName: z.string().trim().max(120).optional(),
   country: z.string().trim().max(40).optional(),

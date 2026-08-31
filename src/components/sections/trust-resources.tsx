@@ -9,7 +9,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 import { ROUTES } from "@/lib/routes";
 
 export const TRUST_RESOURCE_LINKS = [
@@ -51,7 +51,8 @@ export const TRUST_RESOURCE_LINKS = [
   },
 ] as const;
 
-export function TrustResources() {
+export async function TrustResources() {
+  const t = await getServerTranslate();
   return (
     <Section id="resources">
       <Container>

@@ -8,6 +8,8 @@ import { ApiLoadError } from "@/components/runtime/api-load-error";
 import { ScoreRadial } from "@/components/common/score-viz";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { localizedPlanName } from "@/lib/billing/localized-plan-name";
+import type { PlanId } from "@/lib/billing/plans";
 import { useT } from "@/lib/i18n";
 import { usageDescParams } from "@/lib/billing/plan-copy";
 
@@ -78,6 +80,9 @@ export default function UsagePage() {
         day: "numeric",
       })
     : "";
+  const planLabel = usage
+    ? localizedPlanName(usage.plan.displayName, t, usage.plan.planId as PlanId)
+    : "";
 
   return (
     <PageShell>
@@ -124,7 +129,7 @@ export default function UsagePage() {
                   <div className="text-center sm:text-start">
                     <h2 className="font-display text-xl font-bold">{t("usage.planUsage")}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {t("usage.usageDesc", usageDescParams(usage.usagePct, usage.plan.displayName))}
+                      {t("usage.usageDesc", usageDescParams(usage.usagePct, planLabel))}
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {t("usage.periodEnds", { date: renewLabel })}

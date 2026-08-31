@@ -1,6 +1,8 @@
 import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import { AuditReport } from "@/components/app/audit-report";
 import { getEntitledAuditReportForUser } from "@/lib/billing/audit-report-access";
+import { getServerLocaleId } from "@/lib/locale/server";
+import { translate } from "@/lib/locale/t";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAuditInProgress, isPlaceholderAuditId } from "@/lib/audits/types";
 
@@ -35,7 +37,8 @@ export default async function ReportPage({ params }: PageProps) {
     // Preserve notFound()/redirect() control-flow errors for the App Router.
     unstable_rethrow(err);
     console.error("[audit/report] failed to load report:", err);
-    throw new Error("تعذّر تحميل تقرير التحليل. حاول مرة أخرى.");
+    const locale = await getServerLocaleId();
+    throw new Error(translate("report.loadError", undefined, locale));
   }
 
   if (!stored) {

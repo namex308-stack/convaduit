@@ -286,6 +286,27 @@ export async function markWeeklyReportEmailSent(
   return Boolean(data?.id);
 }
 
+/** Active stores in workspaces the user belongs to (for on-demand generation). */
+export async function listUserStoresForWeeklyReport(
+  userId: string
+): Promise<ActiveStoreCandidate[]> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+
+  const { data: memberships } = await sb
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("user_id", userId);
+
+  const workspaceIds = new Set(
+    (memberships ?? []).map((m) => m.workspace_id as string)
+  );
+  if (!workspaceIds.size) return [];
+
+  const stores = await listActiveStoresForWeeklyReport();
+  return stores.filter((store) => workspaceIds.has(store.workspaceId));
+}
+
 export async function listWeeklyReportsForUser(
   userId: string,
   limit = 20

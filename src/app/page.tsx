@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { SkipToContent } from "@/components/layout/skip-link";
 import { Footer } from "@/components/layout/footer";
@@ -19,23 +19,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { JsonLd } from "@/components/seo/json-ld";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildHomeJsonLdGraph } from "@/lib/seo/structured-data";
-import {
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
-} from "@/lib/seo/site-copy";
+import { getSiteDefaultTitle, getSiteDescription } from "@/lib/seo/site-copy";
+import { getServerLocaleId } from "@/lib/locale/server";
 import { ROUTES } from "@/lib/routes";
 
-const homeMeta = publicPageMetadata({
-  title: SITE_DEFAULT_TITLE,
-  description: SITE_DESCRIPTION,
-  path: ROUTES.home,
-});
-
-export const metadata: Metadata = {
-  ...homeMeta,
-  // Composed `%s · ConvAudit` would repeat the brand; keep the ≤60 SERP title.
-  title: { absolute: SITE_DEFAULT_TITLE },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocaleId();
+  const homeMeta = publicPageMetadata({
+    title: getSiteDefaultTitle(locale),
+    description: getSiteDescription(locale),
+    path: ROUTES.home,
+    locale,
+  });
+  return {
+    ...homeMeta,
+    title: { absolute: getSiteDefaultTitle(locale) },
+  };
+}
 
 function SectionSkeleton() {
   return (
@@ -67,10 +67,11 @@ const FAQ = dynamic(
   { loading: () => <SectionSkeleton /> }
 );
 
-export default function Home() {
+export default async function Home() {
+  const locale = await getServerLocaleId();
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <JsonLd data={buildHomeJsonLdGraph()} />
+      <JsonLd data={buildHomeJsonLdGraph(locale)} />
       <SkipToContent />
       <ScrollProgress />
       <Navbar />

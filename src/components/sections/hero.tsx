@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2, Search, Bot, ShieldCheck, Zap } from "lucide-
 import { Button } from "@/components/ui/button";
 import { AppFrame, Container, IconWell } from "@/components/design-system/section";
 import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/marketing-hrefs";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
 const PILLARS = [
   { icon: Zap, labelKey: "hero.pillar.conversion" as const },
@@ -31,7 +31,8 @@ const HERO_SHOT = {
  * Marketing hero — server-rendered so the H1 is in the first HTML paint
  * (not opacity:0 behind a client BlurFade / hydration wait).
  */
-export function Hero() {
+export async function Hero() {
+  const t = await getServerTranslate();
   const headline1 = t("hero.headline1");
   const headlineRest = headline1.startsWith(HERO_BRAND)
     ? headline1.slice(HERO_BRAND.length).trimStart()

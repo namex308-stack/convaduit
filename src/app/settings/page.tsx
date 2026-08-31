@@ -21,6 +21,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { getUserInitials, notifyProfileUpdated } from "@/lib/auth/display-user";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale/resolve";
 import { cn } from "@/lib/utils";
 import {
   CATEGORY_OPTIONS,
@@ -177,6 +178,7 @@ function SettingsFormSkeleton() {
 
 export default function SettingsPage() {
   const t = useT();
+  const { locale } = useLocale();
   const { user } = useAuth();
   const authInitials = user ? getUserInitials(user) : "?";
 
@@ -207,6 +209,7 @@ export default function SettingsPage() {
               fullName?: string;
               email?: string;
               timezone?: string;
+              locale?: string;
             };
           };
           if (!cancelled && data.profile) {
@@ -261,7 +264,7 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName,
-          locale: "ar",
+          locale,
           timezone,
           businessName: biz.businessName,
           country: biz.country,
@@ -370,9 +373,6 @@ export default function SettingsPage() {
                     </Field>
                     <Field label={t("settings.email")} hint={t("settings.emailReadOnly")}>
                       <Input value={email} readOnly className="bg-muted/40" autoComplete="email" />
-                    </Field>
-                    <Field label={t("settings.localeLabel")} hint={t("settings.languageDesc")}>
-                      <Input value={t("settings.localeFixedValue")} readOnly className="bg-muted/40" />
                     </Field>
                     <Field label={t("settings.timezone")} hint={t("settings.timezoneHint")}>
                       <Input

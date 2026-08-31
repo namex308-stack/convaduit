@@ -4,50 +4,29 @@ import * as React from "react";
 import { Bell } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { NotificationsView } from "@/components/app/notifications-view";
-import { ApiLoadError } from "@/components/runtime/api-load-error";
+import { ApiPageBody } from "@/components/runtime/api-page-body";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { useT } from "@/lib/i18n";
 import type { NotificationsOverview } from "@/lib/notifications/types";
 
 export default function NotificationsPage() {
   const t = useT();
-  const [overview, setOverview] = React.useState<NotificationsOverview | null>(null);
   const [filter, setFilter] =
     React.useState<NotificationsOverview["filter"]>("all");
-  const [error, setError] = React.useState<string | null>(null);
-  const [needsAuth, setNeedsAuth] = React.useState(false);
-  const [retryKey, setRetryKey] = React.useState(0);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    setError(null);
-    setNeedsAuth(false);
-    async function load() {
-      try {
-        const qs =
-          filter === "all" ? "" : `?category=${encodeURIComponent(filter)}`;
-        const res = await fetch(`/api/notifications${qs}`);
-        if (!res.ok) {
-          if (!cancelled) {
-            setNeedsAuth(res.status === 401);
-            setError(
-              res.status === 401
-                ? t("notifications.signInRequired")
-                : t("notifications.loadError")
-            );
-          }
-          return;
-        }
-        const data = (await res.json()) as { notifications: NotificationsOverview };
-        if (!cancelled) setOverview(data.notifications);
-      } catch {
-        if (!cancelled) setError(t("notifications.loadError"));
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [t, retryKey, filter]);
+  const url =
+    filter === "all"
+      ? "/api/notifications"
+      : `/api/notifications?category=${encodeURIComponent(filter)}`;
+
+  const { data: overview, setData, error, needsAuth, needsUpgrade, loading, retry } =
+    useApiQuery({
+      url,
+      parse: (json) => (json as { notifications: NotificationsOverview }).notifications,
+      fallbackError: t("notifications.loadError"),
+      signInMessage: t("notifications.signInRequired"),
+      deps: [filter],
+    });
 
   const markRead = async (id: string) => {
     const res = await fetch(`/api/notifications/${id}`, {
@@ -59,7 +38,7 @@ export default function NotificationsPage() {
     const data = (await res.json()) as {
       notification: NotificationsOverview["notifications"][number];
     };
-    setOverview((prev) => {
+    setData((prev) => {
       if (!prev) return prev;
       const notifications = prev.notifications.map((n) =>
         n.id === id ? data.notification : n
@@ -67,7 +46,11 @@ export default function NotificationsPage() {
       return {
         ...prev,
         notifications,
-        unreadCount: Math.max(0, prev.unreadCount - (prev.notifications.find((n) => n.id === id && !n.isRead) ? 1 : 0)),
+        unreadCount: Math.max(
+          0,
+          prev.unreadCount -
+            (prev.notifications.find((n) => n.id === id && !n.isRead) ? 1 : 0)
+        ),
       };
     });
   };
@@ -79,7 +62,7 @@ export default function NotificationsPage() {
       body: JSON.stringify({ action: "archive" }),
     });
     if (!res.ok) return;
-    setOverview((prev) => {
+    setData((prev) => {
       if (!prev) return prev;
       const wasUnread = prev.notifications.some((n) => n.id === id && !n.isRead);
       return {
@@ -101,7 +84,7 @@ export default function NotificationsPage() {
       body: JSON.stringify({ action: "read_all" }),
     });
     if (!res.ok) return;
-    setOverview((prev) => {
+    setData((prev) => {
       if (!prev) return prev;
       const now = new Date().toISOString();
       return {
@@ -125,30 +108,23 @@ export default function NotificationsPage() {
         back="/dashboard"
       />
       <PageContent className="max-w-4xl">
-        {error ? (
-          <ApiLoadError
-            message={error}
-            needsAuth={needsAuth}
-            onRetry={() => setRetryKey((k) => k + 1)}
-          />
-        ) : overview == null ? (
-          <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-28 animate-pulse rounded-2xl bg-muted/50" />
-            ))}
-          </div>
-        ) : (
-          <NotificationsView
-            overview={overview}
-            onFilter={(next) => {
-              setFilter(next);
-              setOverview(null);
-            }}
-            onMarkRead={(id) => void markRead(id)}
-            onArchive={(id) => void archive(id)}
-            onMarkAllRead={() => void markAllRead()}
-          />
-        )}
+        <ApiPageBody
+          error={error}
+          needsAuth={needsAuth}
+          needsUpgrade={needsUpgrade}
+          loading={loading}
+          onRetry={retry}
+        >
+          {overview && (
+            <NotificationsView
+              overview={overview}
+              onFilter={(next) => setFilter(next)}
+              onMarkRead={(id) => void markRead(id)}
+              onArchive={(id) => void archive(id)}
+              onMarkAllRead={() => void markAllRead()}
+            />
+          )}
+        </ApiPageBody>
       </PageContent>
     </PageShell>
   );

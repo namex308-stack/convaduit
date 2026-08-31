@@ -6,6 +6,7 @@ export type CachedShell = {
   displayName?: string | null;
   latestAuditId?: string | null;
   notificationCount?: number;
+  uiLocale?: "ar";
 };
 
 const TTL_MS = 30_000;

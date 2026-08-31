@@ -4,25 +4,10 @@ import {
   PRIVATE_APP_PATHS,
   ROBOTS_DISALLOW_PATHS,
 } from "@/lib/seo/private-app-paths";
-import { ROUTES } from "@/lib/routes";
-import { BLOG_SLUGS } from "@/lib/blog-posts";
+import { PUBLIC_INDEXABLE_PATHS } from "@/lib/seo/internal-links";
 
-/** Public marketing/content paths that must remain crawlable. */
-const PUBLIC_PATHS = [
-  ROUTES.home,
-  ROUTES.pricing,
-  ROUTES.docs,
-  ROUTES.blog,
-  ...BLOG_SLUGS.map((slug) => ROUTES.blogPost(slug)),
-  ROUTES.security,
-  ROUTES.privacy,
-  ROUTES.terms,
-  ROUTES.refundPolicy,
-  ROUTES.about,
-  ROUTES.contact,
-  ROUTES.roadmap,
-  "/llms.txt",
-] as const;
+/** Public marketing/content paths that must remain crawlable (+ llms.txt). */
+const PUBLIC_CRAWLABLE_PATHS = [...PUBLIC_INDEXABLE_PATHS, "/llms.txt"] as const;
 
 function isDisallowedByRobots(pathname: string): boolean {
   return ROBOTS_DISALLOW_PATHS.some((rule) => {
@@ -46,7 +31,7 @@ describe("robots disallow contract", () => {
   });
 
   it("does not disallow public marketing/content paths", () => {
-    for (const path of PUBLIC_PATHS) {
+    for (const path of PUBLIC_CRAWLABLE_PATHS) {
       expect(isDisallowedByRobots(path)).toBe(false);
     }
   });

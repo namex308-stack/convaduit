@@ -122,7 +122,7 @@ export function notificationDraftFromCompletedTask(input: {
   return {
     category: "completed_task",
     priority: "low",
-    title: byReanalysis ? "مهمة أُغلقت بعد إعادة التحليل" : "تم إكمال مهمة نمو",
+    title: byReanalysis ? "مهمة أُغلقت بعد إعادة التدقيق" : "تم إكمال مهمة نمو",
     body: byReanalysis
       ? `اختفت المشكلة المرتبطة بالمهمة: ${input.title}`
       : `أتممت المهمة: ${input.title}`,

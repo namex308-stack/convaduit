@@ -2,23 +2,14 @@ import type { Direction, LocaleId } from "./types";
 
 export interface LocaleConfig {
   id: LocaleId;
-  /** Human-readable label for locale pickers (once more than one is enabled). */
   label: string;
-  /** BCP-47 `lang` attribute value. */
   htmlLang: string;
   dir: Direction;
-  /** Open Graph `locale` value, e.g. for the `og:locale` meta tag. */
   ogLocale: string;
-  /** Whether this locale is selectable today. Only `ar` is enabled. */
   enabled: boolean;
 }
 
-/**
- * Locale registry (Arabic product UI only — English is not supported).
- * Public routes stay Latin (`/pricing`, `/dashboard`, `/blog/...`).
- * Future Arabic dialects (e.g. `ar-gulf`) can be enabled here without
- * touching routing.
- */
+/** Locale registry — Arabic only in the product UI. */
 export const LOCALES: Record<LocaleId, LocaleConfig> = {
   ar: {
     id: "ar",

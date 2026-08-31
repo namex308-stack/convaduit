@@ -88,7 +88,7 @@ export function renderWeeklyReportEmailHtml(
                 payload.highestPriorityActions.map((a) => ({ problem: a.problem }))
               )}
 
-              <h2 style="margin:24px 0 8px;font-size:18px">ملخص AI التنفيذي</h2>
+              <h2 style="margin:24px 0 8px;font-size:18px">ملخص تنفيذي بالذكاء الاصطناعي</h2>
               <p style="margin:0;font-size:14px;line-height:1.7;background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e2e8f0">${escapeHtml(payload.aiExecutiveSummary)}</p>
               <p style="margin:16px 0 0;font-size:12px;color:#94a3b8;text-align:center">يُرسل تلقائياً كل 7 أيام للمتاجر النشطة.</p>`;
 

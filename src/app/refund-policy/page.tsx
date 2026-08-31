@@ -5,56 +5,33 @@ import { BadgePercent } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
 import { ROUTES } from "@/lib/routes";
+import { useLocale } from "@/lib/locale/resolve";
+import { REFUND_COPY } from "@/lib/marketing/static-copy";
 
 export default function RefundPolicyPage() {
+  const { locale } = useLocale();
+  const copy = REFUND_COPY;
+
   return (
     <PageShell>
-      <PageHeader
-        title="سياسة الاسترداد"
-        subtitle="ضمان استرداد خلال 14 يوماً لاشتراكات ConvAudit المدفوعة — بشروط واضحة."
-        icon={BadgePercent}
-      />
+      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={BadgePercent} />
       <PageContent className="max-w-3xl space-y-4">
-        {[
-          {
-            t: "ضمان 14 يوماً",
-            b: "يحق للعميل طلب استرداد كامل للمبلغ المدفوع خلال 14 يوماً من تاريخ الاشتراك أو الشراء المعني، شريطة تقديم الطلب عبر القناة الرسمية الموضحة أدناه.",
-          },
-          {
-            t: "القناة الرسمية لتقديم الطلب",
-            b: "يجب إرسال طلب الاسترداد عبر صفحة «اتصل بنا» (أو البريد المذكور فيها)، مع ذكر البريد المرتبط بالحساب، وتاريخ الدفع أو الاشتراك، ومعرّف العملية إن توفر. الطلبات عبر قنوات غير رسمية قد لا تُعالَج.",
-          },
-          {
-            t: "آلية المعالجة",
-            b: "بعد استلام الطلب عبر القناة الرسمية، يراجع فريق الدعم أهلية الطلب ضمن نافذة الـ 14 يوماً ويؤكد بيانات الدفع. عند الموافقة، يُنفَّذ الاسترداد يدوياً عبر مزود الدفع المعتمد في المنصة (مثل Paymob عند استخدامه) — ولا يوجد مسار استرداد تلقائي داخل التطبيق.",
-          },
-          {
-            t: "مدة وصول المبلغ",
-            b: "بعد تنفيذ الاسترداد لدى مزود الدفع، يعتمد ظهور المبلغ في حسابك على مزود الدفع والبنك أو المحفظة المستخدمة. قد يستغرق ذلك عدة أيام عمل، ولا يتحكم ConvAudit في جداول التسوية لدى البنوك.",
-          },
-          {
-            t: "الاشتراكات الشهرية والسنوية",
-            b: "ينطبق ضمان الـ 14 يوماً على كل من الاشتراكات الشهرية والسنوية، محسوباً من تاريخ الشراء أو بدء الفترة المدفوعة ذات الصلة. بعد انقضاء الـ 14 يوماً، لا يُضمن استرداد الفترة الجارية ما لم يُنص على خلاف ذلك في عرض مكتوب منفصل.",
-          },
-          {
-            t: "الإلغاء مقابل الاسترداد",
-            b: "إلغاء الاشتراك يوقف التجديد المستقبلي عند تفعيل الإلغاء، لكنه لا يضمن تلقائياً استرداد المبالغ المدفوعة مسبقاً. للحصول على استرداد ضمن نافذة الضمان، يجب تقديم طلب استرداد صريح عبر القناة الرسمية.",
-          },
-        ].map((item) => (
-          <SurfaceCard key={item.t} className="p-5">
-            <h2 className="font-display font-semibold text-sm">{item.t}</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{item.b}</p>
+        {copy.sections.map((item) => (
+          <SurfaceCard key={item.title} className="p-5">
+            <h2 className="font-display font-semibold text-sm">{item.title}</h2>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{item.body}</p>
           </SurfaceCard>
         ))}
-        <p className="text-sm">
-          <Link href={ROUTES.contact} className="font-medium text-primary hover:underline">
-            تقديم طلب عبر اتصل بنا ←
-          </Link>
-        </p>
-        <p className="text-xs text-muted-foreground pt-2">
-          هذه السياسة توضّح ممارسة الاسترداد الحالية للمنتج. قد تختلف حقوق المستهلك الإلزامية بحسب القانون
-          المعمول به في بلدك، ولا تُعد هذه الصفحة استشارة قانونية.
-        </p>
+        {copy.linkText ? (
+          <p className="text-sm">
+            <Link href={ROUTES.contact} className="font-medium text-primary hover:underline">
+              {copy.linkText}
+            </Link>
+          </p>
+        ) : null}
+        {copy.footer ? (
+          <p className="text-xs text-muted-foreground pt-2">{copy.footer}</p>
+        ) : null}
       </PageContent>
     </PageShell>
   );

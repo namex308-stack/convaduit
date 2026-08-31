@@ -16,7 +16,7 @@ import {
 const PRODUCTION = "https://www.convaudit.com";
 const FORBIDDEN_PUBLIC_BRAND = /StorePulse|Store Pulse|ConvaDuit|CONVADUIT|conva-aduit/i;
 const OFFICIAL_DESCRIPTION =
-  "ConvAudit is an AI-powered ecommerce audit and visibility platform that analyzes SEO, conversion, AI visibility, and trust signals for online stores.";
+  "ConvAudit is an AI-powered ecommerce audit and analytics platform for Gulf GCC online stores, analyzing SEO audits, conversion rate optimization (CRO), AI visibility (GEO), competitor performance, product page optimization, and trust signals for Shopify, Salla, Zid, WooCommerce, and custom storefronts.";
 
 const PUBLIC_MESSAGE_PREFIXES = [
   "hero.",
@@ -101,7 +101,7 @@ describe("public brand entity", () => {
     ].join("\n");
 
     expect(visible).toMatch(/ConvAudit/);
-    expect(visible).toMatch(/تدقيق متاجر إلكترونية/);
+    expect(visible).toMatch(/تدقيق.*متاجر إلكترونية/);
     expect(visible).toMatch(/SEO/);
     expect(visible).toMatch(/تحويل/);
     expect(visible).toMatch(/GEO/);

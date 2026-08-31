@@ -1,150 +1,25 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { Clock, ArrowLeft, Share2, Twitter, Linkedin, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
+import { BlogArticleBlocks } from "@/components/blog/blog-article-blocks";
 import { PageShell, PageContent } from "@/components/app/page-shell";
-import { useT, type TranslationKey } from "@/lib/i18n";
-import { relatedBlogSlugs, getBlogPostMeta, visibleBlogDateLabel } from "@/lib/blog-posts";
+import { POST_BODIES } from "@/app/blog/[slug]/post-bodies";
+import { useT } from "@/lib/i18n";
+import {
+  relatedBlogSlugs,
+  getBlogPostMeta,
+  visibleBlogDateLabel,
+  type BlogPostMeta,
+} from "@/lib/blog-posts";
 import { absoluteUrl } from "@/lib/site-url";
+import { ROUTES } from "@/lib/routes";
 
-type ContentBlock = {
-  type: "h2" | "h3" | "p";
-  textKey: TranslationKey;
-};
-
-type BlogPost = {
-  slug: string;
-  titleKey: TranslationKey;
-  excerptKey: TranslationKey;
-  dateKey: TranslationKey;
-  readTime: number;
-  categoryKey: TranslationKey;
-  color: string;
-  content: readonly ContentBlock[];
-};
-
-const POSTS: readonly BlogPost[] = [
-  {
-    slug: "geo-ai-visibility-guide",
-    titleKey: "blog.post1.title",
-    excerptKey: "blog.post1.excerpt",
-    dateKey: "blog.post1.date",
-    readTime: 8,
-    categoryKey: "blog.post1.category",
-    color: "#FF6600",
-    content: [
-      { type: "h2", textKey: "blog.post.geo.h2_1" },
-      { type: "p", textKey: "blog.post.geo.p_1" },
-      { type: "h2", textKey: "blog.post.geo.h2_2" },
-      { type: "p", textKey: "blog.post.geo.p_2" },
-      { type: "h2", textKey: "blog.post.geo.h2_3" },
-      { type: "h3", textKey: "blog.post.geo.h3_1" },
-      { type: "p", textKey: "blog.post.geo.p_3" },
-      { type: "h3", textKey: "blog.post.geo.h3_2" },
-      { type: "p", textKey: "blog.post.geo.p_4" },
-      { type: "h3", textKey: "blog.post.geo.h3_3" },
-      { type: "p", textKey: "blog.post.geo.p_5" },
-      { type: "h3", textKey: "blog.post.geo.h3_4" },
-      { type: "p", textKey: "blog.post.geo.p_6" },
-      { type: "h3", textKey: "blog.post.geo.h3_5" },
-      { type: "p", textKey: "blog.post.geo.p_7" },
-      { type: "h2", textKey: "blog.post.geo.h2_4" },
-      { type: "p", textKey: "blog.post.geo.p_8" },
-    ],
-  },
-  {
-    slug: "conversion-rate-optimization",
-    titleKey: "blog.post2.title",
-    excerptKey: "blog.post2.excerpt",
-    dateKey: "blog.post2.date",
-    readTime: 6,
-    categoryKey: "blog.post2.category",
-    color: "#ff983f",
-    content: [
-      { type: "h2", textKey: "blog.post2.body.h2_1" },
-      { type: "p", textKey: "blog.post2.body.p_1" },
-      { type: "h2", textKey: "blog.post2.body.h2_2" },
-      { type: "p", textKey: "blog.post2.body.p_2" },
-      { type: "h2", textKey: "blog.post2.body.h2_3" },
-      { type: "p", textKey: "blog.post2.body.p_3" },
-    ],
-  },
-  {
-    slug: "product-schema-markup",
-    titleKey: "blog.post3.title",
-    excerptKey: "blog.post3.excerpt",
-    dateKey: "blog.post3.date",
-    readTime: 10,
-    categoryKey: "blog.post3.category",
-    color: "#cc5200",
-    content: [
-      { type: "h2", textKey: "blog.post3.body.h2_1" },
-      { type: "p", textKey: "blog.post3.body.p_1" },
-      { type: "h2", textKey: "blog.post3.body.h2_2" },
-      { type: "p", textKey: "blog.post3.body.p_2" },
-      { type: "h2", textKey: "blog.post3.body.h2_3" },
-      { type: "p", textKey: "blog.post3.body.p_3" },
-    ],
-  },
-  {
-    slug: "competitor-analysis-strategy",
-    titleKey: "blog.post4.title",
-    excerptKey: "blog.post4.excerpt",
-    dateKey: "blog.post4.date",
-    readTime: 7,
-    categoryKey: "blog.post4.category",
-    color: "#929292",
-    content: [
-      { type: "h2", textKey: "blog.post4.body.h2_1" },
-      { type: "p", textKey: "blog.post4.body.p_1" },
-      { type: "h2", textKey: "blog.post4.body.h2_2" },
-      { type: "p", textKey: "blog.post4.body.p_2" },
-      { type: "h2", textKey: "blog.post4.body.h2_3" },
-      { type: "p", textKey: "blog.post4.body.p_3" },
-    ],
-  },
-  {
-    slug: "ai-product-descriptions",
-    titleKey: "blog.post5.title",
-    excerptKey: "blog.post5.excerpt",
-    dateKey: "blog.post5.date",
-    readTime: 5,
-    categoryKey: "blog.post5.category",
-    color: "#FF6600",
-    content: [
-      { type: "h2", textKey: "blog.post5.body.h2_1" },
-      { type: "p", textKey: "blog.post5.body.p_1" },
-      { type: "h2", textKey: "blog.post5.body.h2_2" },
-      { type: "p", textKey: "blog.post5.body.p_2" },
-      { type: "h2", textKey: "blog.post5.body.h2_3" },
-      { type: "p", textKey: "blog.post5.body.p_3" },
-    ],
-  },
-  {
-    slug: "trust-signals-ecommerce",
-    titleKey: "blog.post6.title",
-    excerptKey: "blog.post6.excerpt",
-    dateKey: "blog.post6.date",
-    readTime: 6,
-    categoryKey: "blog.post6.category",
-    color: "#ff983f",
-    content: [
-      { type: "h2", textKey: "blog.post6.body.h2_1" },
-      { type: "p", textKey: "blog.post6.body.p_1" },
-      { type: "h2", textKey: "blog.post6.body.h2_2" },
-      { type: "p", textKey: "blog.post6.body.p_2" },
-      { type: "h2", textKey: "blog.post6.body.h2_3" },
-      { type: "p", textKey: "blog.post6.body.p_3" },
-    ],
-  },
-];
-
-function relatedFor(slug: string): readonly BlogPost[] {
+function relatedMeta(slug: string): BlogPostMeta[] {
   return relatedBlogSlugs(slug).flatMap((relatedSlug) => {
-    const post = POSTS.find((p) => p.slug === relatedSlug);
+    const post = getBlogPostMeta(relatedSlug);
     return post ? [post] : [];
   });
 }
@@ -153,21 +28,19 @@ export default function BlogPostPage() {
   const t = useT();
   const params = useParams();
   const slug = params.slug as string;
-  const POST = POSTS.find((p) => p.slug === slug);
+  const body = POST_BODIES.find((p) => p.slug === slug);
+  const meta = getBlogPostMeta(slug);
 
-  if (!POST) {
+  if (!body || !meta) {
     notFound();
   }
 
-  const RELATED = relatedFor(slug);
-  const pageUrl = absoluteUrl(`/blog/${POST.slug}`);
-  const title = t(POST.titleKey);
-  const postMeta = getBlogPostMeta(POST.slug);
-  const visibleDate = postMeta
-    ? visibleBlogDateLabel(postMeta.publishedOn, t(POST.dateKey), (date) =>
-        t("blog.scheduledOn", { date })
-      )
-    : t(POST.dateKey);
+  const RELATED = relatedMeta(slug);
+  const pageUrl = absoluteUrl(ROUTES.blogPost(meta.slug));
+  const title = t(meta.titleKey);
+  const visibleDate = visibleBlogDateLabel(meta.publishedOn, t(meta.dateKey), (date) =>
+    t("blog.scheduledOn", { date })
+  );
 
   const copyPageUrl = async () => {
     try {
@@ -181,66 +54,66 @@ export default function BlogPostPage() {
   return (
     <PageShell>
       <PageContent className="max-w-3xl py-10">
-        {/* Back */}
-        <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          href={ROUTES.blog}
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="size-4 rtl:rotate-180" /> {t("blog.backToBlog")}
         </Link>
 
-        {/* Header */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ background: POST.color }}>{t(POST.categoryKey)}</span>
-            <span className="text-xs text-muted-foreground flex items-center gap-2"><span>{visibleDate}</span><span>·</span><Clock className="size-3" /> {t("blog.minRead", { count: POST.readTime })}</span>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-md px-2.5 py-1 text-xs font-bold text-white"
+              style={{ background: meta.color }}
+            >
+              {t(meta.categoryKey)}
+            </span>
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{visibleDate}</span>
+              <span>·</span>
+              <Clock className="size-3" aria-hidden />
+              {t("blog.minRead", { count: meta.readTime })}
+            </span>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-balance">{t(POST.titleKey)}</h1>
-          <p className="mt-3 text-lg text-muted-foreground text-pretty">{t(POST.excerptKey)}</p>
+          <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight text-balance sm:text-4xl">
+            {t(body.titleKey)}
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground text-pretty">{t(meta.excerptKey)}</p>
         </div>
 
-        {/* Cover */}
-        <div className="mt-6 aspect-[2/1] rounded-2xl gradient-brand-soft relative overflow-hidden">
+        <div
+          className="relative mt-6 aspect-[2/1] overflow-hidden rounded-2xl"
+          style={{ background: `${meta.color}14` }}
+        >
           <div className="absolute inset-0 bg-dots opacity-25" />
-          <div className="absolute inset-0 grid place-items-center"><span className="font-display text-7xl font-extrabold gradient-text">GEO</span></div>
+          <div
+            className="absolute -end-10 -top-10 size-48 rounded-full opacity-35 blur-3xl"
+            style={{ background: meta.color }}
+            aria-hidden
+          />
+          <div className="absolute inset-0 grid place-items-center">
+            <span
+              className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl"
+              style={{ color: meta.color }}
+            >
+              {meta.coverLabel}
+            </span>
+          </div>
         </div>
 
-        {/* Content */}
-        <article className="mt-8 space-y-4">
-          {POST.content.map((block, i) => {
-            switch (block.type) {
-              case "h2":
-                return (
-                  <h2 key={i} className="font-display text-xl font-bold mt-8">
-                    {t(block.textKey)}
-                  </h2>
-                );
-              case "h3":
-                return (
-                  <h3 key={i} className="font-display text-lg font-semibold mt-6">
-                    {t(block.textKey)}
-                  </h3>
-                );
-              case "p":
-                return (
-                  <p key={i} className="text-foreground/85 leading-relaxed">
-                    {t(block.textKey)}
-                  </p>
-                );
-              default: {
-                const _exhaustive: never = block.type;
-                return _exhaustive;
-              }
-            }
-          })}
+        <article>
+          <BlogArticleBlocks content={body.content} />
         </article>
 
-        {/* Share */}
-        <div className="mt-8 flex items-center gap-3 py-5 border-y border-border/60">
+        <div className="mt-8 flex items-center gap-3 border-y border-border/60 py-5">
           <span className="text-sm font-medium text-muted-foreground">{t("blog.share")}</span>
           <a
             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(title)}`}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t("blog.shareTwitter")}
-            className="size-9 rounded-full border border-border/60 grid place-items-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="grid size-9 place-items-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
           >
             <Twitter className="size-4" />
           </a>
@@ -249,7 +122,7 @@ export default function BlogPostPage() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t("blog.shareLinkedin")}
-            className="size-9 rounded-full border border-border/60 grid place-items-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="grid size-9 place-items-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
           >
             <Linkedin className="size-4" />
           </a>
@@ -257,25 +130,37 @@ export default function BlogPostPage() {
             type="button"
             onClick={() => void copyPageUrl()}
             aria-label={t("blog.shareCopy")}
-            className="size-9 rounded-full border border-border/60 grid place-items-center text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="grid size-9 place-items-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
           >
             <Share2 className="size-4" />
           </button>
         </div>
 
-        {/* Related */}
-        <div className="mt-10">
-          <h2 className="font-display text-xl font-bold mb-4">{t("blog.relatedPosts")}</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {RELATED.map((r, i) => (
-              <Link key={i} href={`/blog/${r.slug}`} className="block rounded-xl border border-border/60 bg-card p-4 hover:border-primary/40 hover:shadow-md transition-all group">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white inline-block mb-2" style={{ background: r.color }}>{t(r.categoryKey)}</span>
-                <h3 className="text-sm font-semibold leading-snug group-hover:text-primary transition-colors">{t(r.titleKey)}</h3>
-                <ArrowUpRight className="size-4 text-muted-foreground mt-2" />
-              </Link>
-            ))}
+        {RELATED.length > 0 ? (
+          <div className="mt-10">
+            <h2 className="mb-4 font-display text-xl font-bold">{t("blog.relatedPosts")}</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {RELATED.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={ROUTES.blogPost(r.slug)}
+                  className="group block rounded-xl border border-border/60 bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                >
+                  <span
+                    className="mb-2 inline-block rounded-md px-2 py-0.5 text-[10px] font-bold text-white"
+                    style={{ background: r.color }}
+                  >
+                    {t(r.categoryKey)}
+                  </span>
+                  <h3 className="text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
+                    {t(r.titleKey)}
+                  </h3>
+                  <ArrowUpRight className="mt-2 size-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </PageContent>
     </PageShell>
   );

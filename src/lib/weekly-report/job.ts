@@ -78,7 +78,7 @@ async function deliverWeeklyReportEmail(input: {
   return true;
 }
 
-async function generateForStore(
+export async function generateWeeklyReportForStore(
   store: ActiveStoreCandidate,
   periodStart: string,
   periodEnd: string
@@ -277,7 +277,11 @@ export async function runWeeklyReportJob(now = new Date()): Promise<WeeklyReport
       continue;
     }
 
-    const outcome = await generateForStore(store, periodStartIso, periodEndIso);
+    const outcome = await generateWeeklyReportForStore(
+      store,
+      periodStartIso,
+      periodEndIso
+    );
     if (outcome.failed) {
       result.failed += 1;
       continue;

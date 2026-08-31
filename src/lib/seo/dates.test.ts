@@ -32,6 +32,7 @@ describe("blog post SEO meta", () => {
   it("keeps scheduled stamps internally and does not invent replacement dates", () => {
     const reportNow = new Date("2026-08-30T12:00:00.000Z");
     expect(BLOG_POSTS.map((p) => p.publishedOn).sort()).toEqual([
+      "2026-09-18",
       "2026-09-20",
       "2026-09-28",
       "2026-10-01",

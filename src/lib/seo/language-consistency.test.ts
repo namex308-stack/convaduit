@@ -11,14 +11,14 @@ import {
   privatePageMetadata,
 } from "@/lib/seo/private-page-metadata";
 import {
-  SITE_DEFAULT_TITLE,
-  SITE_DESCRIPTION,
+  getSiteDefaultTitle,
+  getSiteDescription,
   SITE_NAME,
   SITE_OFFICIAL_DESCRIPTION,
 } from "@/lib/seo/site-copy";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/seo/structured-data";
 
-describe("Arabic-first public language strategy", () => {
+describe("Arabic-only public language strategy", () => {
   beforeEach(() => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://www.convaudit.com");
   });
@@ -27,37 +27,34 @@ describe("Arabic-first public language strategy", () => {
     vi.unstubAllEnvs();
   });
 
-  it("keeps the document language Arabic and does not enable an English locale", () => {
+  it("keeps Arabic as the only enabled UI locale", () => {
     expect(LOCALES.ar.htmlLang).toBe("ar");
     expect(LOCALES.ar.dir).toBe("rtl");
     expect(LOCALES.ar.enabled).toBe(true);
     expect(getLocaleConfig("ar").htmlLang).toBe("ar");
     expect(getEnabledLocales().map((locale) => locale.id)).toEqual(["ar"]);
-    expect(Object.values(LOCALES).some((locale) => locale.htmlLang === "en")).toBe(
-      false
-    );
   });
 
   it("aligns homepage SERP title and description with Arabic UI", () => {
     expect(SITE_NAME).toBe("ConvAudit");
-    expect(hasArabicScript(SITE_DEFAULT_TITLE)).toBe(true);
-    expect(hasArabicScript(SITE_DESCRIPTION)).toBe(true);
-    expect(SITE_DESCRIPTION).not.toBe(SITE_OFFICIAL_DESCRIPTION);
-    expect(SITE_DESCRIPTION).not.toBe(ABOUT_DESCRIPTION);
+    expect(hasArabicScript(getSiteDefaultTitle())).toBe(true);
+    expect(hasArabicScript(getSiteDescription())).toBe(true);
+    expect(getSiteDescription()).not.toBe(SITE_OFFICIAL_DESCRIPTION);
+    expect(getSiteDescription()).not.toBe(ABOUT_DESCRIPTION);
     expect(hasArabicScript(SITE_OFFICIAL_DESCRIPTION)).toBe(false);
-    expect(SITE_OFFICIAL_DESCRIPTION).toMatch(/AI-powered ecommerce audit and visibility platform/);
+    expect(SITE_OFFICIAL_DESCRIPTION).toMatch(/AI-powered ecommerce audit and analytics platform/);
   });
 
   it("keeps the official English entity sentence on schema, not as the homepage meta description", () => {
     expect(buildOrganizationJsonLd().description).toBe(SITE_OFFICIAL_DESCRIPTION);
     expect(buildWebSiteJsonLd().description).toBe(SITE_OFFICIAL_DESCRIPTION);
-    expect(SITE_DESCRIPTION).not.toBe(SITE_OFFICIAL_DESCRIPTION);
+    expect(getSiteDescription()).not.toBe(SITE_OFFICIAL_DESCRIPTION);
   });
 
   it("keeps public marketing pages indexable and private app routes noindex/nofollow", () => {
     const publicMeta = publicPageMetadata({
-      title: SITE_DEFAULT_TITLE,
-      description: SITE_DESCRIPTION,
+      title: getSiteDefaultTitle(),
+      description: getSiteDescription(),
       path: ROUTES.home,
     });
     expect(publicMeta.robots).toEqual(PUBLIC_PAGE_ROBOTS);
@@ -73,9 +70,9 @@ describe("Arabic-first public language strategy", () => {
 
   it("keeps blog metadata Arabic and representative of each article", () => {
     for (const post of BLOG_POSTS) {
-      const title = translate(post.titleKey);
-      const excerpt = translate(post.excerptKey);
-      const description = blogPostMetaDescription(post, excerpt);
+      const title = translate(post.titleKey, undefined, "ar");
+      const excerpt = translate(post.excerptKey, undefined, "ar");
+      const description = blogPostMetaDescription(post, excerpt, "ar");
       expect(hasArabicScript(title)).toBe(true);
       expect(hasArabicScript(description)).toBe(true);
       expect(description).toBe(post.metaDescription);

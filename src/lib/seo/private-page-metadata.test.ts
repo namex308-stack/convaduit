@@ -12,23 +12,7 @@ import {
   privatePageMetadata,
 } from "@/lib/seo/private-page-metadata";
 import { PUBLIC_PAGE_ROBOTS, publicPageMetadata } from "@/lib/seo/page-metadata";
-import { ROUTES } from "@/lib/routes";
-import { BLOG_SLUGS } from "@/lib/blog-posts";
-
-const PUBLIC_INDEXABLE_PATHS = [
-  ROUTES.home,
-  ROUTES.pricing,
-  ROUTES.docs,
-  ROUTES.blog,
-  ...BLOG_SLUGS.map((slug) => ROUTES.blogPost(slug)),
-  ROUTES.security,
-  ROUTES.privacy,
-  ROUTES.terms,
-  ROUTES.refundPolicy,
-  ROUTES.about,
-  ROUTES.contact,
-  ROUTES.roadmap,
-] as const;
+import { PUBLIC_INDEXABLE_PATHS } from "@/lib/seo/internal-links";
 
 describe("private page robots contract", () => {
   it("emits noindex, nofollow for private surfaces including googleBot", () => {

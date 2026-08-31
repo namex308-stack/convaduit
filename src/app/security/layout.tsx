@@ -1,28 +1,33 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getServerLocaleId } from "@/lib/locale/server";
+import { SECURITY_COPY } from "@/lib/marketing/static-copy";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
 import { ROUTES } from "@/lib/routes";
 
-const TITLE = "أمان المنتج والبيانات";
-const DESCRIPTION =
-  "نهجنا الحالي في أمان المنتج: تحليل الصفحات العامة فقط، النقل عبر HTTPS، وحدّ أدنى من الصلاحيات — دون الادعاء بشهادات غير موثّقة.";
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocaleId();
+  return publicPageMetadata({
+    title: SECURITY_COPY.pageTitle,
+    description: SECURITY_COPY.metaDescription,
+    path: ROUTES.security,
+    locale,
+  });
+}
 
-export const metadata: Metadata = publicPageMetadata({
-  title: TITLE,
-  description: DESCRIPTION,
-  path: ROUTES.security,
-});
+export default async function SecurityLayout({ children }: { children: ReactNode }) {
+  const locale = await getServerLocaleId();
 
-export default function SecurityLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <JsonLd
         data={buildMarketingPageJsonLd({
-          name: TITLE,
+          name: SECURITY_COPY.pageTitle,
           path: ROUTES.security,
-          description: DESCRIPTION,
+          description: SECURITY_COPY.metaDescription,
+          locale,
         })}
       />
       {children}

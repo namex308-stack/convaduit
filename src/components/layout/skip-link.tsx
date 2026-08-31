@@ -1,7 +1,10 @@
-import { translate as t } from "@/lib/i18n";
+"use client";
 
-/** First focusable control on marketing pages — keep out of client islands. */
+import { useT } from "@/lib/i18n";
+
+/** First focusable control on marketing pages — works inside client shells. */
 export function SkipToContent() {
+  const t = useT();
   return (
     <a
       href="#main-content"

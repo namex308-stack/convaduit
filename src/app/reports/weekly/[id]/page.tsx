@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { useParams } from "next/navigation";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { WeeklyReportView } from "@/components/app/weekly-report-view";
-import { ApiLoadError } from "@/components/runtime/api-load-error";
+import { ApiPageBody } from "@/components/runtime/api-page-body";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { useT } from "@/lib/i18n";
 import type { WeeklyReportPayload } from "@/lib/weekly-report/types";
 
@@ -21,51 +21,16 @@ export default function WeeklyReportDetailPage() {
   const t = useT();
   const params = useParams<{ id: string }>();
   const id = params?.id ?? "";
-  const [report, setReport] = React.useState<ReportResponse | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-  const [needsAuth, setNeedsAuth] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
-  const [retryKey, setRetryKey] = React.useState(0);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!id) return;
-      setLoading(true);
-      setError(null);
-      setNeedsAuth(false);
-      try {
-        const res = await fetch(`/api/weekly-report/${id}`);
-        if (!res.ok) {
-          if (!cancelled) {
-            setReport(null);
-            setNeedsAuth(res.status === 401);
-            setError(
-              res.status === 404
-                ? t("weeklyReport.notFound")
-                : res.status === 401
-                  ? t("weeklyReport.signInRequired")
-                  : t("weeklyReport.loadError")
-            );
-          }
-          return;
-        }
-        const data = (await res.json()) as { report: ReportResponse };
-        if (!cancelled) setReport(data.report);
-      } catch {
-        if (!cancelled) {
-          setReport(null);
-          setError(t("weeklyReport.loadError"));
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [id, retryKey, t]);
+  const { data: report, error, needsAuth, needsUpgrade, loading, retry } = useApiQuery({
+    url: `/api/weekly-report/${id}`,
+    parse: (json) => (json as { report: ReportResponse }).report,
+    fallbackError: t("weeklyReport.loadError"),
+    signInMessage: t("weeklyReport.signInRequired"),
+    notFoundMessage: t("weeklyReport.notFound"),
+    enabled: Boolean(id),
+    deps: [id],
+  });
 
   return (
     <PageShell>
@@ -80,23 +45,21 @@ export default function WeeklyReportDetailPage() {
         back="/reports/weekly"
       />
       <PageContent className="max-w-4xl">
-        {loading ? (
-          <div className="py-20 text-center">
-            <Loader2 className="size-8 animate-spin mx-auto text-primary" />
-          </div>
-        ) : error ? (
-          <ApiLoadError
-            message={error}
-            needsAuth={needsAuth}
-            onRetry={() => setRetryKey((k) => k + 1)}
-          />
-        ) : report ? (
-          <WeeklyReportView
-            reportId={report.id}
-            payload={report.payload}
-            latestAuditId={report.latestAuditId}
-          />
-        ) : null}
+        <ApiPageBody
+          error={error}
+          needsAuth={needsAuth}
+          needsUpgrade={needsUpgrade}
+          loading={loading}
+          onRetry={retry}
+        >
+          {report && (
+            <WeeklyReportView
+              reportId={report.id}
+              payload={report.payload}
+              latestAuditId={report.latestAuditId}
+            />
+          )}
+        </ApiPageBody>
       </PageContent>
     </PageShell>
   );

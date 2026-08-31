@@ -104,7 +104,7 @@ export function generateAuditAlerts(input: {
       out.push({
         alertType: "geo_score_drop",
         priority: "high",
-        title: "انخفاض درجة GEO / ظهور AI",
+        title: "انخفاض درجة GEO / ظهور الذكاء الاصطناعي",
         reason: `انخفضت درجة GEO من ${geo.previous} إلى ${geo.current} (${geo.delta}).`,
         businessImpact:
           "ضعف قابلية الاستشهاد يقلّل فرص ظهور منتجك في إجابات ChatGPT ومحركات AI.",

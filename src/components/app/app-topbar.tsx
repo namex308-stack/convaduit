@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/components/providers/auth-provider";
 import { initialsFromDisplayName, resolvePreferredDisplayName } from "@/lib/auth/display-user";
+import { localizedPlanName } from "@/lib/billing/localized-plan-name";
 import { useT } from "@/lib/i18n";
 
 function greetingKey(hour: number): "dashboard.goodMorning" | "dashboard.goodAfternoon" | "dashboard.goodEvening" {
@@ -77,7 +78,8 @@ export function AppTopbar({
     (typeof user?.user_metadata?.avatar_url === "string" && user.user_metadata.avatar_url) ||
     (typeof user?.user_metadata?.picture === "string" && user.user_metadata.picture) ||
     "";
-  const greetName = firstName(displayName) || "بك";
+  const greetName = firstName(displayName) || t("report.you");
+  const localizedPlan = localizedPlanName(planName, t);
   const badge = Math.max(0, notificationCount);
   const issuesHref = "/notifications";
 
@@ -175,7 +177,7 @@ export function AppTopbar({
                 {displayName || t("dashboard.account")}
               </div>
               <div className="text-[11px] text-muted-foreground truncate">
-                {planName ? t("dashboard.planBadge", { plan: planName }) : t("dashboard.free")}
+                {planName ? t("dashboard.planBadge", { plan: localizedPlan }) : t("dashboard.free")}
               </div>
             </div>
             <ChevronDown className="size-3.5 text-muted-foreground shrink-0" />

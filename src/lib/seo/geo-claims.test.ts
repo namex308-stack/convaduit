@@ -72,10 +72,10 @@ describe("GEO claim honesty", () => {
   });
 
   it("states GEO as page-signal analysis, not live engine citations", () => {
-    expect(arMessages["blog.post.geo.p_1"]).toMatch(/إشارات صفحة المنتج/);
-    expect(arMessages["blog.post.geo.p_1"]).toMatch(/لا يُنفَّذ كاستعلام توصية حي/);
-    expect(arMessages["blog.post.geo.p_1"]).not.toMatch(/لتظهر في إجابات/);
-    expect(arMessages["blog.post.geo.p_2"]).toMatch(/لا يضمن ظهور الصفحة/);
+    expect(arMessages["blog.post1.p_what_2"]).toMatch(/إشارات/);
+    expect(arMessages["blog.post1.p_what_2"]).toMatch(/لا يُنفَّذ كاستعلام توصية حي/);
+    expect(arMessages["blog.post1.p_what_2"]).not.toMatch(/لتظهر في إجابات/);
+    expect(arMessages["blog.post1.p_why_1"]).toMatch(/ولا يضمن مبيعات أو اقتباساً/);
     expect(arMessages["faq.a2"]).toMatch(/وليست نتائج اختبار حي/);
     expect(buildLlmsTxt()).toMatch(/does not query ChatGPT, Perplexity/);
     expect(buildLlmsTxt()).toContain(SITE_OFFICIAL_DESCRIPTION);

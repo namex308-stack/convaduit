@@ -1,6 +1,6 @@
 import { Scale, Bot, Search, Zap, ShieldCheck, FlaskConical } from "lucide-react";
 import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader, SurfaceCard } from "@/components/design-system/section";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
 const PILLARS = [
   {
@@ -36,7 +36,8 @@ const AI_STEPS = [
   { titleKey: "methodology.ai.s4.title" as const, descKey: "methodology.ai.s4.desc" as const },
 ] as const;
 
-export function Methodology() {
+export async function Methodology() {
+  const t = await getServerTranslate();
   return (
     <Section id="methodology">
       <Container>

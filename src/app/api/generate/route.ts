@@ -32,7 +32,7 @@ const Body = z.object({
     .enum(["product_content", "title", "description", "faq", "ad_copy"])
     .optional(),
   /** Reserved for future locale variants (e.g. `ar-gulf`); output is always Arabic today. */
-  locale: z.literal("ar").optional(),
+  locale: z.enum(["ar"]).optional(),
 });
 
 export async function POST(req: NextRequest) {

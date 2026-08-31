@@ -1,31 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 import sitemap from "@/app/sitemap";
-import { BLOG_POSTS } from "@/lib/blog-posts";
-import { ROUTES } from "@/lib/routes";
 import { PRIVATE_APP_PATHS } from "@/lib/seo/private-app-paths";
+import { PUBLIC_INDEXABLE_PATHS } from "@/lib/seo/internal-links";
+import { canonicalPageUrl } from "@/lib/site-url";
 
 describe("sitemap", () => {
-  it("includes only existing non-placeholder public URLs with absolute origins", () => {
+  it("includes every PUBLIC_INDEXABLE_PATHS URL and excludes private surfaces", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://www.convaudit.com");
 
     const entries = sitemap();
     const urls = entries.map((e) => e.url);
 
-    expect(urls).toContain("https://www.convaudit.com/");
-    expect(urls).toContain("https://www.convaudit.com/pricing");
-    expect(urls).toContain("https://www.convaudit.com/docs");
-    expect(urls).toContain("https://www.convaudit.com/blog");
-    expect(urls).toContain("https://www.convaudit.com/security");
-    expect(urls).toContain("https://www.convaudit.com/privacy");
-    expect(urls).toContain("https://www.convaudit.com/terms");
-    expect(urls).toContain("https://www.convaudit.com/refund-policy");
-    expect(urls).toContain("https://www.convaudit.com/about");
-    expect(urls).toContain("https://www.convaudit.com/contact");
-    expect(urls).toContain("https://www.convaudit.com/roadmap");
-
-    for (const post of BLOG_POSTS) {
-      expect(urls).toContain(`https://www.convaudit.com${ROUTES.blogPost(post.slug)}`);
+    for (const path of PUBLIC_INDEXABLE_PATHS) {
+      expect(urls).toContain(canonicalPageUrl(path));
     }
 
     // Removed affiliate program and placeholder shells must not reappear
@@ -51,8 +39,9 @@ describe("sitemap", () => {
     // No fabricated lastModified
     expect(entries.every((e) => e.lastModified === undefined)).toBe(true);
 
-    // No duplicates
+    // Exact sync: sitemap URLs === PUBLIC_INDEXABLE_PATHS (no extras, no missing)
     expect(new Set(urls).size).toBe(urls.length);
+    expect(urls.length).toBe(PUBLIC_INDEXABLE_PATHS.length);
 
     vi.unstubAllEnvs();
   });

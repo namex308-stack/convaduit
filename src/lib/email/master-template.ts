@@ -137,18 +137,18 @@ export function renderMasterEmailHtml(vars: MasterEmailVars): string {
           <tr>
             <td style="padding:24px 8px 8px;text-align:center">
               <p style="margin:0 0 4px;font-size:14px;font-weight:800;color:#0f172a">ConvAudit</p>
-              <p style="margin:0 0 12px;font-size:12px;line-height:1.5;color:#64748b">AI-powered Ecommerce Audit &amp; Visibility Platform</p>
+              <p style="margin:0 0 12px;font-size:12px;line-height:1.5;color:#64748b">منصة تدقيق وظهور للمتاجر الإلكترونية بالذكاء الاصطناعي</p>
               <p style="margin:0 0 12px;font-size:12px">
                 <a href="${escapeAttr(site)}" style="color:${EMAIL_BRAND_ORANGE_DARK};text-decoration:none">${PRODUCTION_CANONICAL_ORIGIN}</a>
               </p>
               <p style="margin:0;font-size:12px;line-height:1.8;color:#64748b">
-                <a href="${supportUrl}" style="color:#64748b;text-decoration:underline">Support</a>
+                <a href="${supportUrl}" style="color:#64748b;text-decoration:underline">الدعم</a>
                 &nbsp;·&nbsp;
                 <a href="${supportMailto}" style="color:#64748b;text-decoration:underline">${escapeHtml(CONTACT_EMAIL)}</a>
                 &nbsp;·&nbsp;
-                <a href="${privacyUrl}" style="color:#64748b;text-decoration:underline">Privacy Policy</a>
+                <a href="${privacyUrl}" style="color:#64748b;text-decoration:underline">سياسة الخصوصية</a>
                 &nbsp;·&nbsp;
-                <a href="${termsUrl}" style="color:#64748b;text-decoration:underline">Terms</a>
+                <a href="${termsUrl}" style="color:#64748b;text-decoration:underline">الشروط والأحكام</a>
               </p>
             </td>
           </tr>

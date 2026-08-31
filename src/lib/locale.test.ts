@@ -19,7 +19,7 @@ describe("locale helpers", () => {
     );
   });
 
-  it("normalizes every locale value to Arabic-only", () => {
+  it("normalizes locale values to Arabic", () => {
     expect(normalizeAppLocale("ar")).toBe("ar");
     expect(normalizeAppLocale("en-US")).toBe("ar");
     expect(normalizeAppLocale("en")).toBe("ar");

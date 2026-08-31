@@ -1,28 +1,35 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getServerLocaleId } from "@/lib/locale/server";
+import { translate } from "@/lib/locale/t";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
 import { ROUTES } from "@/lib/routes";
 
-const TITLE = "دليل تدقيق المتاجر وGEO";
-const DESCRIPTION =
-  "كيف يعمل تدقيق الصفحة في ConvAudit: تحويل، SEO، GEO، حدود التحليل، ومولد المحتوى لمتاجر Shopify وWooCommerce وسلة وزد.";
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocaleId();
+  return publicPageMetadata({
+    title: translate("docs.title", undefined, locale),
+    description: translate("docs.metaDescription", undefined, locale),
+    path: ROUTES.docs,
+    locale,
+  });
+}
 
-export const metadata: Metadata = publicPageMetadata({
-  title: TITLE,
-  description: DESCRIPTION,
-  path: ROUTES.docs,
-});
+export default async function DocsLayout({ children }: { children: ReactNode }) {
+  const locale = await getServerLocaleId();
+  const title = translate("docs.title", undefined, locale);
+  const description = translate("docs.metaDescription", undefined, locale);
 
-export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <JsonLd
         data={buildMarketingPageJsonLd({
-          name: TITLE,
+          name: title,
           path: ROUTES.docs,
-          description: DESCRIPTION,
+          description,
+          locale,
         })}
       />
       {children}

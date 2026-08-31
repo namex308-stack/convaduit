@@ -3,7 +3,7 @@ import { ArrowRight, LayoutDashboard, Link2 } from "lucide-react";
 import { StartAuditCta } from "@/components/common/start-audit-cta";
 import { MotionLift } from "@/components/common/motion-lift";
 import { AppFrame, Container, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
 /**
  * Display width of each screenshot in the homepage grid:
@@ -22,17 +22,20 @@ const SHOTS = [
     icon: Link2,
     titleKey: "productPreview.shot1.title" as const,
     captionKey: "productPreview.shot1.caption" as const,
+    loading: "lazy" as const,
   },
   {
     src: "/product/dashboard.png",
     icon: LayoutDashboard,
     titleKey: "productPreview.shot2.title" as const,
     captionKey: "productPreview.shot2.caption" as const,
+    loading: "eager" as const,
   },
 ] as const;
 
 /** Real product screenshots — no mockups, no fabricated scores. */
-export function ProductPreview() {
+export async function ProductPreview() {
+  const t = await getServerTranslate();
   return (
     <Section id="product-preview" tone="muted">
       <Container>
@@ -63,7 +66,7 @@ export function ProductPreview() {
                     height={PRODUCT_SHOT_SIZE.height}
                     sizes={PRODUCT_PREVIEW_SIZES}
                     className="h-auto w-full"
-                    loading="lazy"
+                    loading={shot.loading}
                   />
                 </AppFrame>
                 <figcaption className="mt-3 px-0.5 text-sm text-muted-foreground leading-relaxed">

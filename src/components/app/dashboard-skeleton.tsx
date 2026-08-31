@@ -4,19 +4,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6" aria-busy="true" aria-live="polite">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 sm:gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-border/50 bg-card p-4 shadow-[var(--shadow-card)]"
-          >
-            <Skeleton className="size-9 rounded-xl" />
-            <Skeleton className="mt-3 h-3 w-20" />
-            <Skeleton className="mt-2 h-7 w-24" />
-            <Skeleton className="mt-2 h-3 w-28" />
-            <Skeleton className="mt-2 h-3 w-full" />
-          </div>
-        ))}
+      <div className="space-y-3">
+        <Skeleton className="h-8 w-56 max-w-full" />
+        <Skeleton className="h-4 w-72 max-w-full" />
+        <Skeleton className="h-4 w-96 max-w-full" />
+        <div className="flex gap-2 pt-1">
+          <Skeleton className="h-9 w-28 rounded-full" />
+          <Skeleton className="h-9 w-32 rounded-full" />
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`primary-${i}`}
+              className="rounded-2xl border border-border/50 bg-card p-4 shadow-[var(--shadow-card)]"
+            >
+              <Skeleton className="size-9 rounded-xl" />
+              <Skeleton className="mt-3 h-3 w-20" />
+              <Skeleton className="mt-2 h-8 w-24" />
+              <Skeleton className="mt-2 h-3 w-full" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`secondary-${i}`}
+              className="rounded-2xl border border-border/50 bg-card p-4 shadow-[var(--shadow-card)]"
+            >
+              <Skeleton className="size-9 rounded-xl" />
+              <Skeleton className="mt-3 h-3 w-20" />
+              <Skeleton className="mt-2 h-7 w-24" />
+              <Skeleton className="mt-2 h-3 w-full" />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-12">
@@ -99,6 +122,16 @@ export function DashboardSkeleton() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ListPageSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="space-y-3" aria-busy="true" aria-live="polite">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="h-28 animate-pulse rounded-2xl bg-muted/50" />
+      ))}
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   type ReportPillarRow,
 } from "@/lib/dashboard/metrics";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
+import { normalizeAppLocale } from "@/lib/locale";
 import { sanitizeDisplayName } from "@/lib/auth/display-user";
 import {
   pageStatsFromRows,
@@ -275,14 +276,16 @@ export type ShellPayload = {
   latestAuditId: string | null;
   notificationCount: number;
   features: { competitor: boolean; aiGenerator: boolean };
+  uiLocale: "ar";
 };
 
 export async function getShellForUser(userId: string): Promise<ShellPayload> {
-  const [plan, audits, profileName, notificationCount] = await Promise.all([
+  const [plan, audits, profileName, notificationCount, profile] = await Promise.all([
     getPlanForUser(userId),
     listAuditsForUser(userId, 8),
     getProfileDisplayName(userId),
     countUnreadNotificationsForUser(userId),
+    getAccountProfile(userId, ""),
   ]);
 
   const latestCompleted = audits.find((a) => a.status === "completed") ?? null;
@@ -293,6 +296,7 @@ export async function getShellForUser(userId: string): Promise<ShellPayload> {
     displayName: profileName,
     latestAuditId: latestAny?.id ?? null,
     notificationCount,
+    uiLocale: normalizeAppLocale(profile?.locale),
     features: {
       competitor: Boolean(plan.features.competitor),
       aiGenerator: Boolean(plan.features.aiGenerator),
@@ -864,7 +868,7 @@ export async function getAccountProfile(
   return {
     fullName: sanitizeDisplayName((data?.full_name as string) || "") ?? "",
     email,
-    locale: "ar",
+    locale: normalizeAppLocale(data?.locale as string | undefined),
     timezone: (data?.timezone as string) || "",
     avatarUrl: (data?.avatar_url as string) || "",
     businessName: (data?.business_name as string) || "",
@@ -884,8 +888,8 @@ export async function updateAccountProfile(
   if (patch.fullName !== undefined) {
     update.full_name = (sanitizeDisplayName(patch.fullName) ?? "").slice(0, 120);
   }
-  // Product UI is Arabic-only — never persist English or other UI locales.
-  if (patch.locale !== undefined) update.locale = "ar";
+  // Product UI locale — Arabic default, English supported.
+  if (patch.locale !== undefined) update.locale = normalizeAppLocale(patch.locale);
   if (patch.timezone !== undefined) update.timezone = patch.timezone.trim().slice(0, 64);
   if (patch.businessName !== undefined) update.business_name = patch.businessName.trim().slice(0, 120);
   if (patch.country !== undefined) update.country = patch.country.trim().slice(0, 40);

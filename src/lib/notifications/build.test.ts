@@ -77,7 +77,7 @@ describe("notification builders", () => {
       completionSource: "reanalysis",
     });
     expect(draft.category).toBe("completed_task");
-    expect(draft.title).toContain("إعادة التحليل");
+    expect(draft.title).toContain("إعادة التدقيق");
   });
 
   it("builds subscription warning notification", () => {

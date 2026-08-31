@@ -1,9 +1,10 @@
 import { ArrowRight } from "lucide-react";
 import { StartAuditCta } from "@/components/common/start-audit-cta";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 import { Container, Section } from "@/components/design-system/section";
 
-export function CTA() {
+export async function CTA() {
+  const t = await getServerTranslate();
   return (
     <Section>
       <Container className="max-w-5xl">

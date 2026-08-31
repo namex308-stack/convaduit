@@ -1,28 +1,35 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getServerLocaleId } from "@/lib/locale/server";
+import { translate } from "@/lib/locale/t";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildMarketingPageJsonLd } from "@/lib/seo/structured-data";
 import { ROUTES } from "@/lib/routes";
 
-const TITLE = "أسعار تدقيق المتاجر";
-const DESCRIPTION =
-  "باقات ConvAudit لتدقيق المتاجر الإلكترونية: تحويل، SEO، وGEO. ابدأ مجاناً — الأسعار بالجنيه المصري عبر Paymob.";
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocaleId();
+  return publicPageMetadata({
+    title: translate("pricing.title", undefined, locale),
+    description: translate("pricing.metaDescription", undefined, locale),
+    path: ROUTES.pricing,
+    locale,
+  });
+}
 
-export const metadata: Metadata = publicPageMetadata({
-  title: TITLE,
-  description: DESCRIPTION,
-  path: ROUTES.pricing,
-});
+export default async function PricingLayout({ children }: { children: ReactNode }) {
+  const locale = await getServerLocaleId();
+  const title = translate("pricing.title", undefined, locale);
+  const description = translate("pricing.metaDescription", undefined, locale);
 
-export default function PricingLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <JsonLd
         data={buildMarketingPageJsonLd({
-          name: TITLE,
+          name: title,
           path: ROUTES.pricing,
-          description: DESCRIPTION,
+          description,
+          locale,
         })}
       />
       {children}

@@ -1,6 +1,8 @@
-import { getActiveLocaleId } from "./resolve";
+import { DEFAULT_LOCALE } from "./config";
 import { arMessages } from "./messages/ar";
 import { getMessages, type MessageKey } from "./messages";
+import { useLocaleContext } from "./provider";
+import type { LocaleId } from "./types";
 
 export type { MessageKey };
 
@@ -9,24 +11,21 @@ function format(str: string, params?: Record<string, string | number>): string {
   return str.replace(/\{(\w+)\}/g, (_, key) => String(params[key] ?? ""));
 }
 
-/**
- * Resolves a message key against the active locale, falling back to the
- * `ar` baseline for keys not yet translated in a secondary locale (e.g. a
- * partially-filled future `ar-gulf` catalog).
- */
-export function translate(key: MessageKey, params?: Record<string, string | number>): string {
-  const locale = getActiveLocaleId();
-  const messages = getMessages(locale);
+/** Resolves a message key against the Arabic catalog. */
+export function translate(
+  key: MessageKey,
+  params?: Record<string, string | number>,
+  locale?: LocaleId
+): string {
+  const active = locale ?? DEFAULT_LOCALE;
+  const messages = getMessages(active);
   const text = messages[key] ?? arMessages[key] ?? key;
   return format(text, params);
 }
 
-/**
- * `t()` accessor. Not a stateful hook today since only one locale is
- * enabled, but kept as a function-returning call (matching the historical
- * `useT()` shape) so call sites are unaffected once locale selection
- * becomes dynamic.
- */
+/** Client hook — re-renders when locale context updates (always Arabic). */
 export function useT() {
-  return translate;
+  const { locale } = useLocaleContext();
+  return (key: MessageKey, params?: Record<string, string | number>) =>
+    translate(key, params, locale);
 }

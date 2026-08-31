@@ -6,6 +6,7 @@ import {
   featureLockedBody,
   isPlanFeatureEnabled,
 } from "@/lib/billing/entitlements";
+import { ensureWeeklyReportsForUser } from "@/lib/weekly-report/ensure-for-user";
 
 export async function GET() {
   const auth = await requireApiUser();
@@ -18,6 +19,11 @@ export async function GET() {
     });
   }
 
-  const reports = await listWeeklyReportsForUser(auth.user.id, 30);
+  let reports = await listWeeklyReportsForUser(auth.user.id, 30);
+  if (!reports.length) {
+    await ensureWeeklyReportsForUser(auth.user.id);
+    reports = await listWeeklyReportsForUser(auth.user.id, 30);
+  }
+
   return NextResponse.json({ reports });
 }

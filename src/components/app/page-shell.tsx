@@ -62,13 +62,16 @@ function ProductShell({ children }: { children: React.ReactNode }) {
     setMobileOpen(false);
   }, [pathname]);
 
-  const applyShell = React.useCallback((shell: CachedShell) => {
-    setPlanName(shell.planName ?? null);
-    setPreferredDisplayName(shell.displayName ?? null);
-    const latest = shell.latestAuditId ?? null;
-    setLatestAuditId(latest);
-    setNotificationCount(latest ? (shell.notificationCount ?? 0) : 0);
-  }, []);
+  const applyShell = React.useCallback(
+    (shell: CachedShell) => {
+      setPlanName(shell.planName ?? null);
+      setPreferredDisplayName(shell.displayName ?? null);
+      const latest = shell.latestAuditId ?? null;
+      setLatestAuditId(latest);
+      setNotificationCount(latest ? (shell.notificationCount ?? 0) : 0);
+    },
+    []
+  );
 
   const loadShell = React.useCallback(
     async (signal?: { cancelled: boolean }, options?: { force?: boolean }) => {

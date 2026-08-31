@@ -4,9 +4,15 @@ import { ROUTES } from "@/lib/routes";
 import { absoluteUrl, canonicalPageUrl, getSiteUrl } from "@/lib/site-url";
 import { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 import { isCalendarDateOnOrBeforeToday } from "@/lib/seo/dates";
-import { CONTACT_EMAIL } from "@/lib/seo/contact";
-import { SITE_NAME, SITE_OFFICIAL_DESCRIPTION } from "@/lib/seo/site-copy";
+import { CONTACT_EMAIL, CONTACT_WHATSAPP_E164 } from "@/lib/seo/contact";
+import type { LocaleId } from "@/lib/locale/types";
+import {
+  SITE_NAME,
+  SITE_OFFICIAL_DESCRIPTION,
+  getSiteOfficialDescription,
+} from "@/lib/seo/site-copy";
 import { ORGANIZATION_SAME_AS } from "@/lib/seo/social";
+import { gulfAreaServedSchema } from "@/lib/seo/gulf-keyword-map";
 
 export { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
 
@@ -34,10 +40,11 @@ function softwareSchemaId(base: string): string {
 
 /**
  * Product description for schema — factual, aligned with homepage pillars.
- * No fixed SLAs, invented statistics, or live ChatGPT/Perplexity query claims.
+ * Locale-aware via `schema.softwareDescription` message key.
  */
-const SOFTWARE_DESCRIPTION =
-  "ConvAudit منصة ويب لتحليل وتحسين متاجر التجارة الإلكترونية. تدقق صفحات المنتجات العامة عبر خمس خدمات: تدقيق SEO، تدقيق التحويل، تحليل قابلية الظهور في الذكاء الاصطناعي (GEO) من إشارات الصفحة، إشارات الثقة، وتحليل المنافسين عند توفر الباقة. تحليل GEO ليس استعلاماً حياً لـ ChatGPT أو Gemini أو Perplexity.";
+function softwareDescription(locale: LocaleId): string {
+  return translate("schema.softwareDescription", undefined, locale);
+}
 
 function organizationNode(base: string) {
   return {
@@ -53,10 +60,12 @@ function organizationNode(base: string) {
     },
     description: SITE_OFFICIAL_DESCRIPTION,
     email: CONTACT_EMAIL,
+    areaServed: gulfAreaServedSchema(),
     ...(ORGANIZATION_SAME_AS.length > 0 ? { sameAs: [...ORGANIZATION_SAME_AS] } : {}),
     contactPoint: {
       "@type": "ContactPoint" as const,
       email: CONTACT_EMAIL,
+      telephone: `+${CONTACT_WHATSAPP_E164}`,
       contactType: "customer support",
       url: absoluteUrl(ROUTES.contact),
       availableLanguage: ["ar"],
@@ -79,22 +88,36 @@ function webSiteNode(base: string) {
 
 function webPageNode(
   base: string,
-  input: { name: string; url: string; description?: string }
+  input: { name: string; url: string; description?: string },
+  locale: LocaleId = "ar"
 ) {
+  const inLanguage = "ar";
   return {
     "@type": "WebPage" as const,
     "@id": input.url,
     url: input.url,
     name: input.name,
     ...(input.description ? { description: input.description } : {}),
-    inLanguage: "ar",
+    inLanguage,
     isPartOf: { "@id": websiteSchemaId(base) },
     about: { "@id": softwareSchemaId(base) },
     publisher: { "@id": organizationSchemaId(base) },
   };
 }
 
-function softwareApplicationNode(base: string) {
+function softwareApplicationNode(base: string, locale: LocaleId = "ar") {
+  const description = softwareDescription(locale);
+  const featureList = [
+    translate("schema.feature.seo", undefined, locale),
+    translate("schema.feature.conversion", undefined, locale),
+    translate("schema.feature.geo", undefined, locale),
+    translate("schema.feature.trust", undefined, locale),
+    translate("schema.feature.competitors", undefined, locale),
+    translate("schema.feature.aiGenerator", undefined, locale),
+    translate("schema.feature.platforms", undefined, locale),
+  ];
+  const offerCatalogName = translate("schema.offerCatalogName", undefined, locale);
+
   return {
     "@type": ["SoftwareApplication", "Product"] as const,
     "@id": softwareSchemaId(base),
@@ -103,9 +126,10 @@ function softwareApplicationNode(base: string) {
     operatingSystem: "Web",
     url: base,
     image: absoluteUrl("/opengraph-image"),
-    description: SOFTWARE_DESCRIPTION,
+    description,
     brand: { "@id": organizationSchemaId(base) },
     provider: { "@id": organizationSchemaId(base) },
+    areaServed: gulfAreaServedSchema(),
     isPartOf: { "@id": websiteSchemaId(base) },
     offers: MARKETING_PLANS.map((plan) => ({
       "@type": "Offer" as const,
@@ -114,25 +138,17 @@ function softwareApplicationNode(base: string) {
       priceCurrency: "EGP",
       url: absoluteUrl(ROUTES.pricing),
     })),
-    featureList: [
-      "تدقيق SEO للمتاجر الإلكترونية",
-      "تدقيق التحويل لصفحات المنتجات",
-      "تحليل قابلية الظهور في الذكاء الاصطناعي (GEO) من إشارات الصفحة — بدون استعلام حي لـ ChatGPT أو Gemini أو Perplexity",
-      "تدقيق إشارات الثقة",
-      "تحليل المنافسين عند توفر الباقة",
-      "مولّد محتوى بالذكاء الاصطناعي (عناوين، أوصاف، أسئلة شائعة، نصوص إعلانية) عند تفعيل الباقة والمزوّد",
-      "دعم صفحات المنتجات العامة على Shopify وWooCommerce وسلة وزد",
-    ],
+    featureList,
     hasOfferCatalog: {
       "@type": "OfferCatalog" as const,
-      name: "خدمات تحليل وتحسين المتاجر الإلكترونية",
+      name: offerCatalogName,
       itemListElement: [
         {
           "@type": "ListItem" as const,
           position: 1,
           item: {
             "@type": "Service" as const,
-            name: "تدقيق SEO للمتاجر الإلكترونية",
+            name: translate("schema.service.seo", undefined, locale),
             url: `${base}/#features`,
           },
         },
@@ -141,7 +157,7 @@ function softwareApplicationNode(base: string) {
           position: 2,
           item: {
             "@type": "Service" as const,
-            name: "تدقيق التحويل لصفحات المنتجات",
+            name: translate("schema.service.conversion", undefined, locale),
             url: `${base}/#features`,
           },
         },
@@ -150,7 +166,7 @@ function softwareApplicationNode(base: string) {
           position: 3,
           item: {
             "@type": "Service" as const,
-            name: "تحليل قابلية الظهور في الذكاء الاصطناعي (GEO)",
+            name: translate("schema.service.geo", undefined, locale),
             url: `${base}/#methodology`,
           },
         },
@@ -159,7 +175,7 @@ function softwareApplicationNode(base: string) {
           position: 4,
           item: {
             "@type": "Service" as const,
-            name: "تدقيق إشارات الثقة",
+            name: translate("schema.service.trust", undefined, locale),
             url: absoluteUrl(ROUTES.blogPost("trust-signals-ecommerce")),
           },
         },
@@ -168,7 +184,7 @@ function softwareApplicationNode(base: string) {
           position: 5,
           item: {
             "@type": "Service" as const,
-            name: "تحليل المنافسين",
+            name: translate("schema.service.competitors", undefined, locale),
             url: absoluteUrl(ROUTES.blogPost("competitor-analysis-strategy")),
           },
         },
@@ -177,15 +193,15 @@ function softwareApplicationNode(base: string) {
   };
 }
 
-function faqPageNode() {
+function faqPageNode(locale: LocaleId = "ar") {
   return {
     "@type": "FAQPage" as const,
     mainEntity: HOME_FAQ_KEYS.map(({ qKey, aKey }) => ({
       "@type": "Question" as const,
-      name: translate(qKey),
+      name: translate(qKey, undefined, locale),
       acceptedAnswer: {
         "@type": "Answer" as const,
-        text: translate(aKey),
+        text: translate(aKey, undefined, locale),
       },
     })),
   };
@@ -259,18 +275,38 @@ export function buildWebSiteJsonLd() {
 /**
  * Offer prices mirror `MARKETING_PLANS` / Kashier EGP amounts — never invent USD.
  */
-export function buildSoftwareApplicationJsonLd() {
+export function buildSoftwareApplicationJsonLd(locale: LocaleId = "ar") {
   const base = getSiteUrl();
   return {
     "@context": SCHEMA_CONTEXT,
-    ...softwareApplicationNode(base),
+    ...softwareApplicationNode(base, locale),
   };
 }
 
-export function buildFaqPageJsonLd() {
+export function buildFaqPageJsonLd(locale: LocaleId = "ar") {
   return {
     "@context": SCHEMA_CONTEXT,
-    ...faqPageNode(),
+    ...faqPageNode(locale),
+  };
+}
+
+/** FAQPage JSON-LD from explicit Q/A pairs (e.g. blog article FAQs). */
+export function buildFaqPageJsonLdFromPairs(
+  items: readonly { question: string; answer: string }[],
+  path: string
+) {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "FAQPage" as const,
+    url: absoluteUrl(path),
+    mainEntity: items.map(({ question, answer }) => ({
+      "@type": "Question" as const,
+      name: question,
+      acceptedAnswer: {
+        "@type": "Answer" as const,
+        text: answer,
+      },
+    })),
   };
 }
 
@@ -279,9 +315,11 @@ export function buildMarketingPageJsonLd(input: {
   name: string;
   path: string;
   description?: string;
+  locale?: LocaleId;
 }) {
   const base = getSiteUrl();
   const url = absoluteUrl(input.path);
+  const locale = input.locale ?? "ar";
   const crumbs: BreadcrumbItem[] = [
     { name: SITE_NAME, path: ROUTES.home },
     { name: input.name, path: input.path },
@@ -293,11 +331,15 @@ export function buildMarketingPageJsonLd(input: {
       organizationNode(base),
       webSiteNode(base),
       {
-        ...webPageNode(base, {
-          name: input.name,
-          url,
-          description: input.description,
-        }),
+        ...webPageNode(
+          base,
+          {
+            name: input.name,
+            url,
+            description: input.description,
+          },
+          locale
+        ),
         breadcrumb: { "@id": `${url}#breadcrumb` },
       },
       breadcrumbNode(url, crumbs),
@@ -310,10 +352,12 @@ export function buildBlogArticleJsonLd(input: {
   description: string;
   path: string;
   publishedOn?: string;
+  locale?: LocaleId;
 }) {
   const base = getSiteUrl();
   const url = absoluteUrl(input.path);
   const orgId = organizationSchemaId(base);
+  const inLanguage = "ar";
 
   const jsonLd: Record<string, unknown> = {
     "@context": SCHEMA_CONTEXT,
@@ -325,7 +369,7 @@ export function buildBlogArticleJsonLd(input: {
       "@type": "WebPage",
       "@id": url,
     },
-    inLanguage: "ar",
+    inLanguage,
     image: [absoluteUrl("/opengraph-image")],
     author: {
       "@type": "Organization",
@@ -359,23 +403,29 @@ export function buildBlogArticleJsonLd(input: {
 /**
  * Homepage graph — one JSON-LD script, linked entities via `@id` (no duplicate Organization nodes).
  */
-export function buildHomeJsonLdGraph() {
+export function buildHomeJsonLdGraph(locale: LocaleId = "ar") {
   const base = getSiteUrl();
+  const description = getSiteOfficialDescription(locale);
+  const inLanguage = "ar";
   return {
     "@context": SCHEMA_CONTEXT,
     "@graph": [
       organizationNode(base),
-      webSiteNode(base),
+      { ...webSiteNode(base), inLanguage },
       {
-        ...webPageNode(base, {
-          name: SITE_NAME,
-          url: canonicalPageUrl("/"),
-          description: SITE_OFFICIAL_DESCRIPTION,
-        }),
+        ...webPageNode(
+          base,
+          {
+            name: SITE_NAME,
+            url: canonicalPageUrl("/"),
+            description,
+          },
+          locale
+        ),
         mainEntity: { "@id": softwareSchemaId(base) },
       },
-      softwareApplicationNode(base),
-      faqPageNode(),
+      softwareApplicationNode(base, locale),
+      faqPageNode(locale),
     ],
   };
 }

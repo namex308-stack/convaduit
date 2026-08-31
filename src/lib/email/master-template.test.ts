@@ -33,11 +33,11 @@ describe("ConvAudit master email template", () => {
     expect(html).toContain("https://www.convaudit.com/dashboard");
     expect(html).toContain(EMAIL_BRAND_ORANGE);
     expect(html).toContain("/apple-icon");
-    expect(html).toContain("AI-powered Ecommerce Audit &amp; Visibility Platform");
+    expect(html).toContain("منصة تدقيق وظهور للمتاجر الإلكترونية بالذكاء الاصطناعي");
     expect(html).toContain("https://www.convaudit.com");
-    expect(html).toContain("Support");
-    expect(html).toContain("Privacy Policy");
-    expect(html).toContain("Terms");
+    expect(html).toContain("الدعم");
+    expect(html).toContain("سياسة الخصوصية");
+    expect(html).toContain("الشروط والأحكام");
     expect(html).toContain("/contact");
     expect(html).toContain("/privacy");
     expect(html).toContain("/terms");
@@ -56,7 +56,7 @@ describe("ConvAudit master email template", () => {
     expect(html).not.toContain("padding:14px 28px");
     expect(html).toContain("تنبيه مهم");
     expect(html).toContain("حدث تغيير على متجرك.");
-    expect(html).toContain("Privacy Policy");
+    expect(html).toContain("سياسة الخصوصية");
   });
 
   it("escapes HTML in all template variables", () => {

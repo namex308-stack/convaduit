@@ -84,7 +84,7 @@ export const MARKETING_PLANS: MarketingPlan[] = [
     tagline: "ابدأ بتحليل أساسي واكشف فرص التحويل دون التزام.",
     monthlyPrice: 0,
     yearlyPrice: 0,
-    auditsLabel: "3 تحليلات / شهر",
+    auditsLabel: "3 تدقيقات / شهر",
     cta: "ابدأ مجاناً",
     featureKeys: [
       "plan.starter.f1",
@@ -97,10 +97,10 @@ export const MARKETING_PLANS: MarketingPlan[] = [
   {
     id: "pro",
     name: "احترافي",
-    tagline: "الخطة المناسبة للمتاجر الجادة: تحليل كامل، منافسون، واستوديو AI.",
+    tagline: "الخطة المناسبة للمتاجر الجادة: تدقيق كامل، منافسون، واستوديو الذكاء الاصطناعي.",
     monthlyPrice: PLAN_PRICES.pro.monthly,
     yearlyPrice: PLAN_PRICES.pro.yearly,
-    auditsLabel: "50 تحليلاً / شهر",
+    auditsLabel: "50 تدقيق / شهر",
     highlight: true,
     cta: "الترقية للاحترافي",
     featureKeys: [
@@ -119,7 +119,7 @@ export const MARKETING_PLANS: MarketingPlan[] = [
     tagline: "حدود أعلى ومراقبة مستمرة للفرق التي تدير عدة متاجر.",
     monthlyPrice: PLAN_PRICES.business.monthly,
     yearlyPrice: PLAN_PRICES.business.yearly,
-    auditsLabel: "200 تحليل / شهر",
+    auditsLabel: "200 تدقيق / شهر",
     cta: "الترقية للأعمال",
     featureKeys: [
       "plan.business.f1",

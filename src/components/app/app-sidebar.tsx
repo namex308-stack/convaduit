@@ -13,6 +13,7 @@ import {
   initialsFromDisplayName,
   resolvePreferredDisplayName,
 } from "@/lib/auth/display-user";
+import { localizedPlanName } from "@/lib/billing/localized-plan-name";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   APP_NAV_FOOTER,
@@ -78,6 +79,7 @@ export function AppSidebar({
   const [signingOut, setSigningOut] = React.useState(false);
   const displayName = resolvePreferredDisplayName(preferredDisplayName, user);
   const initials = displayName ? initialsFromDisplayName(displayName) : "?";
+  const localizedPlan = localizedPlanName(planName, t);
 
   const handleLogout = async () => {
     if (signingOut) return;
@@ -149,7 +151,7 @@ export function AppSidebar({
             <div className="min-w-0 flex-1 leading-tight">
               <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
               <p className="truncate text-[11px] text-muted-foreground">
-                {planName ? t("dashboard.planBadge", { plan: planName }) : t("dashboard.account")}
+                {planName ? t("dashboard.planBadge", { plan: localizedPlan }) : t("dashboard.account")}
               </p>
             </div>
           </Link>

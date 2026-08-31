@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale/resolve";
 import { isPlaceholderAuditId } from "@/lib/audits/types";
 import type { GeneratedContent } from "@/lib/types";
 import { decodeHtmlEntities } from "@/lib/text/decode-html";
@@ -22,6 +23,7 @@ type LoadState =
 
 export default function GeneratePage() {
   const t = useT();
+  const { locale } = useLocale();
   const params = useParams<{ id: string }>();
   const auditId = params?.id ?? "";
   const [state, setState] = React.useState<LoadState>({ status: "loading" });
@@ -36,7 +38,7 @@ export default function GeneratePage() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auditId, locale: "ar" }),
+        body: JSON.stringify({ auditId, locale }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -58,7 +60,7 @@ export default function GeneratePage() {
     } catch {
       setState({ status: "error", message: t("generate.generationFailed") });
     }
-  }, [auditId, t]);
+  }, [auditId, locale, t]);
 
   React.useEffect(() => {
     void load();

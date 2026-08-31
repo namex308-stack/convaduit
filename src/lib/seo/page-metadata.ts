@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getLocaleConfig } from "@/lib/locale/config";
-import { getActiveLocaleId } from "@/lib/locale/resolve";
+import { DEFAULT_LOCALE, getLocaleConfig } from "@/lib/locale/config";
+import type { LocaleId } from "@/lib/locale/types";
 import { SITE_OG_TITLE, SITE_TITLE_MAX } from "@/lib/seo/site-copy";
 import { twitterSiteFields } from "@/lib/seo/social";
 import { canonicalPageUrl } from "@/lib/site-url";
@@ -42,6 +42,8 @@ type PublicPageMetadataInput = {
    * (use sparingly for thin or transitional public surfaces).
    */
   indexable?: boolean;
+  /** UI locale for Open Graph `locale` tag. Defaults to Arabic. */
+  locale?: LocaleId;
 };
 
 /**
@@ -65,20 +67,27 @@ export function publicPageMetadata({
   path,
   type = "website",
   indexable = true,
+  locale = DEFAULT_LOCALE,
 }: PublicPageMetadataInput): Metadata {
-  const locale = getLocaleConfig(getActiveLocaleId());
+  const localeConfig = getLocaleConfig(locale);
   const canonical = canonicalPageUrl(path);
 
   return {
     title: resolvePublicTitle(title),
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: {
+        ar: canonical,
+        "x-default": canonical,
+      },
+    },
     openGraph: {
       title,
       description,
       url: canonical,
       siteName: "ConvAudit",
-      locale: locale.ogLocale,
+      locale: localeConfig.ogLocale,
       type,
       images: [OG_IMAGE],
     },

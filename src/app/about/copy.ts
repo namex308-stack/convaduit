@@ -4,11 +4,11 @@ import { ROUTES } from "@/lib/routes";
 export const ABOUT_TITLE = "من نحن";
 
 export const ABOUT_SUBTITLE =
-  "ConvAudit — منصة تدقيق متاجر إلكترونية بالذكاء الاصطناعي لتحليل SEO والتحويل وظهور الذكاء الاصطناعي وإشارات الثقة.";
+  "ConvAudit — منصة تدقيق وتحليل متاجر إلكترونية بالذكاء الاصطناعي: SEO، CRO، GEO، تحليلات المتجر، وإشارات الثقة.";
 
 /** Unique public meta description — factual, no invented metrics. */
 export const ABOUT_DESCRIPTION =
-  "ConvAudit منصة تدقيق متاجر إلكترونية بالذكاء الاصطناعي: SEO، تحويل، ظهور AI (GEO)، وإشارات ثقة. لتجار Shopify وWooCommerce وسلة وزد. https://www.convaudit.com";
+  "ConvAudit: تدقيق وتحليل متاجر إلكترونية بالذكاء الاصطناعي للخليج (GCC) — SEO، CRO، GEO، تحليلات، ومنافسين. Shopify وسلة وزد وWooCommerce. https://www.convaudit.com";
 
 export type AboutInlineLink = {
   phrase: string;
@@ -32,8 +32,8 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     paragraphs: [
       { text: SITE_OFFICIAL_DESCRIPTION, dir: "ltr" },
       {
-        text: "ConvAudit منصة ويب لتدقيق المتاجر الإلكترونية (ecommerce audit). نقرأ صفحة منتج عامة ونُرجع درجات وتوصيات مرتبة عبر SEO والتحويل وظهور الذكاء الاصطناعي وإشارات الثقة. الموقع الرسمي هو https://www.convaudit.com.",
-        links: [{ phrase: "ecommerce audit", href: ROUTES.docs }],
+        text: "ConvAudit منصة ويب لتدقيق المتاجر الإلكترونية. نقرأ صفحة منتج عامة ونُرجع درجات وتوصيات مرتبة عبر SEO والتحويل وظهور الذكاء الاصطناعي وإشارات الثقة. الموقع الرسمي هو https://www.convaudit.com.",
+        links: [{ phrase: "تدقيق المتاجر الإلكترونية", href: ROUTES.docs }],
       },
     ],
   },
@@ -41,8 +41,8 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     t: "لمن؟",
     paragraphs: [
       {
-        text: "لمن يدير متجراً إلكترونياً ويريد تدقيق موقع التجارة الإلكترونية (ecommerce website audit) على مستوى صفحة المنتج: تجار Shopify وWooCommerce وسلة وزد وMagento والمتاجر المخصصة. الجمهور هو بائع التجزئة الإلكتروني، لا وكالة تدّعي أرقاماً غير موثّقة.",
-        links: [{ phrase: "ecommerce website audit", href: "/#how" }],
+        text: "لمن يدير متجراً إلكترونياً في الخليج (السعودية، الإمارات، قطر، الكويت، البحرين، عُمان) ويريد تدقيق موقع المتجر الإلكتروني على مستوى صفحة المنتج: تجار Shopify وWooCommerce وسلة وزد وMagento والمتاجر المخصصة. الجمهور هو بائع التجزئة الإلكتروني، لا وكالة تدّعي أرقاماً غير موثّقة.",
+        links: [{ phrase: "تدقيق موقع المتجر الإلكتروني", href: "/#how" }],
       },
     ],
   },
@@ -64,13 +64,13 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     ],
   },
   {
-    t: "تدقيق SEO للمتاجر الإلكترونية",
+    t: "SEO للمتاجر الإلكترونية",
     paragraphs: [
       {
-        text: "ecommerce SEO audit هنا مراجعة لعناصر صفحة المنتج: العنوان، الوصف التعريفي، Schema، الصور، والوضوح للبحث. على Shopify وWooCommerce ينطبق نفس التدقيق على الصفحة العامة (Shopify SEO audit وWooCommerce SEO audit كحالات استخدام شائعة)، وليس تثبيتاً لتطبيق المنصة.",
+        text: "تدقيق SEO للمتاجر الإلكترونية هنا مراجعة لعناصر صفحة المنتج: العنوان، الوصف التعريفي، Schema، الصور، والوضوح للبحث. على Shopify وWooCommerce ينطبق نفس التدقيق على الصفحة العامة (حالات استخدام شائعة لـ Shopify وWooCommerce)، وليس تثبيتاً لتطبيق المنصة.",
         links: [
           {
-            phrase: "ecommerce SEO audit",
+            phrase: "تدقيق SEO للمتاجر الإلكترونية",
             href: ROUTES.blogPost("product-schema-markup"),
           },
         ],
@@ -81,10 +81,10 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     t: "تحليل التحويل",
     paragraphs: [
       {
-        text: "تحليل التحويل ينظر إلى ما يساعد المتسوق على فهم العرض والشراء: وضوح القيمة، السعر، ودعوة الإجراء في HTML. هذا تحسين تحويل للمتاجر الإلكترونية (ecommerce conversion optimization) على مستوى الصفحة — توصيات، وليست ضمانة لمعدل تحويل.",
+        text: "تحليل التحويل (CRO) ينظر إلى ما يساعد المتسوق على فهم العرض والشراء: وضوح القيمة، السعر، ودعوة الإجراء في HTML. هذا تحسين التحويل للمتاجر الإلكترونية على مستوى الصفحة — توصيات لنمو المبيعات، وليست ضمانة لمعدل تحويل.",
         links: [
           {
-            phrase: "ecommerce conversion optimization",
+            phrase: "تحسين التحويل للمتاجر الإلكترونية",
             href: ROUTES.blogPost("conversion-rate-optimization"),
           },
         ],
@@ -92,13 +92,28 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     ],
   },
   {
-    t: "AI visibility وGEO",
+    t: "تحليل صفحات المنتج والصفحات المقصودة",
     paragraphs: [
       {
-        text: "AI visibility وecommerce AI في ConvAudit تعني تقدير جاهزية الصفحة للاقتباس من إشاراتها بعد الزحف. GEO (تحسين محركات التوليد) هنا تحليل محلي: الأسئلة والأجوبة، Schema، والحقائق القابلة للاقتباس. الدرجات المرتبطة بـ ChatGPT أو Perplexity أو Google AI تقديرات من تلك الإشارات — وليست استعلاماً حياً داخل تلك المحركات، ولا يوجد تكامل بحث معها حالياً.",
+        text: "تحليل صفحة المنتج وتحليل الصفحة المقصودة (landing page) يركز على العنوان، الوصف، الصور، alt، والهيكل — مع تحليل تجربة المستخدم الظاهر في HTML العام. تحسين صفحة المنتج هدفه أوضح عرض وأسهل شراء، دون ادعاء نمو مبيعات مضمون.",
         links: [
           {
-            phrase: "AI visibility",
+            phrase: "تحليل صفحة المنتج",
+            href: ROUTES.blogPost("product-schema-markup"),
+          },
+          { phrase: "تحليل الصفحة المقصودة", href: ROUTES.docs },
+        ],
+      },
+    ],
+  },
+  {
+    t: "الظهور في الذكاء الاصطناعي وGEO",
+    paragraphs: [
+      {
+        text: "الظهور في الذكاء الاصطناعي في ConvAudit يعني تقدير جاهزية الصفحة للاقتباس من إشاراتها بعد الزحف. GEO (تحسين محركات التوليد) هنا تحليل محلي: الأسئلة والأجوبة، Schema، والحقائق القابلة للاقتباس. الدرجات المرتبطة بـ ChatGPT أو Perplexity أو Google AI تقديرات من تلك الإشارات — وليست استعلاماً حياً داخل تلك المحركات، ولا يوجد تكامل بحث معها حالياً.",
+        links: [
+          {
+            phrase: "الظهور في الذكاء الاصطناعي",
             href: ROUTES.blogPost("geo-ai-visibility-guide"),
           },
           { phrase: "GEO (تحسين محركات التوليد)", href: "/#methodology" },
@@ -110,10 +125,10 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     t: "إشارات الثقة",
     paragraphs: [
       {
-        text: "تدقيق trust signals يراجع ما يظهر للمتسوق قبل الدفع: السياسات، التقييمات إن وُجدت، والوضوح حول المتجر أو الضمان — كما هو ظاهر في الصفحة العامة.",
+        text: "تدقيق إشارات الثقة يراجع ما يظهر للمتسوق قبل الدفع: السياسات، التقييمات إن وُجدت، والوضوح حول المتجر أو الضمان — كما هو ظاهر في الصفحة العامة.",
         links: [
           {
-            phrase: "trust signals",
+            phrase: "إشارات الثقة",
             href: ROUTES.blogPost("trust-signals-ecommerce"),
           },
         ],
@@ -124,10 +139,10 @@ export const ABOUT_SECTIONS: readonly AboutSection[] = [
     t: "تحليل المنافسين",
     paragraphs: [
       {
-        text: "competitor analysis اختياري حسب الباقة: مقارنة فجوات صفحة منتجك بصفحات عامة لمنافسين تختارهم. لا نُخطر المنافسين، ولا نختلق ترتيب سوق.",
+        text: "تحليل المنافسين اختياري حسب الباقة: مقارنة فجوات صفحة منتجك بصفحات عامة لمنافسين تختارهم. لا نُخطر المنافسين، ولا نختلق ترتيب سوق.",
         links: [
           {
-            phrase: "competitor analysis",
+            phrase: "تحليل المنافسين",
             href: ROUTES.blogPost("competitor-analysis-strategy"),
           },
         ],
@@ -193,4 +208,20 @@ export function collectAboutInternalLinks(): readonly AboutInlineLink[] {
   return ABOUT_SECTIONS.flatMap((section) =>
     section.paragraphs.flatMap((paragraph) => paragraph.links ?? [])
   );
+}
+
+export function getAboutTitle(_locale?: string): string {
+  return ABOUT_TITLE;
+}
+
+export function getAboutSubtitle(_locale?: string): string {
+  return ABOUT_SUBTITLE;
+}
+
+export function getAboutDescription(_locale?: string): string {
+  return ABOUT_DESCRIPTION;
+}
+
+export function getAboutSections(_locale?: string): readonly AboutSection[] {
+  return ABOUT_SECTIONS;
 }

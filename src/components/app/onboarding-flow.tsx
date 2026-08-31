@@ -201,7 +201,7 @@ export function OnboardingFlow({ stepSlug }: { stepSlug: OnboardingStepSlug }) {
             router.replace(`/auth?next=${encodeURIComponent(`/onboarding/${stepSlug}`)}`);
             return;
           }
-          throw new Error("تعذّر التحميل");
+          throw new Error(t("onboarding.loadError"));
         }
         const data = (await res.json()) as { onboarding: OnboardingStatePayload };
         if (cancelled) return;

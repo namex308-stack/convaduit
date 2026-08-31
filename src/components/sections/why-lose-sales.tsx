@@ -1,6 +1,6 @@
 import { EyeOff, FileWarning, ShieldAlert, Swords } from "lucide-react";
 import { BentoCell, BentoPanel, Container, IconWell, Section, SectionHeader } from "@/components/design-system/section";
-import { translate as t } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
 const PROBLEMS = [
   {
@@ -29,7 +29,8 @@ const PROBLEMS = [
   },
 ] as const;
 
-export function WhyLoseSales() {
+export async function WhyLoseSales() {
+  const t = await getServerTranslate();
   return (
     <Section id="why-lose-sales">
       <Container>

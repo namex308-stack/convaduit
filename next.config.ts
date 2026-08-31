@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 import { APEX_TO_WWW_REDIRECTS } from "./src/lib/apex-www-redirects";
+import { buildContentSecurityPolicy } from "./src/lib/security/content-security-policy";
 import { PRIVATE_APP_PATHS } from "./src/lib/seo/private-app-paths";
 
 const repoRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -23,21 +24,10 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      // 'unsafe-eval' is dev-only: Turbopack's HMR client needs it for module
-      // reloading. Production bundles never call eval(), so it's dropped there.
-      `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"} https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "img-src 'self' data: https:",
-      "connect-src 'self' https: wss: ws:",
-      "frame-ancestors 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-      ...(isProd ? ["upgrade-insecure-requests"] : []),
-    ].join("; "),
+    value: buildContentSecurityPolicy({
+      isProd,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }),
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },

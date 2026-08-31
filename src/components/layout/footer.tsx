@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { SocialLinks } from "@/components/layout/social-links";
 import { ROUTES } from "@/lib/routes";
-import { translate as t, type TranslationKey } from "@/lib/i18n";
+import { useT, type TranslationKey } from "@/lib/i18n";
 
 /**
  * Public footer link inventory — real `href`s only (no JS-only destinations).
@@ -37,6 +39,7 @@ export const FOOTER_LINK_COLS: readonly {
     links: [
       { labelKey: "footer.blog", href: ROUTES.blog },
       { labelKey: "footer.link.geoGuide", href: ROUTES.blogPost("geo-ai-visibility-guide") },
+      { labelKey: "footer.link.seoForAiGuide", href: ROUTES.blogPost("seo-for-ai-complete-guide") },
       { labelKey: "footer.link.conversionGuide", href: ROUTES.blogPost("conversion-rate-optimization") },
       { labelKey: "footer.link.competitorGuide", href: ROUTES.blogPost("competitor-analysis-strategy") },
       { labelKey: "footer.link.trustGuide", href: ROUTES.blogPost("trust-signals-ecommerce") },
@@ -57,6 +60,7 @@ export const FOOTER_LINK_COLS: readonly {
 ];
 
 export function Footer() {
+  const t = useT();
   return (
     <footer className="mt-auto border-t border-border/50 bg-muted/20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
