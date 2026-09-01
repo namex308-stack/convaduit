@@ -32,9 +32,11 @@ import {
 } from "@/lib/billing/entitlements";
 import { emitSubscriptionWarningNotification } from "@/lib/notifications/emit";
 import type { AnalyzerJsonResult } from "@/lib/db/types";
+import type { AuditData } from "@/lib/types";
 import { assertSafePublicHttpUrl } from "@/lib/url-safety";
 import { analyzeGeo } from "@/lib/audit/geo-analyzer";
 import { applyGeoAnalysisToAudit } from "@/lib/audit/scoring";
+import { applySiteIntegrationsToAudit, runSiteIntegrations } from "@/lib/integrations";
 import {
   getOnboardingState,
   toAnalyzerOnboarding,
@@ -178,7 +180,7 @@ async function runAuditPipeline(input: {
     const geoAnalysis = analyzeGeo(product);
     const withGeo = applyGeoAnalysisToAudit(audit, geoAnalysis);
     const usedFallback = productResult.source === "fallback";
-    const withMeta = {
+    const withMeta: AuditData = {
       ...withGeo,
       storeUrl: resolvedStoreUrl || withGeo.storeUrl,
       competitorUrl: resolvedCompetitorUrl || withGeo.competitorUrl,
@@ -201,7 +203,24 @@ async function runAuditPipeline(input: {
       },
     };
 
-    await persistAuditResults(auditId, workspaceId, withMeta);
+    let toPersist: AuditData = withMeta;
+    if (!useLoadTestMocks) {
+      try {
+        const siteIntegrations = await runSiteIntegrations(primaryUrl);
+        toPersist = applySiteIntegrationsToAudit(withMeta, siteIntegrations);
+        console.info("[audit] site integrations", {
+          ssl: siteIntegrations.sslTls.status,
+          pagespeed: siteIntegrations.pageSpeed.status,
+          webrisk: siteIntegrations.webRisk.status,
+          ipgeo: siteIntegrations.ipGeo.status,
+          whois: siteIntegrations.whois.status,
+        });
+      } catch (err) {
+        console.error("[audit] site integrations failed:", err);
+      }
+    }
+
+    await persistAuditResults(auditId, workspaceId, toPersist);
 
     if (storeId || resolvedStoreUrl) {
       const sd = product.structuredData as Record<string, unknown>;

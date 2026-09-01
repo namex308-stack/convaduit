@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Mail,
@@ -66,7 +66,6 @@ export default function AuthPage() {
 
 function AuthPageInner() {
   const t = useT();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { theme, setTheme } = useTheme();
   const initialMode =
@@ -107,8 +106,8 @@ function AuthPageInner() {
   }, [callbackError, t]);
 
   const redirectAfterAuth = React.useCallback(() => {
-    router.replace(nextPath);
-  }, [nextPath, router]);
+    window.location.assign(nextPath);
+  }, [nextPath]);
 
   const handleGoogle = async () => {
     if (inFlightRef.current) return;

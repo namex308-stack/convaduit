@@ -23,6 +23,7 @@ describe("llms.txt", () => {
     expect(text).toMatch(/does not query ChatGPT, Perplexity/);
     expect(text).toMatch(/SEO audit/);
     expect(text).toMatch(/competitor analysis/);
+    expect(text).toContain("https://www.tiktok.com/@convaduit");
     expect(text).not.toMatch(/StorePulse/);
     expect(text).not.toMatch(/CONVADUIT|conva-aduit/);
     expect(text).not.toMatch(/cited in ChatGPT/);

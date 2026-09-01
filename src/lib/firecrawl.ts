@@ -9,7 +9,10 @@ import {
   extractPageData,
   extractionToStructuredData,
 } from "@/lib/firecrawl/extract";
-import { extractFirecrawlScreenshotUrl } from "@/lib/firecrawl/screenshot";
+import {
+  extractFirecrawlCrawledUrl,
+  extractFirecrawlScreenshotUrl,
+} from "@/lib/firecrawl/screenshot";
 import { fetchSafePublicHttpUrl } from "@/lib/safe-http-fetch";
 import { assertSafePublicHttpUrl } from "@/lib/url-safety";
 
@@ -142,15 +145,18 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
 
     const json = await res.json();
     const data = json.data ?? json;
+    const dataRecord =
+      data && typeof data === "object" && !Array.isArray(data)
+        ? (data as Record<string, unknown>)
+        : null;
     const html: string | undefined = typeof data.html === "string" ? data.html.slice(0, MAX_HTML_BYTES) : undefined;
     const markdown: string = data.markdown || "";
-    const screenshotUrl = extractFirecrawlScreenshotUrl(
-      data && typeof data === "object" ? (data as Record<string, unknown>) : null
-    );
-    const extracted = extractPageData(html, markdown, data.metadata as Record<string, unknown> | undefined, target);
-    const title = extracted.title || extractTitleFromUrl(target);
+    const screenshotUrl = extractFirecrawlScreenshotUrl(dataRecord);
+    const pageUrl = await resolveCrawledPageUrl(dataRecord, target);
+    const extracted = extractPageData(html, markdown, data.metadata as Record<string, unknown> | undefined, pageUrl);
+    const title = extracted.title || extractTitleFromUrl(pageUrl);
     const description = extracted.description || "";
-    const pageType = classifyPageType(target, title, markdown);
+    const pageType = classifyPageType(pageUrl, title, markdown);
     const structuredData = {
       ...extractionToStructuredData(extracted),
       ...(screenshotUrl ? { screenshotUrl } : {}),
@@ -160,13 +166,13 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
 
     return {
       page: {
-        url: target,
+        url: pageUrl,
         title,
         description,
         pageType,
         markdown: normalizedMarkdown,
         imageCount,
-        contentHash: hashContent(target, normalizedMarkdown),
+        contentHash: hashContent(pageUrl, normalizedMarkdown),
         structuredData,
         scrapeStatus: "ok",
         scrapeMs: Date.now() - started,
@@ -192,6 +198,20 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
       source: "none",
     };
   }
+}
+
+/**
+ * Prefer Firecrawl's post-redirect URL when present so screenshot matching
+ * compares against the page that was actually captured, not the raw target.
+ */
+async function resolveCrawledPageUrl(
+  data: Record<string, unknown> | null,
+  target: string
+): Promise<string> {
+  const crawled = extractFirecrawlCrawledUrl(data, target);
+  if (crawled === target) return target;
+  const safe = await assertSafePublicHttpUrl(crawled);
+  return safe.ok ? safe.href : target;
 }
 
 function composeCreditsFailureMessage(url: string, fallback: FallbackAttempt): string {

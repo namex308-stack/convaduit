@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  extractFirecrawlCrawledUrl,
   extractFirecrawlScreenshotUrl,
   parseScreenshotUrl,
   resolveWebsitePagePreview,
@@ -15,6 +16,34 @@ describe("parseScreenshotUrl", () => {
     expect(parseScreenshotUrl("javascript:alert(1)")).toBeNull();
     expect(parseScreenshotUrl("")).toBeNull();
     expect(parseScreenshotUrl(null)).toBeNull();
+  });
+});
+
+describe("extractFirecrawlCrawledUrl", () => {
+  const fallback = "https://shop.example.com/products/serum";
+
+  it("prefers metadata.url (post-redirect) over sourceURL", () => {
+    expect(
+      extractFirecrawlCrawledUrl(
+        {
+          metadata: {
+            url: "https://www.shop.example.com/products/serum",
+            sourceURL: "https://shop.example.com/products/serum",
+          },
+        },
+        fallback
+      )
+    ).toBe("https://www.shop.example.com/products/serum");
+  });
+
+  it("falls back to sourceURL then the scrape target", () => {
+    expect(
+      extractFirecrawlCrawledUrl(
+        { metadata: { sourceURL: "https://www.shop.example.com/products/serum" } },
+        fallback
+      )
+    ).toBe("https://www.shop.example.com/products/serum");
+    expect(extractFirecrawlCrawledUrl({ markdown: "# Hi" }, fallback)).toBe(fallback);
   });
 });
 
@@ -34,6 +63,10 @@ describe("extractFirecrawlScreenshotUrl", () => {
 });
 
 describe("resolveWebsitePagePreview", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("keeps the analyzed URL as the preview target and shows its screenshot", () => {
     const preview = resolveWebsitePagePreview({
       analyzedUrl: TARGET,
@@ -66,16 +99,40 @@ describe("resolveWebsitePagePreview", () => {
     expect(collision).toEqual({ kind: "unavailable" });
   });
 
+  it("accepts a www.-only host difference as the same public URL", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const shot = "https://cdn.firecrawl.dev/target-shot.png";
+    const withWww = resolveWebsitePagePreview({
+      analyzedUrl: TARGET,
+      pageUrl: "https://www.shop.example.com/products/serum",
+      pageScreenshotUrl: shot,
+    });
+    const withoutWww = resolveWebsitePagePreview({
+      analyzedUrl: "https://www.shop.example.com/products/serum",
+      pageUrl: TARGET,
+      pageScreenshotUrl: shot,
+    });
+    expect(withWww).toEqual({ kind: "screenshot", url: shot });
+    expect(withoutWww).toEqual({ kind: "screenshot", url: shot });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it("rejects a screenshot when the page URL is not the analyzed target", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const pageUrl = "https://shop.example.com/collections/all";
     const preview = resolveWebsitePagePreview({
       analyzedUrl: TARGET,
-      pageUrl: "https://shop.example.com/collections/all",
+      pageUrl,
       pageScreenshotUrl: "https://cdn.firecrawl.dev/other-shot.png",
     });
     expect(preview).toEqual({ kind: "unavailable" });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toMatch(/URL mismatch/i);
+    expect(warn.mock.calls[0]?.[1]).toEqual({ analyzedUrl: TARGET, pageUrl });
   });
 
   it("returns Preview unavailable when screenshot capture is missing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(
       resolveWebsitePagePreview({
         analyzedUrl: TARGET,
@@ -83,5 +140,6 @@ describe("resolveWebsitePagePreview", () => {
         pageScreenshotUrl: null,
       })
     ).toEqual({ kind: "unavailable" });
+    expect(warn).not.toHaveBeenCalled();
   });
 });

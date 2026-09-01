@@ -5,6 +5,7 @@
 import { blogSeoForAiMessages } from "./blog-seo-for-ai";
 import { blogClusterUpgradeMessages } from "./blog-cluster-upgrades";
 import { blogSeoIssuesMessages } from "./blog-seo-issues";
+import { blogAiProductSearchRelevanceMessages } from "./blog-ai-product-search-relevance";
 
 export const arMessages = {
   "nav.dashboard": "لوحة التحكم",
@@ -37,6 +38,7 @@ export const arMessages = {
   "footer.social.label": "الحسابات الرسمية",
   "footer.social.x": "ConvAudit على X",
   "footer.social.linkedin": "ConvAudit على LinkedIn",
+  "footer.social.tiktok": "ConvAudit على TikTok",
   "contact.sendEmail": "أرسل رسالة",
   "contact.openWhatsApp": "فتح واتساب",
   "terms.and": "و",
@@ -675,6 +677,31 @@ export const arMessages = {
   "report.metaImages": "الصور",
   "report.metaScrapedAt": "وقت السحب",
   "report.metaContentHash": "بصمة المحتوى",
+  "report.siteIntegrations": "فحوصات الموقع",
+  "report.int.statusOk": "تم",
+  "report.int.statusSkipped": "تخطّي",
+  "report.int.statusError": "تعذّر",
+  "report.int.ssl": "شهادة SSL/TLS",
+  "report.int.pagespeed": "PageSpeed Insights",
+  "report.int.webrisk": "Web Risk",
+  "report.int.ipgeo": "الموقع الجغرافي",
+  "report.int.whois": "WHOIS",
+  "report.int.protocol": "البروتوكول",
+  "report.int.issuer": "الجهة المُصدِرة",
+  "report.int.validTo": "صالحة حتى",
+  "report.int.performance": "الأداء",
+  "report.int.psiSeo": "SEO",
+  "report.int.accessibility": "إمكانية الوصول",
+  "report.int.lcp": "LCP",
+  "report.int.grade": "التقييم",
+  "report.int.threats": "التهديدات",
+  "report.int.safe": "لا توجد تهديدات معروفة",
+  "report.int.ip": "عنوان IP",
+  "report.int.country": "الدولة",
+  "report.int.org": "الجهة",
+  "report.int.domain": "النطاق",
+  "report.int.registrar": "المُسجِّل",
+  "report.int.expires": "ينتهي",
   "report.generatedTitle": "العنوان",
   "report.generatedDescription": "الوصف",
   "report.generatedSourceGemini": "Gemini",
@@ -809,6 +836,23 @@ export const arMessages = {
   "shopify.home.title": "ابدأ متجر Shopify",
   "shopify.home.body": "لبناء متجر جديد في الخليج — ثم دقّق صفحات المنتجات مع ConvAudit.",
   "shopify.home.button": "تعرّف على Shopify",
+
+  "productLookup.urlLabel": "رابط صفحة المنتج",
+  "productLookup.urlHint": "رابط عام لصفحة منتج على شوبيفاي أو سلة أو زد أو أي متجر.",
+  "productLookup.urlError": "أدخل رابطاً يبدأ بـ http أو https.",
+  "productLookup.submit": "حلّل الرابط",
+  "productLookup.analyzing": "جاري التحليل…",
+  "productLookup.genericError": "تعذّر قراءة الصفحة. حاول مرة أخرى.",
+  "productLookup.untitled": "منتج بدون عنوان",
+  "productLookup.priceMissing": "السعر غير ظاهر",
+  "productLookup.brand": "العلامة",
+  "productLookup.rating": "التقييم",
+  "productLookup.reviews": "المراجعات",
+  "productLookup.faq": "الأسئلة الشائعة على الصفحة",
+  "productLookup.imageAlt": "صورة المنتج",
+  "productLookup.ctaTitle": "عايز تحليل كامل لمتجرك بالكامل مش منتج واحد بس؟",
+  "productLookup.ctaBody": "التحليل الكامل يعطيك درجات التحويل وSEO والثقة وخطوات إصلاح مرتبة — هذا الفحص السريع يعرض بيانات الصفحة فقط.",
+  "productLookup.ctaButton": "ابدأ التحليل الكامل",
   "pricing.title": "أسعار تدقيق وتحليل المتاجر في الخليج",
   "pricing.metaDescription":
     "باقات ConvAudit لتدقيق وتحليل المتاجر الإلكترونية: SEO وCRO وGEO Audit وتحليلات المتجر والمنافسين. للسعودية والإمارات وقطر والكويت والبحرين وعُمان — ابدأ مجاناً.",
@@ -1363,6 +1407,7 @@ export const arMessages = {
   "footer.link.geoVisibility": "الظهور في GEO",
   "footer.link.platforms": "المنصات المدعومة",
   "footer.link.shopify": "ابدأ متجر Shopify",
+  "footer.link.productLookup": "تحليل صفحة منتج",
   "footer.link.woocommerce": "WooCommerce",
   "footer.link.salla": "Salla",
   "footer.link.zid": "Zid",
@@ -1389,6 +1434,7 @@ export const arMessages = {
   "footer.link.trustGuide": "إشارات الثقة",
   "footer.link.schemaGuide": "Product Schema",
   "footer.link.aiCopyGuide": "أوصاف المنتجات بالذكاء الاصطناعي",
+  "footer.link.aiSearchRelevanceGuide": "صلة المنتج بالبحث بالذكاء الاصطناعي",
 
   // ===== Navbar (marketing) =====
   "navbar.nav.product": "المنتج",
@@ -1727,6 +1773,7 @@ export const arMessages = {
   ...blogSeoForAiMessages,
   ...blogClusterUpgradeMessages,
   ...blogSeoIssuesMessages,
+  ...blogAiProductSearchRelevanceMessages,
 } as const;
 
 export type MessageKey = keyof typeof arMessages;

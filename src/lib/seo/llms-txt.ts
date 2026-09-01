@@ -20,6 +20,8 @@ const PUBLIC_PAGE_NOTES: Partial<Record<string, string>> = {
   [ROUTES.contact]: "Contact",
   [ROUTES.roadmap]: "Directional product priorities — not delivery commitments",
   [ROUTES.shopify]: "Shopify affiliate landing — start a store via partner link, then audit product pages",
+  [ROUTES.productLookup]:
+    "Free product URL lookup — extract price, brand, rating, images, and FAQ from a public product page (no account, no full audit)",
 };
 
 function publicPageNote(path: string): string {

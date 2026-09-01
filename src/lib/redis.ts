@@ -68,3 +68,40 @@ export async function checkRateLimit(
   }
   return limiter.limit(identifier);
 }
+
+/** Generous anonymous cap — cheaper than a full audit (no Gemini). */
+const PRODUCT_LOOKUP_PER_HOUR = 20;
+let _productLookupLimiter: Ratelimit | null = null;
+
+function getProductLookupRatelimit(): Ratelimit | null {
+  const redis = getRedis();
+  if (!redis) return null;
+  if (!_productLookupLimiter) {
+    _productLookupLimiter = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(PRODUCT_LOOKUP_PER_HOUR, "1 h"),
+      prefix: "ratelimit:product-lookup",
+      analytics: true,
+    });
+  }
+  return _productLookupLimiter;
+}
+
+/**
+ * Rate limit for the free product-lookup tool.
+ * Pass a namespaced identifier such as `product-lookup:ip:…` so this bucket
+ * never shares quota with `checkRateLimit` audit keys.
+ */
+export async function checkProductLookupRateLimit(
+  identifier: string
+): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
+  const limiter = getProductLookupRatelimit();
+  if (!limiter) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[redis] product-lookup rate limit denied: Upstash Redis not configured");
+      return { success: false, limit: 0, remaining: 0, reset: 0 };
+    }
+    return { success: true, limit: Infinity, remaining: Infinity, reset: 0 };
+  }
+  return limiter.limit(identifier);
+}

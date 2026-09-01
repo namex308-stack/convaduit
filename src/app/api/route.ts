@@ -20,6 +20,7 @@ export async function GET() {
       "GET|PATCH /api/profile": "Account profile (Supabase profiles)",
       "GET|PATCH /api/onboarding": "Load / save enterprise onboarding profile",
       "POST /api/generate": "Generate AI copy (title, description, FAQ, meta, ads)",
+      "POST /api/product-lookup": "Extract price, brand, rating, images, and FAQ from a product URL",
       "POST /api/checkout": "Create a Paymob checkout session",
       "POST /api/webhook/paymob": "Paymob payment webhook",
       "GET /api/oauth/google": "Start Google OAuth via Supabase",

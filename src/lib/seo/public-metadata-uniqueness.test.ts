@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ABOUT_DESCRIPTION, ABOUT_TITLE } from "@/app/about/copy";
 import { BLOG_INDEX_DESCRIPTION, BLOG_INDEX_TITLE } from "@/app/blog/copy";
+import {
+  PRODUCT_LOOKUP_META_DESCRIPTION,
+  PRODUCT_LOOKUP_PAGE_TITLE,
+} from "@/app/product-lookup/copy";
 import { BLOG_POSTS, BLOG_SLUGS, blogPostMetaDescription } from "@/lib/blog-posts";
 import { translate } from "@/lib/locale/t";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP_DISPLAY } from "@/lib/seo/contact";
@@ -61,6 +65,11 @@ const STATIC_PUBLIC_PAGES = [
     title: "خارطة طريق المنتج",
     description:
       "خارطة طريق ConvAudit لمتاجر في السعودية والإمارات وقطر والكويت والبحرين وعُمان: الآن والتالي ولاحقاً — دون تعهدات تسليم ملزمة.",
+  },
+  {
+    path: ROUTES.productLookup,
+    title: PRODUCT_LOOKUP_PAGE_TITLE,
+    description: PRODUCT_LOOKUP_META_DESCRIPTION,
   },
 ] as const;
 

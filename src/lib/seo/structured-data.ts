@@ -273,7 +273,7 @@ export function buildWebSiteJsonLd() {
 }
 
 /**
- * Offer prices mirror `MARKETING_PLANS` / Kashier EGP amounts — never invent USD.
+ * Offer prices mirror `MARKETING_PLANS` / Paymob EGP amounts — never invent USD.
  */
 export function buildSoftwareApplicationJsonLd(locale: LocaleId = "ar") {
   const base = getSiteUrl();

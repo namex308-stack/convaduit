@@ -16,6 +16,7 @@ export const PUBLIC_INDEXABLE_PATHS = [
   ROUTES.contact,
   ROUTES.roadmap,
   ROUTES.shopify,
+  ROUTES.productLookup,
 ] as const;
 
 /** Fragment ids that exist on the named public pathname. */

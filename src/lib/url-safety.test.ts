@@ -5,6 +5,7 @@ import {
   assertSafePublicHttpUrl,
   isBlockedIpAddress,
   isPrivateOrReservedHostname,
+  resolveSafePublicHttpUrl,
 } from "@/lib/url-safety";
 import { ssrfLookup } from "@/lib/safe-http-fetch";
 
@@ -20,6 +21,28 @@ const lookupSsrf = promisify(ssrfLookup) as (
   hostname: string,
   options: { all?: boolean }
 ) => Promise<string | Array<{ address: string; family: number }>>;
+
+describe("resolveSafePublicHttpUrl", () => {
+  it("returns resolved public addresses for a hostname", async () => {
+    const r = await resolveSafePublicHttpUrl("https://shop.example.com/products/a", {
+      lookup: lookupPublic,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.hostname).toBe("shop.example.com");
+      expect(r.addresses).toEqual(PUBLIC_A);
+    }
+  });
+
+  it("returns the IP literal itself when the host is a public address", async () => {
+    const r = await resolveSafePublicHttpUrl("https://8.8.8.8/");
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.hostname).toBe("8.8.8.8");
+      expect(r.addresses[0]?.address).toBe("8.8.8.8");
+    }
+  });
+});
 
 describe("assertSafePublicHttpUrl", () => {
   it("allows a legitimate public URL after DNS to a public IP", async () => {

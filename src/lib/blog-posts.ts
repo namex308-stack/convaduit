@@ -207,6 +207,28 @@ export const BLOG_POSTS: readonly BlogPostMeta[] = [
       { qKey: "blog.post8.faq.q7", aKey: "blog.post8.faq.a7" },
     ],
   },
+  {
+    slug: "ai-product-search-relevance",
+    titleKey: "blog.post9.title",
+    excerptKey: "blog.post9.excerpt",
+    dateKey: "blog.post9.date",
+    publishedOn: "2026-09-01",
+    readTime: 12,
+    categoryKey: "blog.post9.category",
+    color: "#FF6600",
+    coverLabel: "AI SEO",
+    metaDescription:
+      "كيف تجعل منتجات متجرك أكثر صلةً بالبحث باستخدام الذكاء الاصطناعي: نية البحث، FAQ، Schema ومسار عمل عملي لمتاجر الخليج — دون ضمان ترتيب أو ظهور في ChatGPT.",
+    faqKeys: [
+      { qKey: "blog.post9.faq.q1", aKey: "blog.post9.faq.a1" },
+      { qKey: "blog.post9.faq.q2", aKey: "blog.post9.faq.a2" },
+      { qKey: "blog.post9.faq.q3", aKey: "blog.post9.faq.a3" },
+      { qKey: "blog.post9.faq.q4", aKey: "blog.post9.faq.a4" },
+      { qKey: "blog.post9.faq.q5", aKey: "blog.post9.faq.a5" },
+      { qKey: "blog.post9.faq.q6", aKey: "blog.post9.faq.a6" },
+      { qKey: "blog.post9.faq.q7", aKey: "blog.post9.faq.a7" },
+    ],
+  },
 ];
 
 /** Stable slug list derived from `BLOG_POSTS` (single source of truth). */
@@ -239,7 +261,7 @@ export const BLOG_RELATED_SLUGS: Readonly<Record<string, readonly string[]>> = {
   "ai-product-descriptions": [
     "seo-for-ai-complete-guide",
     "product-schema-markup",
-    "identify-seo-issues-store-growth",
+    "ai-product-search-relevance",
   ],
   "trust-signals-ecommerce": [
     "conversion-rate-optimization",
@@ -249,12 +271,17 @@ export const BLOG_RELATED_SLUGS: Readonly<Record<string, readonly string[]>> = {
   "seo-for-ai-complete-guide": [
     "geo-ai-visibility-guide",
     "product-schema-markup",
-    "identify-seo-issues-store-growth",
+    "ai-product-search-relevance",
   ],
   "identify-seo-issues-store-growth": [
     "product-schema-markup",
     "seo-for-ai-complete-guide",
     "conversion-rate-optimization",
+  ],
+  "ai-product-search-relevance": [
+    "seo-for-ai-complete-guide",
+    "ai-product-descriptions",
+    "product-schema-markup",
   ],
 };
 

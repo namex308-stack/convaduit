@@ -6,7 +6,7 @@ import { translate } from "@/lib/locale/t";
 import { arMessages } from "@/lib/locale/messages/ar";
 import { buildLlmsTxt } from "@/lib/seo/llms-txt";
 import { SITE_NAME, SITE_OFFICIAL_DESCRIPTION } from "@/lib/seo/site-copy";
-import { ORGANIZATION_SAME_AS, SOCIAL_PROFILES } from "@/lib/seo/social";
+import { ORGANIZATION_SAME_AS, SOCIAL_PROFILES, TIKTOK_PROFILE_URL } from "@/lib/seo/social";
 import {
   buildHomeJsonLdGraph,
   buildOrganizationJsonLd,
@@ -115,10 +115,10 @@ describe("public brand entity", () => {
   });
 
   it("does not invent Organization sameAs profiles", () => {
-    expect(SOCIAL_PROFILES).toEqual([]);
-    expect(ORGANIZATION_SAME_AS).toEqual([]);
+    expect(SOCIAL_PROFILES.map((p) => p.id)).toEqual(["tiktok"]);
+    expect(ORGANIZATION_SAME_AS).toEqual(["https://www.tiktok.com/@convaduit"]);
     const org = buildOrganizationJsonLd() as Record<string, unknown>;
-    expect(org.sameAs).toBeUndefined();
+    expect(org.sameAs).toEqual(["https://www.tiktok.com/@convaduit"]);
     expect(JSON.stringify(org)).not.toMatch(/x\.com|linkedin\.com|facebook\.com|instagram\.com/i);
   });
 
@@ -127,8 +127,10 @@ describe("public brand entity", () => {
     expect(SITE_OFFICIAL_DESCRIPTION).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
     expect(homepageH1()).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
     expect(translate("footer.tagline")).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
-    expect(JSON.stringify(buildHomeJsonLdGraph())).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
-    expect(buildLlmsTxt()).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
+    expect(JSON.stringify(buildHomeJsonLdGraph()).replaceAll(TIKTOK_PROFILE_URL, "")).not.toMatch(
+      FORBIDDEN_PUBLIC_BRAND
+    );
+    expect(buildLlmsTxt().replaceAll(TIKTOK_PROFILE_URL, "")).not.toMatch(FORBIDDEN_PUBLIC_BRAND);
 
     for (const [key, value] of Object.entries(arMessages)) {
       if (PUBLIC_MESSAGE_PREFIXES.some((prefix) => key.startsWith(prefix))) {

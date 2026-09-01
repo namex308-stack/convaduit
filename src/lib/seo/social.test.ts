@@ -3,17 +3,22 @@ import {
   ORGANIZATION_SAME_AS,
   SOCIAL_PROFILES,
   SOCIAL_X_HANDLE,
+  TIKTOK_PROFILE_URL,
   twitterSiteFields,
 } from "@/lib/seo/social";
 
 describe("official social profiles", () => {
-  it("does not advertise non-ConvAudit handles as the live identity", () => {
-    expect(SOCIAL_PROFILES).toEqual([]);
-    expect(ORGANIZATION_SAME_AS).toEqual([]);
+  it("lists only confirmed ConvAudit-branded profiles", () => {
+    expect(SOCIAL_PROFILES).toEqual([{ id: "tiktok", url: TIKTOK_PROFILE_URL }]);
+    expect(ORGANIZATION_SAME_AS).toEqual([TIKTOK_PROFILE_URL]);
+    expect(TIKTOK_PROFILE_URL).toBe("https://www.tiktok.com/@convaduit");
     expect(SOCIAL_X_HANDLE).toBeUndefined();
     expect(twitterSiteFields()).toEqual({});
     expect(JSON.stringify({ SOCIAL_PROFILES, ORGANIZATION_SAME_AS })).not.toMatch(
-      /CONVADUIT|conva-aduit|StorePulse/i
+      /conva-aduit|StorePulse/i
+    );
+    expect(JSON.stringify({ SOCIAL_PROFILES, ORGANIZATION_SAME_AS })).not.toMatch(
+      /x\.com|linkedin\.com|facebook\.com|instagram\.com/i
     );
   });
 });

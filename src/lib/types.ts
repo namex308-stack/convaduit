@@ -144,6 +144,86 @@ export interface GeoAnalysisResult {
   };
 }
 
+export type SiteIntegrationStatus = "ok" | "skipped" | "error";
+
+export interface SiteIntegrationBase {
+  status: SiteIntegrationStatus;
+  checkedAt: string;
+  durationMs: number;
+  error?: string;
+  skipReason?: string;
+}
+
+export interface SslTlsIntegration extends SiteIntegrationBase {
+  service: "ssl_tls";
+  hostname?: string;
+  port?: number;
+  protocol?: string | null;
+  authorized?: boolean;
+  validFrom?: string;
+  validTo?: string;
+  daysUntilExpiry?: number | null;
+  issuer?: string;
+  subjectCn?: string;
+  sans?: string[];
+  hostnameMatches?: boolean;
+  expired?: boolean;
+  grade?: "ok" | "warn" | "fail";
+}
+
+export interface PageSpeedIntegration extends SiteIntegrationBase {
+  service: "pagespeed";
+  strategy?: "mobile";
+  performance?: number | null;
+  accessibility?: number | null;
+  bestPractices?: number | null;
+  seo?: number | null;
+  lcp?: string | null;
+  cls?: number | null;
+  ttfb?: string | null;
+}
+
+export interface WebRiskIntegration extends SiteIntegrationBase {
+  service: "web_risk";
+  threatTypes?: string[];
+  isSafe?: boolean;
+}
+
+export interface IpGeoIntegration extends SiteIntegrationBase {
+  service: "ip_geo";
+  ip?: string;
+  country?: string;
+  countryCode?: string;
+  city?: string;
+  region?: string;
+  organization?: string;
+  timezone?: string;
+  asn?: string;
+  provider?: "geojs" | "ipwhois";
+}
+
+export interface WhoisIntegration extends SiteIntegrationBase {
+  service: "whois";
+  domain?: string;
+  registrar?: string | null;
+  registeredAt?: string | null;
+  expiresAt?: string | null;
+  updatedAt?: string | null;
+  statuses?: string[];
+  nameservers?: string[];
+  dnssec?: boolean | null;
+  source?: "rdap";
+}
+
+/** Free website-analysis integrations attached to the existing audit payload. */
+export interface SiteIntegrations {
+  sslTls: SslTlsIntegration;
+  pageSpeed: PageSpeedIntegration;
+  webRisk: WebRiskIntegration;
+  ipGeo: IpGeoIntegration;
+  whois: WhoisIntegration;
+}
+
 export interface AuditData {
   id?: string;
   productUrl: string;
@@ -170,6 +250,8 @@ export interface AuditData {
   pageSignals?: PageSignals;
   /** Scrape provenance for the primary page. */
   crawlMetadata?: CrawlMetadata;
+  /** Free SSL / PageSpeed / Web Risk / IP-geo / WHOIS checks (never mock data). */
+  siteIntegrations?: SiteIntegrations;
   /** Latest AI (or page-derived) rewrite payload for this audit. */
   generatedContent?: GeneratedContent;
   /** Persisted audit lifecycle status (queued → … → completed|failed). */

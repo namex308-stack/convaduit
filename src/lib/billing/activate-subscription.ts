@@ -10,7 +10,7 @@ type Plan = PlanId;
  * Activate a paid plan after Paymob payment (or demo checkout).
  * Idempotent on orderId. Updates workspace.plan_id + subscriptions.
  * Fail-closed when writes fail.
- * Payment reference is stored in subscriptions.kashier_subscription_id (existing column).
+ * Payment reference (Paymob merchant order id) is stored in subscriptions.kashier_subscription_id (legacy column name).
  */
 export async function activateSubscription(
   userId: string,
@@ -36,7 +36,7 @@ export async function activateSubscription(
     return { activated: false, alreadyProcessed: false };
   }
 
-  // Idempotency: same payment reference already applied (column name unchanged).
+  // Idempotency: same Paymob order id already applied (legacy column name unchanged).
   const { data: byOrder, error: byOrderError } = await sb
     .from("subscriptions")
     .select("id, status, workspace_id")

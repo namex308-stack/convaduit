@@ -24,6 +24,7 @@ const SITEMAP_SIGNAL: Partial<
   [ROUTES.contact]: { priority: 0.5, changeFrequency: "monthly" },
   [ROUTES.roadmap]: { priority: 0.4, changeFrequency: "monthly" },
   [ROUTES.shopify]: { priority: 0.7, changeFrequency: "monthly" },
+  [ROUTES.productLookup]: { priority: 0.8, changeFrequency: "weekly" },
 };
 
 const BLOG_POST_SIGNAL = {

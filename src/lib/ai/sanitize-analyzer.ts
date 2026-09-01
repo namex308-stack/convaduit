@@ -86,7 +86,7 @@ export type BatchedPillarAnalysis = {
   recommendationsResult: AnalyzerJsonResult;
   perPillarResults: Record<"conversion" | "seo" | "trust", AnalyzerJsonResult>;
   /** Who actually produced conversion/SEO/trust — never claim Gemini on heuristic fallback. */
-  pillarSource: "gemini" | "heuristic";
+  pillarSource: "gemini" | "groq" | "heuristic";
 };
 
 function clamp(n: unknown): number {

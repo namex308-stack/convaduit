@@ -19,6 +19,7 @@ export const ROUTES = {
   geo: "/geo",
   roadmap: "/roadmap",
   shopify: "/shopify",
+  productLookup: "/product-lookup",
 
   auth: "/auth",
   dashboard: "/dashboard",

@@ -13,15 +13,27 @@ function XLogo({ className }: { className?: string }) {
   );
 }
 
+function TikTokLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.76-.31 2.89 2.89 0 0 1 3.7-2.81V9.07a6.27 6.27 0 0 0-.82-.05A6.34 6.34 0 0 0 3.15 15.3a6.34 6.34 0 0 0 12.68 0V8.31a8.2 8.2 0 0 0 4.76 1.52V6.7a4.84 4.84 0 0 1-1-.01z" />
+    </svg>
+  );
+}
+
+type SocialIcon = typeof XLogo | typeof Linkedin | typeof TikTokLogo;
+
 function socialProfileUi(id: SocialProfileId): {
   labelKey: TranslationKey;
-  Icon: typeof XLogo | typeof Linkedin;
+  Icon: SocialIcon;
 } {
   switch (id) {
     case "x":
       return { labelKey: "footer.social.x", Icon: XLogo };
     case "linkedin":
       return { labelKey: "footer.social.linkedin", Icon: Linkedin };
+    case "tiktok":
+      return { labelKey: "footer.social.tiktok", Icon: TikTokLogo };
     default: {
       const _exhaustive: never = id;
       return _exhaustive;

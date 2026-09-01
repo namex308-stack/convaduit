@@ -956,4 +956,249 @@ export const POST_BODIES: readonly BlogPostBody[] = [
       },
     ],
   },
+  {
+    slug: "ai-product-search-relevance",
+    titleKey: "blog.post9.title",
+    content: [
+      { type: "h2", textKey: "blog.post9.h2_intro" },
+      { type: "p", textKey: "blog.post9.p_intro_1" },
+      { type: "p", textKey: "blog.post9.p_intro_2" },
+      { type: "p", textKey: "blog.post9.p_intro_3" },
+
+      { type: "h2", textKey: "blog.post9.h2_meaning" },
+      { type: "p", textKey: "blog.post9.p_meaning_1" },
+      { type: "p", textKey: "blog.post9.p_meaning_2" },
+      { type: "p", textKey: "blog.post9.p_meaning_3" },
+
+      { type: "h2", textKey: "blog.post9.h2_diff" },
+      { type: "p", textKey: "blog.post9.p_diff_1" },
+      {
+        type: "table",
+        headers: ["blog.post9.table.h1", "blog.post9.table.h2", "blog.post9.table.h3"],
+        rows: [
+          ["blog.post9.table.r1c1", "blog.post9.table.r1c2", "blog.post9.table.r1c3"],
+          ["blog.post9.table.r2c1", "blog.post9.table.r2c2", "blog.post9.table.r2c3"],
+          ["blog.post9.table.r3c1", "blog.post9.table.r3c2", "blog.post9.table.r3c3"],
+          ["blog.post9.table.r4c1", "blog.post9.table.r4c2", "blog.post9.table.r4c3"],
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post9.h2_gcc" },
+      { type: "p", textKey: "blog.post9.p_gcc_1" },
+      { type: "p", textKey: "blog.post9.p_gcc_2" },
+      { type: "p", textKey: "blog.post9.p_gcc_3" },
+      { type: "p", textKey: "blog.post9.p_gcc_4" },
+
+      { type: "h2", textKey: "blog.post9.h2_intent" },
+      { type: "p", textKey: "blog.post9.p_intent_1" },
+      { type: "p", textKey: "blog.post9.p_intent_2" },
+      {
+        type: "ul",
+        itemKeys: [
+          "blog.post9.ul_intent_1",
+          "blog.post9.ul_intent_2",
+          "blog.post9.ul_intent_3",
+          "blog.post9.ul_intent_4",
+        ],
+      },
+      { type: "p", textKey: "blog.post9.p_intent_3" },
+
+      { type: "h2", textKey: "blog.post9.h2_workflow" },
+      { type: "p", textKey: "blog.post9.p_workflow_1" },
+      { type: "h3", textKey: "blog.post9.h3_step1" },
+      { type: "p", textKey: "blog.post9.p_step1" },
+      { type: "h3", textKey: "blog.post9.h3_step2" },
+      { type: "p", textKey: "blog.post9.p_step2" },
+      { type: "h3", textKey: "blog.post9.h3_step3" },
+      { type: "p", textKey: "blog.post9.p_step3" },
+      { type: "h3", textKey: "blog.post9.h3_step4" },
+      { type: "p", textKey: "blog.post9.p_step4" },
+      { type: "h3", textKey: "blog.post9.h3_step5" },
+      { type: "p", textKey: "blog.post9.p_step5" },
+      { type: "p", textKey: "blog.post9.p_workflow_2" },
+
+      { type: "h2", textKey: "blog.post9.h2_onpage" },
+      { type: "p", textKey: "blog.post9.p_onpage_1" },
+      {
+        type: "ul",
+        itemKeys: [
+          "blog.post9.ul_onpage_1",
+          "blog.post9.ul_onpage_2",
+          "blog.post9.ul_onpage_3",
+          "blog.post9.ul_onpage_4",
+          "blog.post9.ul_onpage_5",
+          "blog.post9.ul_onpage_6",
+        ],
+      },
+      { type: "p", textKey: "blog.post9.p_onpage_2" },
+
+      { type: "h2", textKey: "blog.post9.h2_platforms" },
+      { type: "p", textKey: "blog.post9.p_platforms_1" },
+      { type: "h3", textKey: "blog.post9.h3_shopify" },
+      { type: "p", textKey: "blog.post9.p_shopify" },
+      { type: "h3", textKey: "blog.post9.h3_woo" },
+      { type: "p", textKey: "blog.post9.p_woo" },
+      { type: "h3", textKey: "blog.post9.h3_salla" },
+      { type: "p", textKey: "blog.post9.p_salla" },
+      {
+        type: "pLinks",
+        textKey: "blog.post9.pLinks_platforms",
+        links: [
+          { href: "/#platforms", labelKey: "blog.post9.link.platforms" },
+          { href: ROUTES.docs, labelKey: "blog.post9.link.docs" },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post9.h2_ai_limits" },
+      { type: "p", textKey: "blog.post9.p_ai_limits_1" },
+      {
+        type: "ol",
+        itemKeys: [
+          "blog.post9.ol_limits_1",
+          "blog.post9.ol_limits_2",
+          "blog.post9.ol_limits_3",
+          "blog.post9.ol_limits_4",
+          "blog.post9.ol_limits_5",
+        ],
+      },
+      { type: "p", textKey: "blog.post9.p_ai_limits_2" },
+
+      { type: "h2", textKey: "blog.post9.h2_examples" },
+      { type: "p", textKey: "blog.post9.p_examples_1" },
+      {
+        type: "table",
+        headers: [
+          "blog.post9.table_ex.h1",
+          "blog.post9.table_ex.h2",
+          "blog.post9.table_ex.h3",
+        ],
+        rows: [
+          [
+            "blog.post9.table_ex.r1c1",
+            "blog.post9.table_ex.r1c2",
+            "blog.post9.table_ex.r1c3",
+          ],
+          [
+            "blog.post9.table_ex.r2c1",
+            "blog.post9.table_ex.r2c2",
+            "blog.post9.table_ex.r2c3",
+          ],
+          [
+            "blog.post9.table_ex.r3c1",
+            "blog.post9.table_ex.r3c2",
+            "blog.post9.table_ex.r3c3",
+          ],
+        ],
+      },
+      { type: "p", textKey: "blog.post9.p_examples_2" },
+
+      { type: "h2", textKey: "blog.post9.h2_measure" },
+      { type: "p", textKey: "blog.post9.p_measure_1" },
+      {
+        type: "ul",
+        itemKeys: [
+          "blog.post9.ul_measure_1",
+          "blog.post9.ul_measure_2",
+          "blog.post9.ul_measure_3",
+          "blog.post9.ul_measure_4",
+        ],
+      },
+      { type: "p", textKey: "blog.post9.p_measure_2" },
+
+      { type: "h2", textKey: "blog.post9.h2_checklist" },
+      {
+        type: "checklist",
+        itemKeys: [
+          "blog.post9.check_1",
+          "blog.post9.check_2",
+          "blog.post9.check_3",
+          "blog.post9.check_4",
+          "blog.post9.check_5",
+          "blog.post9.check_6",
+          "blog.post9.check_7",
+          "blog.post9.check_8",
+          "blog.post9.check_9",
+          "blog.post9.check_10",
+          "blog.post9.check_11",
+          "blog.post9.check_12",
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post9.h2_faq" },
+      {
+        type: "faq",
+        items: [
+          { qKey: "blog.post9.faq.q1", aKey: "blog.post9.faq.a1" },
+          { qKey: "blog.post9.faq.q2", aKey: "blog.post9.faq.a2" },
+          { qKey: "blog.post9.faq.q3", aKey: "blog.post9.faq.a3" },
+          { qKey: "blog.post9.faq.q4", aKey: "blog.post9.faq.a4" },
+          { qKey: "blog.post9.faq.q5", aKey: "blog.post9.faq.a5" },
+          { qKey: "blog.post9.faq.q6", aKey: "blog.post9.faq.a6" },
+          { qKey: "blog.post9.faq.q7", aKey: "blog.post9.faq.a7" },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post9.h2_guides" },
+      { type: "p", textKey: "blog.post9.p_guides" },
+      {
+        type: "pLinks",
+        textKey: "blog.post9.pLinks_guides",
+        links: [
+          {
+            href: ROUTES.blogPost("geo-ai-visibility-guide"),
+            labelKey: "blog.post9.link.geo",
+          },
+          {
+            href: ROUTES.blogPost("seo-for-ai-complete-guide"),
+            labelKey: "blog.post9.link.seoForAi",
+          },
+          {
+            href: ROUTES.blogPost("identify-seo-issues-store-growth"),
+            labelKey: "blog.post9.link.seoIssues",
+          },
+          {
+            href: ROUTES.blogPost("conversion-rate-optimization"),
+            labelKey: "blog.post9.link.cro",
+          },
+          {
+            href: ROUTES.blogPost("competitor-analysis-strategy"),
+            labelKey: "blog.post9.link.competitors",
+          },
+          {
+            href: ROUTES.blogPost("trust-signals-ecommerce"),
+            labelKey: "blog.post9.link.trust",
+          },
+          {
+            href: ROUTES.blogPost("product-schema-markup"),
+            labelKey: "blog.post9.link.schema",
+          },
+          {
+            href: ROUTES.blogPost("ai-product-descriptions"),
+            labelKey: "blog.post9.link.aiDescriptions",
+          },
+        ],
+      },
+
+      { type: "h2", textKey: "blog.post9.h2_close" },
+      { type: "p", textKey: "blog.post9.p_close_1" },
+      { type: "p", textKey: "blog.post9.p_close_2" },
+      {
+        type: "pLinks",
+        textKey: "blog.post9.pLinks_close",
+        links: [
+          { href: ROUTES.docs, labelKey: "blog.post9.link.docs" },
+          { href: "/#methodology", labelKey: "blog.post9.link.methodology" },
+          { href: ROUTES.pricing, labelKey: "blog.post9.link.pricing" },
+        ],
+      },
+
+      {
+        type: "cta",
+        titleKey: "blog.post9.cta.title",
+        bodyKey: "blog.post9.cta.body",
+        buttonKey: "blog.post9.cta.button",
+        href: ROUTES.auditNew,
+      },
+    ],
+  },
 ];

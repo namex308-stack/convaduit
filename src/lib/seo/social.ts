@@ -6,7 +6,7 @@
  * identifiers and are not the official product name.
  */
 
-export type SocialProfileId = "x" | "linkedin";
+export type SocialProfileId = "x" | "linkedin" | "tiktok";
 
 export type SocialProfile = {
   id: SocialProfileId;
@@ -15,7 +15,11 @@ export type SocialProfile = {
   handle?: string;
 };
 
-export const SOCIAL_PROFILES: readonly SocialProfile[] = [];
+export const TIKTOK_PROFILE_URL = "https://www.tiktok.com/@convaduit";
+
+export const SOCIAL_PROFILES: readonly SocialProfile[] = [
+  { id: "tiktok", url: TIKTOK_PROFILE_URL },
+];
 
 export const ORGANIZATION_SAME_AS: readonly string[] = SOCIAL_PROFILES.map(
   (profile) => profile.url

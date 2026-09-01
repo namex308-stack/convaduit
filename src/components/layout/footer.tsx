@@ -24,6 +24,7 @@ export const FOOTER_LINK_COLS: readonly {
       { labelKey: "footer.link.geoVisibility", href: "/#methodology" },
       { labelKey: "footer.link.platforms", href: "/#platforms" },
       { labelKey: "footer.link.shopify", href: ROUTES.shopify },
+      { labelKey: "footer.link.productLookup", href: ROUTES.productLookup },
       { labelKey: "footer.link.aiGenerator", href: `${ROUTES.docs}#2` },
     ],
   },
@@ -47,6 +48,10 @@ export const FOOTER_LINK_COLS: readonly {
       { labelKey: "footer.link.trustGuide", href: ROUTES.blogPost("trust-signals-ecommerce") },
       { labelKey: "footer.link.schemaGuide", href: ROUTES.blogPost("product-schema-markup") },
       { labelKey: "footer.link.aiCopyGuide", href: ROUTES.blogPost("ai-product-descriptions") },
+      {
+        labelKey: "footer.link.aiSearchRelevanceGuide",
+        href: ROUTES.blogPost("ai-product-search-relevance"),
+      },
       { labelKey: "footer.link.roadmap", href: ROUTES.roadmap },
     ],
   },

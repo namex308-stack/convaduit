@@ -94,7 +94,7 @@ import {
   type QuickWinDifficulty,
   type QuickWinTask,
 } from "@/lib/report/quick-wins";
-import type { AuditData, PageSignals, Recommendation, ScorePillar } from "@/lib/types";
+import type { AuditData, PageSignals, Recommendation, ScorePillar, SiteIntegrations } from "@/lib/types";
 import { resolveWebsitePagePreview } from "@/lib/firecrawl/screenshot";
 import { decodeAuditDisplayFields } from "@/lib/text/decode-html";
 import type { ReportAccess } from "@/lib/billing/report-preview";
@@ -285,6 +285,8 @@ export function AuditReport({
             )}
           </div>
         )}
+
+        {audit.siteIntegrations && <SiteIntegrationsPanel integrations={audit.siteIntegrations} />}
 
         {/* Executive summary */}
         <motion.div
@@ -1766,6 +1768,140 @@ function MetaItem({ label, value }: { label: string; value: string }) {
       <div className="text-[11px] text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold truncate mt-0.5" title={value}>
         {value}
+      </div>
+    </div>
+  );
+}
+
+function integrationStatusLabel(
+  t: ReturnType<typeof useT>,
+  status: SiteIntegrations["sslTls"]["status"]
+): string {
+  switch (status) {
+    case "ok":
+      return t("report.int.statusOk");
+    case "skipped":
+      return t("report.int.statusSkipped");
+    case "error":
+      return t("report.int.statusError");
+    default: {
+      const _exhaustive: never = status;
+      return _exhaustive;
+    }
+  }
+}
+
+function SiteIntegrationsPanel({ integrations }: { integrations: SiteIntegrations }) {
+  const t = useT();
+  const ssl = integrations.sslTls;
+  const psi = integrations.pageSpeed;
+  const risk = integrations.webRisk;
+  const geo = integrations.ipGeo;
+  const whois = integrations.whois;
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-5">
+      <h2 className="font-display text-lg font-bold mb-3 flex items-center gap-2">
+        <ShieldCheck className="size-5 text-primary" /> {t("report.siteIntegrations")}
+      </h2>
+      <div className="space-y-4">
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{t("report.int.ssl")}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {integrationStatusLabel(t, ssl.status)}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <MetaItem label={t("report.int.protocol")} value={ssl.protocol || "—"} />
+            <MetaItem label={t("report.int.issuer")} value={ssl.issuer || "—"} />
+            <MetaItem
+              label={t("report.int.validTo")}
+              value={ssl.validTo ? new Date(ssl.validTo).toLocaleDateString() : "—"}
+            />
+            <MetaItem
+              label={t("report.int.grade")}
+              value={ssl.grade ? ssl.grade : ssl.error || ssl.skipReason || "—"}
+            />
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{t("report.int.pagespeed")}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {integrationStatusLabel(t, psi.status)}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <MetaItem
+              label={t("report.int.performance")}
+              value={psi.performance != null ? String(psi.performance) : "—"}
+            />
+            <MetaItem
+              label={t("report.int.psiSeo")}
+              value={psi.seo != null ? String(psi.seo) : "—"}
+            />
+            <MetaItem
+              label={t("report.int.accessibility")}
+              value={psi.accessibility != null ? String(psi.accessibility) : "—"}
+            />
+            <MetaItem label={t("report.int.lcp")} value={psi.lcp || "—"} />
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{t("report.int.webrisk")}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {integrationStatusLabel(t, risk.status)}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <MetaItem
+              label={t("report.int.threats")}
+              value={
+                risk.status === "ok"
+                  ? risk.isSafe
+                    ? t("report.int.safe")
+                    : (risk.threatTypes ?? []).join(", ") || "—"
+                  : risk.error || risk.skipReason || "—"
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{t("report.int.ipgeo")}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {integrationStatusLabel(t, geo.status)}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <MetaItem label={t("report.int.ip")} value={geo.ip || "—"} />
+            <MetaItem label={t("report.int.country")} value={geo.country || geo.countryCode || "—"} />
+            <MetaItem label={t("report.int.org")} value={geo.organization || "—"} />
+            <MetaItem label={t("report.metaSource")} value={geo.provider || "—"} />
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+            <span>{t("report.int.whois")}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {integrationStatusLabel(t, whois.status)}
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <MetaItem label={t("report.int.domain")} value={whois.domain || "—"} />
+            <MetaItem label={t("report.int.registrar")} value={whois.registrar || "—"} />
+            <MetaItem
+              label={t("report.int.expires")}
+              value={whois.expiresAt ? new Date(whois.expiresAt).toLocaleDateString() : "—"}
+            />
+            <MetaItem
+              label={t("report.int.org")}
+              value={whois.nameservers?.[0] || whois.source || "—"}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

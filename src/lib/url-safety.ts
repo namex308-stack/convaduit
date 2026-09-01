@@ -51,6 +51,13 @@ export type UrlSafetyResult =
   | { ok: true; href: string }
   | { ok: false; reason: string };
 
+export type ResolvedSafePublicUrl = {
+  ok: true;
+  href: string;
+  hostname: string;
+  addresses: Array<{ address: string; family: number }>;
+};
+
 export type HostnameLookup = (
   hostname: string
 ) => Promise<Array<{ address: string; family: number }>>;
@@ -187,19 +194,25 @@ export function addressesArePublic(
 }
 
 /**
- * Full SSRF check: URL parse, IP literals, then DNS for hostnames.
+ * Full SSRF check plus resolved public addresses (IP literal or DNS).
  * Fails closed if any resolved address is non-public or lookup fails.
  */
-export async function assertSafePublicHttpUrl(
+export async function resolveSafePublicHttpUrl(
   raw: string,
   options?: { lookup?: HostnameLookup }
-): Promise<UrlSafetyResult> {
+): Promise<ResolvedSafePublicUrl | { ok: false; reason: string }> {
   const parsed = parseHttpUrl(raw);
   if (!parsed.ok) return parsed;
 
   const host = normalizeHostname(parsed.parsed.hostname);
   if (isIP(host)) {
-    return { ok: true, href: parsed.parsed.href };
+    const family = isIP(host) === 6 ? 6 : 4;
+    return {
+      ok: true,
+      href: parsed.parsed.href,
+      hostname: host,
+      addresses: [{ address: host, family }],
+    };
   }
 
   try {
@@ -208,9 +221,26 @@ export async function assertSafePublicHttpUrl(
     if (!addressesArePublic(records)) {
       return { ok: false, reason: BLOCKED_REASON };
     }
+    return {
+      ok: true,
+      href: parsed.parsed.href,
+      hostname: host,
+      addresses: records,
+    };
   } catch {
     return { ok: false, reason: DNS_REASON };
   }
+}
 
-  return { ok: true, href: parsed.parsed.href };
+/**
+ * Full SSRF check: URL parse, IP literals, then DNS for hostnames.
+ * Fails closed if any resolved address is non-public or lookup fails.
+ */
+export async function assertSafePublicHttpUrl(
+  raw: string,
+  options?: { lookup?: HostnameLookup }
+): Promise<UrlSafetyResult> {
+  const resolved = await resolveSafePublicHttpUrl(raw, options);
+  if (!resolved.ok) return resolved;
+  return { ok: true, href: resolved.href };
 }

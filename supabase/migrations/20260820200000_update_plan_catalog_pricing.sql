@@ -1,5 +1,5 @@
 -- Rebuild ConvAudit plan limits and EGP prices for Free / Pro / Business.
--- Prices are also mirrored in src/lib/billing/plans.ts (Kashier + UI source of truth).
+-- Prices are also mirrored in src/lib/billing/plans.ts (Paymob + UI source of truth).
 
 alter table public.plan_catalog
   add column if not exists monthly_price_egp integer,

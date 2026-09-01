@@ -31,6 +31,7 @@ const SITEMAP_STATIC_PATHS = [
   ROUTES.contact,
   ROUTES.roadmap,
   ROUTES.shopify,
+  ROUTES.productLookup,
 ] as const;
 
 const TOPIC_BLOG_HREFS = {

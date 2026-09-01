@@ -236,7 +236,7 @@ export async function runAudit(
     comp,
     results,
     moduleResults,
-    batch.pillarSource !== "gemini"
+    batch.pillarSource === "heuristic"
   );
 }
 
@@ -251,59 +251,79 @@ export async function runBatchedPillarAnalysis(
   const locale = normalizeAppLocale(outputLocale);
   const heuristic = heuristicBatchedPillarAnalysis(page, competitor);
   if (batchOptions?.forceHeuristic) {
+    console.info("[audit] pillar analysis served by heuristic (forceHeuristic)");
     return heuristic;
   }
+
   const client = getClient();
-  if (!client) {
+  if (client) {
+    const model = client.getGenerativeModel({ model: getGeminiModelId() });
+    const prompt = buildBatchedPillarPrompt(page, competitor, onboarding, locale);
+
+    try {
+      const result = await generateGeminiModelContent(model, prompt, "batched pillar analysis");
+      const text = stripCodeFences(result.response.text());
+      const parsed = JSON.parse(text) as unknown;
+      let sanitized = sanitizeBatchedPillarAnalysis(parsed);
+      sanitized.modules.trust = enrichTrustSubChecks(page, sanitized.modules.trust, {
+        adjustScore: false,
+      });
+      if (competitor && sanitized.competitorModules?.trust) {
+        sanitized.competitorModules.trust = enrichTrustSubChecks(
+          competitor,
+          sanitized.competitorModules.trust,
+          { adjustScore: false }
+        );
+      }
+
+      void locale;
+      sanitized = enforceArabicBatchedOutput(sanitized, heuristic, "gemini");
+      sanitized = syncBatchedPerPillarResults(sanitized);
+      const usage = result.response.usageMetadata as
+        | { totalTokenCount?: number; promptTokenCount?: number; candidatesTokenCount?: number }
+        | undefined;
+      const tokensUsed =
+        typeof usage?.totalTokenCount === "number"
+          ? usage.totalTokenCount
+          : typeof usage?.promptTokenCount === "number" &&
+              typeof usage?.candidatesTokenCount === "number"
+            ? usage.promptTokenCount + usage.candidatesTokenCount
+            : undefined;
+      if (tokensUsed != null) {
+        sanitized.recommendationsResult.tokensUsed = tokensUsed;
+      }
+      console.info("[audit] pillar analysis served by gemini");
+      return sanitized;
+    } catch (err) {
+      console.error("[gemini] batched pillar analysis failed:", err);
+      console.info("[gemini] Trying Groq fallback before heuristic modules.");
+    }
+  } else {
     console.info(
-      "[gemini] Batched pillars in demo mode — GEMINI_API_KEY missing. Using deterministic modules."
+      "[gemini] Batched pillars — GEMINI_API_KEY missing. Trying Groq or heuristic fallback."
     );
-    return heuristic;
   }
 
-  const model = client.getGenerativeModel({ model: getGeminiModelId() });
-  const prompt = buildBatchedPillarPrompt(page, competitor, onboarding, locale);
-
-  try {
-    const result = await generateGeminiModelContent(model, prompt, "batched pillar analysis");
-    const text = stripCodeFences(result.response.text());
-    const parsed = JSON.parse(text) as unknown;
-    let sanitized = sanitizeBatchedPillarAnalysis(parsed);
-    // Deterministic Trust sub-checks (payments + shipping/returns); score already anchored.
-    sanitized.modules.trust = enrichTrustSubChecks(page, sanitized.modules.trust, {
-      adjustScore: false,
-    });
-    if (competitor && sanitized.competitorModules?.trust) {
-      sanitized.competitorModules.trust = enrichTrustSubChecks(
+  const { generateGroqBatchedAnalysis, isGroqConfigured } = await import("@/lib/groq");
+  if (isGroqConfigured()) {
+    try {
+      const groqResult = await generateGroqBatchedAnalysis(
+        page,
         competitor,
-        sanitized.competitorModules.trust,
-        { adjustScore: false }
+        onboarding,
+        locale
       );
+      console.info("[audit] pillar analysis served by groq");
+      return groqResult;
+    } catch (err) {
+      console.error("[groq] batched pillar analysis failed:", err);
     }
-
-    // Product UI is Arabic-only — always coerce AI copy back to Arabic.
-    void locale;
-    sanitized = enforceArabicBatchedOutput(sanitized, heuristic);
-
-    sanitized = syncBatchedPerPillarResults(sanitized);
-    const usage = result.response.usageMetadata as
-      | { totalTokenCount?: number; promptTokenCount?: number; candidatesTokenCount?: number }
-      | undefined;
-    const tokensUsed =
-      typeof usage?.totalTokenCount === "number"
-        ? usage.totalTokenCount
-        : typeof usage?.promptTokenCount === "number" && typeof usage?.candidatesTokenCount === "number"
-          ? usage.promptTokenCount + usage.candidatesTokenCount
-          : undefined;
-    if (tokensUsed != null) {
-      sanitized.recommendationsResult.tokensUsed = tokensUsed;
-    }
-    return sanitized;
-  } catch (err) {
-    console.error("[gemini] batched pillar analysis failed:", err);
-    console.info("[gemini] Falling back to deterministic score modules.");
-    return heuristic;
+  } else {
+    console.info("[groq] GROQ_API_KEY missing — skipping Groq fallback.");
   }
+
+  console.info("[audit] pillar analysis served by heuristic (fallback)");
+  return heuristic;
 }
 
 export type GenerateContentResult =
@@ -602,7 +622,7 @@ function assembleAuditData(
   };
 }
 
-function heuristicBatchedPillarAnalysis(
+export function heuristicBatchedPillarAnalysis(
   page: NormalizedPage,
   competitor: NormalizedPage | null
 ): BatchedPillarAnalysis {
@@ -877,7 +897,7 @@ function buildPageSignals(
   };
 }
 
-function buildBatchedPillarPrompt(
+export function buildBatchedPillarPrompt(
   page: NormalizedPage,
   competitor: NormalizedPage | null,
   onboarding: OnboardingAnswers | null,
@@ -980,9 +1000,10 @@ ${shippingHint}
  * If Gemini drifts into English while the UI locale is Arabic, keep numeric scores
  * but replace merchant-facing text with deterministic Arabic modules/recs.
  */
-function enforceArabicBatchedOutput(
+export function enforceArabicBatchedOutput(
   batch: BatchedPillarAnalysis,
-  heuristic: BatchedPillarAnalysis
+  heuristic: BatchedPillarAnalysis,
+  provider: "gemini" | "groq" = "gemini"
 ): BatchedPillarAnalysis {
   const next: BatchedPillarAnalysis = {
     ...batch,
@@ -1002,7 +1023,7 @@ function enforceArabicBatchedOutput(
     const ratio = arabicTextRatio([mod.summary, ...mod.findings]);
     if (ratio < 0.5) {
       console.warn(
-        `[gemini] ${key} findings were not Arabic (ratio=${ratio.toFixed(2)}); using Arabic heuristic text.`
+        `[${provider}] ${key} findings were not Arabic (ratio=${ratio.toFixed(2)}); using Arabic heuristic text.`
       );
       next.modules[key] = {
         ...heuristic.modules[key],
@@ -1032,7 +1053,7 @@ function enforceArabicBatchedOutput(
   const recRatio = arabicTextRatio(recs.flatMap((r) => [r.problem, r.solution]));
   if (recs.length === 0 || recRatio < 0.5) {
     console.warn(
-      `[gemini] recommendations were not Arabic (ratio=${recRatio.toFixed(2)}); using Arabic heuristics.`
+      `[${provider}] recommendations were not Arabic (ratio=${recRatio.toFixed(2)}); using Arabic heuristics.`
     );
     next.recommendationsResult = {
       ...next.recommendationsResult,
@@ -1059,7 +1080,7 @@ function enforceArabicBatchedOutput(
   return next;
 }
 
-function syncBatchedPerPillarResults(batch: BatchedPillarAnalysis): BatchedPillarAnalysis {
+export function syncBatchedPerPillarResults(batch: BatchedPillarAnalysis): BatchedPillarAnalysis {
   const perPillarResults = {
     conversion: moduleToSyncedAnalyzerResult(
       "conversion",
@@ -1138,7 +1159,7 @@ function toNormalized(page: NormalizedPage | ScrapedPage): NormalizedPage {
   };
 }
 
-function stripCodeFences(text: string): string {
+export function stripCodeFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
 }
 

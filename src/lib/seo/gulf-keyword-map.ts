@@ -147,6 +147,22 @@ export const GULF_KEYWORD_MAP: readonly GulfKeywordAssignment[] = [
     intent: "informational",
   },
   {
+    path: ROUTES.blogPost("ai-product-search-relevance"),
+    primary: ["product page optimization", "SEO audit"],
+    secondary: [
+      "AI visibility",
+      "search intent",
+      "ecommerce audit",
+      "store visibility in search engines",
+      "GCC Countries",
+      "Shopify audit",
+      "Salla audit",
+      "Zid audit",
+      "WooCommerce audit",
+    ],
+    intent: "informational",
+  },
+  {
     path: ROUTES.blogPost("trust-signals-ecommerce"),
     primary: ["trust signals", "store trust optimization"],
     secondary: [
@@ -197,6 +213,19 @@ export const GULF_KEYWORD_MAP: readonly GulfKeywordAssignment[] = [
       "GCC Countries",
       "product page optimization",
       "ecommerce audit",
+    ],
+    intent: "commercial",
+  },
+  {
+    path: ROUTES.productLookup,
+    primary: ["product page analysis", "Shopify audit"],
+    secondary: [
+      "ecommerce audit",
+      "product page optimization",
+      "Salla audit",
+      "Zid audit",
+      "WooCommerce audit",
+      "GCC Countries",
     ],
     intent: "commercial",
   },

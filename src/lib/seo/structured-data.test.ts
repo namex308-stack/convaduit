@@ -59,7 +59,7 @@ describe("structured data", () => {
     expect(orgNodes[0]?.url).toBe(CANONICAL);
     expect(orgNodes[0]?.description).toBe(SITE_OFFICIAL_DESCRIPTION);
     expect(orgNodes[0]?.areaServed).toHaveLength(6);
-    expect(orgNodes[0]?.sameAs).toBeUndefined();
+    expect(orgNodes[0]?.sameAs).toEqual([...ORGANIZATION_SAME_AS]);
 
     const website = graph["@graph"].find((n) => n["@type"] === "WebSite");
     expect(website?.["@id"]).toBe(`${CANONICAL}/#website`);
@@ -111,7 +111,7 @@ describe("structured data", () => {
     } else {
       expect(org?.sameAs).toBeUndefined();
     }
-    expect(JSON.stringify(org)).not.toMatch(/CONVADUIT|conva-aduit|StorePulse/i);
+    expect(JSON.stringify(org)).not.toMatch(/conva-aduit|StorePulse/i);
     expect(org?.email).toBe(CONTACT_EMAIL);
     expect(org?.logo).toEqual({
       "@type": "ImageObject",
@@ -132,7 +132,7 @@ describe("structured data", () => {
     expect(org?.name).toBe("ConvAudit");
     expect(org?.url).toBe("https://www.convaudit.com");
     expect(org?.description).toBe(SITE_OFFICIAL_DESCRIPTION);
-    expect(org?.sameAs).toBeUndefined();
+    expect(org?.sameAs).toEqual([...ORGANIZATION_SAME_AS]);
     expect(website?.["@id"]).toBe("https://www.convaudit.com/#website");
     expect(website?.name).toBe("ConvAudit");
     expect(website?.url).toBe("https://www.convaudit.com");
@@ -156,7 +156,7 @@ describe("structured data", () => {
       url: "https://www.convaudit.com",
       description: SITE_OFFICIAL_DESCRIPTION,
     });
-    expect(org.sameAs).toBeUndefined();
+    expect(org.sameAs).toEqual([...ORGANIZATION_SAME_AS]);
     expect(JSON.stringify(org)).not.toMatch(/x\.com|linkedin\.com/i);
 
     expect(website).toMatchObject({
