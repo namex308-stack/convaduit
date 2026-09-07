@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   decideStoreEnsure,
@@ -29,6 +30,17 @@ import { syncGrowthTasksFromAudit } from "@/lib/growth-tasks/emit";
 import { getGeminiModelId } from "@/lib/gemini";
 
 export type { AuditHistoryItem } from "@/lib/audits/types";
+
+/** Workspace ids the user belongs to — request-memoized to avoid N+1 membership lookups. */
+export const listWorkspaceIdsForUser = cache(async (userId: string): Promise<string[]> => {
+  const sb = getSupabaseAdmin();
+  if (!sb) return [];
+  const { data } = await sb
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("user_id", userId);
+  return (data ?? []).map((m) => m.workspace_id as string);
+});
 
 /** Upsert the workspace primary store from onboarding / audit context; return store id. */
 export type EnsureWorkspaceStoreResult =
@@ -153,7 +165,7 @@ export async function ensureWorkspaceStore(input: {
 }
 
 /** Ensure the user has a personal workspace; return its id. */
-export async function ensurePersonalWorkspace(userId: string): Promise<string | null> {
+export const ensurePersonalWorkspace = cache(async (userId: string): Promise<string | null> => {
   const sb = getSupabaseAdmin();
   if (!sb) return null;
 
@@ -191,7 +203,7 @@ export async function ensurePersonalWorkspace(userId: string): Promise<string | 
   }
 
   return ws.id as string;
-}
+});
 
 export async function createAuditRecord(input: {
   workspaceId: string;
@@ -626,12 +638,7 @@ export async function listAuditsForUser(
   const sb = getSupabaseAdmin();
   if (!sb) return [];
 
-  const { data: memberships } = await sb
-    .from("workspace_members")
-    .select("workspace_id")
-    .eq("user_id", userId);
-
-  const workspaceIds = (memberships ?? []).map((m) => m.workspace_id as string);
+  const workspaceIds = await listWorkspaceIdsForUser(userId);
   if (!workspaceIds.length) return [];
 
   let req = sb

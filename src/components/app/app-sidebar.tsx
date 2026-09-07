@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowUpRight, LogOut, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/auth-context";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import {

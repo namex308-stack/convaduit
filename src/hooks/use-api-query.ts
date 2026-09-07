@@ -9,6 +9,7 @@ export type UseApiQueryOptions<T> = {
   fallbackError: string;
   signInMessage: string;
   notFoundMessage?: string;
+  initialData?: T;
   enabled?: boolean;
   deps?: React.DependencyList;
 };
@@ -30,14 +31,15 @@ export function useApiQuery<T>({
   fallbackError,
   signInMessage,
   notFoundMessage,
+  initialData,
   enabled = true,
   deps = [],
 }: UseApiQueryOptions<T>): UseApiQueryResult<T> {
-  const [data, setData] = React.useState<T | null>(null);
+  const [data, setData] = React.useState<T | null>(initialData ?? null);
   const [error, setError] = React.useState<string | null>(null);
   const [needsAuth, setNeedsAuth] = React.useState(false);
   const [needsUpgrade, setNeedsUpgrade] = React.useState(false);
-  const [loading, setLoading] = React.useState(enabled);
+  const [loading, setLoading] = React.useState(enabled && initialData === undefined);
   const [retryKey, setRetryKey] = React.useState(0);
 
   const retry = React.useCallback(() => setRetryKey((key) => key + 1), []);
@@ -45,6 +47,10 @@ export function useApiQuery<T>({
   React.useEffect(() => {
     if (!enabled) {
       setLoading(false);
+      return;
+    }
+
+    if (retryKey === 0 && initialData !== undefined) {
       return;
     }
 

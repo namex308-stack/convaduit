@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Map } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
@@ -11,7 +9,7 @@ export default function RoadmapPage() {
 
   return (
     <PageShell>
-      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={Map} />
+      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={<Map />} />
       <PageContent className="max-w-2xl space-y-10">
         {copy.sectionOrder.map((status: RoadmapStatus) => {
           const items = copy.items.filter((item) => item.status === status);

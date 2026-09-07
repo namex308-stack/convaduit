@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Navbar } from "@/components/layout/navbar";
+import { AuthBoundary } from "@/components/providers/auth-boundary";
 import { SkipToContent } from "@/components/layout/skip-link";
 import { Footer } from "@/components/layout/footer";
 import { cn } from "@/lib/utils";
@@ -102,7 +103,7 @@ function ProductShell({ children }: { children: React.ReactNode }) {
     return () => {
       state.cancelled = true;
     };
-  }, [pathname, loadShell]);
+  }, [loadShell]);
 
   React.useEffect(() => {
     const onProfileUpdated = (event: Event) => {
@@ -144,22 +145,41 @@ function ProductShell({ children }: { children: React.ReactNode }) {
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (isAppShellRoute(pathname)) {
-    return <ProductShell>{children}</ProductShell>;
+  const inner = isAppShellRoute(pathname) ? (
+    <ProductShell>{children}</ProductShell>
+  ) : (
+    <MarketingShell>{children}</MarketingShell>
+  );
+  return <AuthBoundary>{inner}</AuthBoundary>;
+}
+
+function HeaderGlyph({
+  icon,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }> | React.ReactNode;
+  className: string;
+}) {
+  if (icon == null || typeof icon === "boolean") return null;
+  if (React.isValidElement<{ className?: string }>(icon)) {
+    return React.cloneElement(icon, {
+      className: cn(className, icon.props.className),
+    });
   }
-  return <MarketingShell>{children}</MarketingShell>;
+  const Icon = icon as React.ComponentType<{ className?: string }>;
+  return <Icon className={className} />;
 }
 
 export function PageHeader({
   title,
   subtitle,
-  icon: Icon,
+  icon,
   actions,
   back,
 }: {
   title: string;
   subtitle?: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }> | React.ReactNode;
   actions?: React.ReactNode;
   back?: string;
 }) {
@@ -185,11 +205,11 @@ export function PageHeader({
           )}
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-center gap-3">
-              {Icon && (
+              {icon ? (
                 <span className="size-11 rounded-2xl gradient-brand grid place-items-center text-white shadow-glow shrink-0">
-                  <Icon className="size-5" />
+                  <HeaderGlyph icon={icon} className="size-5" />
                 </span>
-              )}
+              ) : null}
               <div>
                 <h1 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight">
                   {displayTitle}
@@ -218,11 +238,11 @@ export function PageHeader({
         )}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex items-center gap-4">
-            {Icon && (
-              <span className="size-12 rounded-2xl gradient-brand grid place-items-center text-white shadow-glow shrink-0">
-                <Icon className="size-6" />
-              </span>
-            )}
+              {icon ? (
+                <span className="size-12 rounded-2xl gradient-brand grid place-items-center text-white shadow-glow shrink-0">
+                  <HeaderGlyph icon={icon} className="size-6" />
+                </span>
+              ) : null}
             <div>
               <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
                 {displayTitle}
@@ -267,8 +287,10 @@ export function PageContent({
 export function AuthShell({ children }: { children: React.ReactNode }) {
   const { lang, dir } = useLocale();
   return (
-    <div className="min-h-screen bg-background" dir={dir} lang={lang}>
-      {children}
-    </div>
+    <AuthBoundary>
+      <div className="min-h-screen bg-background" dir={dir} lang={lang}>
+        {children}
+      </div>
+    </AuthBoundary>
   );
 }

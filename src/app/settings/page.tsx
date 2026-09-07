@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/auth-context";
 import { getUserInitials, notifyProfileUpdated } from "@/lib/auth/display-user";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";

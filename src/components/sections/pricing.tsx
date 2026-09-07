@@ -8,15 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BentoPanel, Container, SectionHeader } from "@/components/design-system/section";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { useT, type TranslationKey } from "@/lib/i18n";
 import { MARKETING_PLANS, formatEgp, yearlySavingsEgp, type PlanId } from "@/lib/billing/plans";
 import {
   assertNoUpgradeLoop,
   resolvePlanSelectionPath,
 } from "@/lib/billing/upgrade-flow";
-import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/use-navigate";
+import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/marketing-hrefs";
 import { withTimeout } from "@/lib/with-timeout";
 
 export type BillingInterval = "monthly" | "yearly";
@@ -83,6 +81,7 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
     setCheckingOut(planId);
     try {
       let authenticated = false;
+      const { getSupabaseBrowser } = await import("@/lib/supabase-browser");
       const sb = getSupabaseBrowser();
       if (sb) {
         const user = await withTimeout(
@@ -97,6 +96,7 @@ export function Pricing({ onFreeCta, className, variant = "landing" }: PricingPr
       assertNoUpgradeLoop(destination);
       router.push(destination);
     } catch {
+      const { toast } = await import("sonner");
       toast.error(t("pricing.checkoutFailed"));
     } finally {
       setCheckingOut(null);

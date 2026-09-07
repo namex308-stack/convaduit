@@ -1,19 +1,17 @@
-"use client";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { StartAuditCta } from "@/components/common/start-audit-cta";
 import { ArrowRight } from "lucide-react";
-import { useT } from "@/lib/i18n";
+import { StartAuditCta } from "@/components/common/start-audit-cta";
+import { FaqAccordion } from "@/components/sections/faq-accordion";
 import { Container, Section, SectionHeader } from "@/components/design-system/section";
 import { HOME_FAQ_KEYS } from "@/lib/seo/faq-keys";
+import { getServerTranslate } from "@/lib/locale/server-t";
 
-export function FAQ() {
-  const t = useT();
+export async function FAQ() {
+  const t = await getServerTranslate();
+  const items = HOME_FAQ_KEYS.map((f) => ({
+    question: t(f.qKey),
+    answer: t(f.aKey),
+  }));
+
   return (
     <Section id="faq">
       <Container className="max-w-3xl">
@@ -24,26 +22,7 @@ export function FAQ() {
           className="mb-8 sm:mb-10"
         />
 
-        <Accordion
-          type="single"
-          collapsible
-          className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-[var(--shadow-card)]"
-        >
-          {HOME_FAQ_KEYS.map((f, i) => (
-            <AccordionItem
-              key={f.qKey}
-              value={`item-${i}`}
-              className="border-border/50 px-5 last:border-b-0"
-            >
-              <AccordionTrigger className="text-start font-display font-semibold text-sm sm:text-base hover:no-underline py-5 hover:text-primary transition-colors">
-                {t(f.qKey)}
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
-                {t(f.aKey)}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <FaqAccordion items={items} />
 
         <div className="mt-10 text-center">
           <p className="text-sm text-muted-foreground mb-4">{t("faq.stillQuestions")}</p>

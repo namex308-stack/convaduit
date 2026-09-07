@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Cairo, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DeferredGoogleAnalytics } from "@/components/analytics/deferred-google-analytics";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { DeferredThirdParties } from "@/components/analytics/deferred-third-parties";
+import { DeferredToaster } from "@/components/analytics/deferred-toaster";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
 import { LocaleProvider } from "@/lib/locale/provider";
-import { LOCALE_COOKIE, parseEnabledLocale } from "@/lib/locale/cookie";
-import { getLocaleConfig } from "@/lib/locale/config";
-import { getServerLocaleId } from "@/lib/locale/server";
+import { DEFAULT_LOCALE, getLocaleConfig } from "@/lib/locale/config";
 import { getSiteUrl } from "@/lib/site-url";
 import { googleSiteVerificationMetadata } from "@/lib/seo/google-site-verification";
 import { impactSiteVerificationMetadata } from "@/lib/seo/impact-site-verification";
@@ -42,7 +36,7 @@ const geistMono = Geist_Mono({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const localeId = await getServerLocaleId();
+  const localeId = DEFAULT_LOCALE;
   const locale = getLocaleConfig(localeId);
   const title = getSiteDefaultTitle(localeId);
   const description = getSiteDescription(localeId);
@@ -117,10 +111,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const cookieLocale = parseEnabledLocale(cookieStore.get(LOCALE_COOKIE)?.value);
-  const localeId = await getServerLocaleId();
-  const initialLocale = cookieLocale ?? localeId;
+  const initialLocale = DEFAULT_LOCALE;
   const locale = getLocaleConfig(initialLocale);
 
   return (
@@ -135,15 +126,11 @@ export default async function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <LocaleProvider initialLocale={initialLocale}>
-            <AuthProvider>
-              {children}
-              <SonnerToaster position="top-center" richColors closeButton />
-              <Analytics />
-              <SpeedInsights />
-            </AuthProvider>
+            {children}
+            <DeferredToaster />
           </LocaleProvider>
         </ThemeProvider>
-        <DeferredGoogleAnalytics />
+        <DeferredThirdParties />
       </body>
     </html>
   );

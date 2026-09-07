@@ -18,6 +18,7 @@ import { ShopifyPromoBand } from "@/components/sections/shopify-promo-band";
 import { ScrollProgress } from "@/components/common/scroll-progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JsonLd } from "@/components/seo/json-ld";
+import { FAQ } from "@/components/sections/faq";
 import { publicPageMetadata } from "@/lib/seo/page-metadata";
 import { buildHomeJsonLdGraph } from "@/lib/seo/structured-data";
 import { getSiteDefaultTitle, getSiteDescription } from "@/lib/seo/site-copy";
@@ -61,10 +62,6 @@ const ConceptExplainer = dynamic(
 );
 const Pricing = dynamic(
   () => import("@/components/sections/pricing").then((m) => ({ default: m.Pricing })),
-  { loading: () => <SectionSkeleton /> }
-);
-const FAQ = dynamic(
-  () => import("@/components/sections/faq").then((m) => ({ default: m.FAQ })),
   { loading: () => <SectionSkeleton /> }
 );
 

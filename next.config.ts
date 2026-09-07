@@ -57,7 +57,15 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   experimental: {
-    optimizePackageImports: ["lucide-react", "framer-motion"],
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "recharts",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+    ],
     // Inline CSS in the document so the homepage (and other routes) do not wait
     // on a render-blocking stylesheet round-trip. Requires style-src 'unsafe-inline'
     // which is already in the CSP.

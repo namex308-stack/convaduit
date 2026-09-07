@@ -1,20 +1,18 @@
-"use client";
-
 import Link from "next/link";
 import { ScrollText } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
 import { ROUTES } from "@/lib/routes";
-import { useT } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 import { TERMS_COPY } from "@/lib/marketing/static-copy";
 
-export default function TermsPage() {
-  const t = useT();
+export default async function TermsPage() {
+  const t = await getServerTranslate();
   const copy = TERMS_COPY;
 
   return (
     <PageShell>
-      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={ScrollText} />
+      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={<ScrollText />} />
       <PageContent className="max-w-3xl space-y-4">
         {copy.sections.map((item) => (
           <SurfaceCard key={item.title} className="p-5">

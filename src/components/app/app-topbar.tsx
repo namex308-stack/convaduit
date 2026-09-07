@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/auth-context";
 import { initialsFromDisplayName, resolvePreferredDisplayName } from "@/lib/auth/display-user";
 import { localizedPlanName } from "@/lib/billing/localized-plan-name";
 import { useT } from "@/lib/i18n";

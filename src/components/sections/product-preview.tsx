@@ -29,7 +29,7 @@ const SHOTS = [
     icon: LayoutDashboard,
     titleKey: "productPreview.shot2.title" as const,
     captionKey: "productPreview.shot2.caption" as const,
-    loading: "eager" as const,
+    loading: "lazy" as const,
   },
 ] as const;
 

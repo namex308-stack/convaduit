@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ExternalLink, ShoppingBag } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
@@ -13,15 +11,15 @@ import {
   SHOPIFY_AFFILIATE_DISCLOSURE,
   SHOPIFY_AFFILIATE_URL,
 } from "@/lib/affiliates/shopify";
-import { useT } from "@/lib/i18n";
+import { getServerTranslate } from "@/lib/locale/server-t";
 import { ROUTES } from "@/lib/routes";
 
-export default function ShopifyPage() {
-  const t = useT();
+export default async function ShopifyPage() {
+  const t = await getServerTranslate();
 
   return (
     <PageShell>
-      <PageHeader title={SHOPIFY_PAGE_TITLE} subtitle={SHOPIFY_PAGE_SUBTITLE} icon={ShoppingBag} />
+      <PageHeader title={SHOPIFY_PAGE_TITLE} subtitle={SHOPIFY_PAGE_SUBTITLE} icon={<ShoppingBag />} />
       <PageContent className="max-w-3xl space-y-8">
         <SurfaceCard className="p-6 sm:p-8 space-y-4">
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed text-pretty">

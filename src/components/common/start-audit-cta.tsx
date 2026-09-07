@@ -1,9 +1,7 @@
-"use client";
-
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useNavigateAfterAction } from "@/lib/use-navigate";
+import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/marketing-hrefs";
 import { cn } from "@/lib/utils";
 
 type StartAuditCtaProps = {
@@ -24,10 +22,9 @@ export function StartAuditCta({
   size = "lg",
   variant = "default",
 }: StartAuditCtaProps) {
-  const { startAuditHref } = useNavigateAfterAction();
   return (
     <Button size={size} variant={variant} asChild className={cn(className)}>
-      <Link href={startAuditHref}>{children}</Link>
+      <Link href={CRAWLABLE_START_AUDIT_HREF}>{children}</Link>
     </Button>
   );
 }

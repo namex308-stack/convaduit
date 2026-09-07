@@ -9,7 +9,7 @@ export type CachedShell = {
   uiLocale?: "ar";
 };
 
-const TTL_MS = 30_000;
+const TTL_MS = 120_000;
 
 let cached: { at: number; shell: CachedShell } | null = null;
 

@@ -7,10 +7,10 @@ import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/auth-context";
 import { getUserDisplayName, getUserInitials } from "@/lib/auth/display-user";
 import { ROUTES } from "@/lib/routes";
-import { useNavigateAfterAction } from "@/lib/use-navigate";
+import { CRAWLABLE_START_AUDIT_HREF } from "@/lib/marketing-hrefs";
 import { cn } from "@/lib/utils";
 import { useT, type TranslationKey } from "@/lib/i18n";
 
@@ -27,10 +27,8 @@ export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthed, user, loading, signOut } = useAuth();
-  const {
-    startAuditHref,
-    newAuditHref,
-  } = useNavigateAfterAction();
+  const startAuditHref = CRAWLABLE_START_AUDIT_HREF;
+  const newAuditHref = ROUTES.auditNew;
   const { theme, setTheme } = useTheme();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);

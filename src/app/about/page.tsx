@@ -1,10 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
-import { useLocale } from "@/lib/locale/resolve";
+import { DEFAULT_LOCALE } from "@/lib/locale/config";
 import {
   aboutParagraphParts,
   getAboutSections,
@@ -31,12 +29,12 @@ function AboutPart({ part }: { part: AboutTextPart }) {
 }
 
 export default function AboutPage() {
-  const { locale } = useLocale();
+  const locale = DEFAULT_LOCALE;
   const sections = getAboutSections(locale);
 
   return (
     <PageShell>
-      <PageHeader title={getAboutTitle(locale)} subtitle={getAboutSubtitle(locale)} icon={Building2} />
+      <PageHeader title={getAboutTitle(locale)} subtitle={getAboutSubtitle(locale)} icon={<Building2 />} />
       <PageContent className="max-w-3xl space-y-4">
         {sections.map((item) => (
           <SurfaceCard key={item.t} className="p-5">

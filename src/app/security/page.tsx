@@ -1,19 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import { Shield, Server, FileCheck2, Lock } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
-import { useLocale } from "@/lib/locale/resolve";
 import { SECURITY_COPY } from "@/lib/marketing/static-copy";
 
 export default function SecurityPage() {
-  const { locale } = useLocale();
   const copy = SECURITY_COPY;
 
   return (
     <PageShell>
-      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={Shield} />
+      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={<Shield />} />
       <PageContent className="space-y-10 max-w-3xl">
         <section className="grid sm:grid-cols-2 gap-4">
           {copy.practices.map((p) => (

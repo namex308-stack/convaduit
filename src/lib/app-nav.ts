@@ -125,26 +125,7 @@ export const APP_NAV_FOOTER: AppNavItem[] = [
   },
 ];
 
-export const APP_ROUTE_PREFIXES = [
-  "/dashboard",
-  "/health",
-  "/audit",
-  "/history",
-  "/reports",
-  "/monitor",
-  "/geo",
-  "/alerts",
-  "/notifications",
-  "/tasks",
-  "/settings",
-  "/onboarding",
-] as const;
-
-export function isAppShellRoute(pathname: string): boolean {
-  return APP_ROUTE_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
+export { APP_ROUTE_PREFIXES, isAppShellRoute } from "@/lib/app-routes";
 
 export function resolveNavHref(
   item: AppNavItem,

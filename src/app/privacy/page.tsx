@@ -1,5 +1,3 @@
-"use client";
-
 import { Lock } from "lucide-react";
 import { PageShell, PageHeader, PageContent } from "@/components/app/page-shell";
 import { SurfaceCard } from "@/components/design-system/section";
@@ -10,7 +8,7 @@ export default function PrivacyPage() {
 
   return (
     <PageShell>
-      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={Lock} />
+      <PageHeader title={copy.pageTitle} subtitle={copy.pageSubtitle} icon={<Lock />} />
       <PageContent className="max-w-3xl space-y-4">
         {copy.sections.map((item) => (
           <SurfaceCard key={item.title} className="p-5">
