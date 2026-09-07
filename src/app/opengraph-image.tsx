@@ -21,19 +21,22 @@ const HEADLINE_1 = "حوّل كل صفحة منتج";
 const HEADLINE_2 = "إلى آلة تحويل مبيعات.";
 const SUBHEAD =
   "تحليل بالذكاء الاصطناعي للتحويل، SEO، الظهور في GEO والثقة — مع مقارنة بالمنافسين وإصلاحات جاهزة للنشر.";
-const PILLARS = ["التحويل", "SEO", "GEO / AI", "الثقة"];
-const CTA = "← ابدأ تحليلاً مجانياً";
+const PILLARS = ["التحويل", "SEO", "GEO / AI", "الثقة"] as const;
+const CTA = "ابدأ تحليلاً مجانياً";
 const KICKER = "AI INTELLIGENCE";
 
 export default async function OgImage() {
   const storeName = sanitizeOgStoreName("ConvAudit");
   const analysisTitle1 = sanitizeOgAnalysisTitle(HEADLINE_1);
   const analysisTitle2 = sanitizeOgAnalysisTitle(HEADLINE_2);
-  const subhead = sanitizeOgText(SUBHEAD, { maxLength: OG_SUBHEAD_MAX, fallback: analysisTitle1 });
+  const subhead = sanitizeOgText(SUBHEAD, {
+    maxLength: OG_SUBHEAD_MAX,
+    fallback: analysisTitle1,
+  });
   const kicker = sanitizeOgText(KICKER, { maxLength: 32, fallback: "AI" });
   const cta = sanitizeOgText(CTA, { maxLength: OG_CTA_MAX, fallback: storeName });
   const pillars = PILLARS.map((pillar) =>
-    sanitizeOgText(pillar, { maxLength: OG_PILLAR_MAX, fallback: "" })
+    sanitizeOgText(pillar, { maxLength: OG_PILLAR_MAX, fallback: "—" })
   ).filter((pillar) => pillar.length > 0);
 
   return safeImageResponse(async () => {
@@ -51,6 +54,8 @@ export default async function OgImage() {
       return fallbackOgImage(size);
     }
 
+    // Keep the layout simple: no backgroundClip text, no nested gradient spans.
+    // Complex Satori trees + Edge WASM previously threw codePointAt / OOB errors.
     return new ImageResponse(
       (
         <div
@@ -61,18 +66,17 @@ export default async function OgImage() {
             display: "flex",
             flexDirection: "column",
             background: "linear-gradient(135deg, #1d1f21 0%, #2a2d30 50%, #1d1f21 100%)",
-            padding: "80px",
-            position: "relative",
+            padding: "72px 80px",
             fontFamily: "Cairo",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 40 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 36 }}>
             <div
               style={{
                 width: 64,
                 height: 64,
                 borderRadius: 18,
-                background: "linear-gradient(135deg, #FF6600, #ff983f)",
+                background: "#FF6600",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -84,43 +88,63 @@ export default async function OgImage() {
               C
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ fontSize: 30, fontWeight: 800, color: "white", lineHeight: 1 }}>
+              <div style={{ fontSize: 30, fontWeight: 800, color: "white", lineHeight: 1.1 }}>
                 {storeName}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#FF6600", letterSpacing: 2, marginTop: 4, display: "flex" }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#FF6600",
+                  letterSpacing: 2,
+                  marginTop: 6,
+                }}
+              >
                 {kicker}
               </div>
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
-            <div style={{ fontSize: 62, fontWeight: 800, color: "white", lineHeight: 1.3, display: "flex" }}>
+            <div style={{ fontSize: 58, fontWeight: 800, color: "white", lineHeight: 1.25 }}>
               {analysisTitle1}
             </div>
-            <div style={{ fontSize: 62, fontWeight: 800, lineHeight: 1.3, marginTop: 8, display: "flex" }}>
-              <span style={{ background: "linear-gradient(120deg, #FF6600, #ff983f)", backgroundClip: "text", color: "transparent", display: "flex" }}>
-                {analysisTitle2}
-              </span>
+            <div style={{ fontSize: 58, fontWeight: 800, color: "#FF6600", lineHeight: 1.25, marginTop: 6 }}>
+              {analysisTitle2}
             </div>
-            <div style={{ fontSize: 24, color: "#929292", marginTop: 24, maxWidth: 900, lineHeight: 1.6, display: "flex" }}>
+            <div
+              style={{
+                fontSize: 22,
+                color: "#929292",
+                marginTop: 22,
+                maxWidth: 920,
+                lineHeight: 1.55,
+              }}
+            >
               {subhead}
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 40 }}>
-            <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-              {pillars.map((pillar, i) => (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 36,
+            }}
+          >
+            <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+              {pillars.map((pillar) => (
                 <div key={pillar} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div
                     style={{
                       width: 10,
                       height: 10,
-                      borderRadius: "50%",
-                      background: ["#FF6600", "#ff983f", "#cc5200", "#929292"][i] ?? "#929292",
-                      display: "flex",
+                      borderRadius: 5,
+                      background: "#FF6600",
                     }}
                   />
-                  <div style={{ fontSize: 18, fontWeight: 600, color: "#cccccc", display: "flex" }}>{pillar}</div>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: "#cccccc" }}>{pillar}</div>
                 </div>
               ))}
             </div>
@@ -128,10 +152,9 @@ export default async function OgImage() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
                 padding: "12px 28px",
                 borderRadius: 999,
-                background: "linear-gradient(135deg, #FF6600, #ff983f)",
+                background: "#FF6600",
                 fontSize: 18,
                 fontWeight: 700,
                 color: "white",

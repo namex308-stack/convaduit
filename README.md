@@ -6,7 +6,7 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 
 **Production:** [https://www.convaudit.com](https://www.convaudit.com)
 
-[![CI](https://github.com/namex308-stack/GEO/actions/workflows/ci.yml/badge.svg)](https://github.com/namex308-stack/GEO/actions/workflows/ci.yml)
+[![CI](https://github.com/namex308-stack/convaduit/actions/workflows/ci.yml/badge.svg)](https://github.com/namex308-stack/convaduit/actions/workflows/ci.yml)
 
 ---
 
@@ -15,6 +15,7 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 | Capability | Description |
 |---|---|
 | **Audit engine** | Conversion · SEO · GEO · Trust pillars with actionable recommendations |
+| **Site integrations** | Free SSL/TLS, PageSpeed, Web Risk, IP/Geo, and WHOIS/RDAP enrichments |
 | **AI Studio** | Arabic-first titles, descriptions, FAQ, meta, and ad copy (plan-gated) |
 | **Competitor tools** | In-audit comparison (Pro+) and scheduled monitoring (Business) |
 | **Billing** | Free / Pro / Business plans via Paymob (EGP), entitlements enforced server-side |
@@ -26,7 +27,8 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 
 - **Framework:** Next.js (App Router) · React 19 · TypeScript
 - **Data / Auth:** Supabase (PostgreSQL, Auth, RLS)
-- **AI / scrape:** Google Gemini · Firecrawl
+- **AI / scrape:** Google Gemini · Groq · Firecrawl
+- **Integrations:** Google PageSpeed Insights · Google Web Risk · RDAP · GeoJS
 - **Payments:** Paymob
 - **Rate limits:** Upstash Redis
 - **Deploy:** Vercel (`standalone` output)
@@ -36,8 +38,8 @@ Paste a product URL → get Conversion, SEO, GEO (AI-search visibility), and Tru
 ## Quick start
 
 ```bash
-git clone https://github.com/namex308-stack/GEO.git
-cd GEO
+git clone https://github.com/namex308-stack/convaduit.git
+cd convaduit
 cp .env.example .env.local
 # Fill required keys — see .env.example
 npm install
@@ -87,7 +89,7 @@ Copy [`.env.example`](.env.example). Never commit real secrets.
 - `FIRECRAWL_API_KEY`
 - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
 - Paymob: `PAYMOB_API_KEY`, `PAYMOB_INTEGRATION_ID`, `PAYMOB_IFRAME_ID`, `PAYMOB_HMAC_SECRET`, `PAYMOB_MODE`
-- Optional: `GOOGLE_SITE_VERIFICATION`, Resend, Google OAuth
+- Optional: `GROQ_API_KEY`, `GOOGLE_PAGESPEED_API_KEY`, `GOOGLE_WEB_RISK_API_KEY`, `GOOGLE_SITE_VERIFICATION`, Resend, Google OAuth
 
 ---
 

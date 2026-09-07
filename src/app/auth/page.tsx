@@ -21,21 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Logo } from "@/components/brand/logo";
+import { AuthPageLoading } from "@/components/runtime/auth-page-loading";
 import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase-browser";
 import { mapAuthErrorMessage } from "@/lib/auth/map-auth-error";
 import { safeNextPath } from "@/lib/auth/safe-next-path";
 import { withTimeout } from "@/lib/with-timeout";
 import { absoluteUrl } from "@/lib/site-url";
 import { useT, type TranslationKey } from "@/lib/i18n";
-
-function AuthPageLoading() {
-  const t = useT();
-  return (
-    <div className="min-h-screen grid place-items-center px-4" aria-busy="true">
-      <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-    </div>
-  );
-}
 
 type StatItem = { v: string; lKey: TranslationKey };
 

@@ -46,6 +46,7 @@ export default async function TwitterImage() {
             justifyContent: "center",
             background: "linear-gradient(135deg, #1d1f21 0%, #2a2d30 100%)",
             fontFamily: "Cairo",
+            padding: "64px",
           }}
         >
           <div
@@ -53,7 +54,7 @@ export default async function TwitterImage() {
               width: 80,
               height: 80,
               borderRadius: 22,
-              background: "linear-gradient(135deg, #FF6600, #ff983f)",
+              background: "#FF6600",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -65,10 +66,10 @@ export default async function TwitterImage() {
           >
             C
           </div>
-          <div style={{ fontSize: 56, fontWeight: 800, color: "white", lineHeight: 1.1, display: "flex" }}>
+          <div style={{ fontSize: 56, fontWeight: 800, color: "white", lineHeight: 1.1 }}>
             {storeName}
           </div>
-          <div style={{ fontSize: 24, color: "#929292", marginTop: 16, display: "flex" }}>
+          <div style={{ fontSize: 24, color: "#929292", marginTop: 16, textAlign: "center" }}>
             {analysisTitle}
           </div>
           <div
@@ -76,11 +77,10 @@ export default async function TwitterImage() {
               marginTop: 40,
               padding: "14px 32px",
               borderRadius: 999,
-              background: "linear-gradient(135deg, #FF6600, #ff983f)",
+              background: "#FF6600",
               fontSize: 20,
               fontWeight: 700,
               color: "white",
-              display: "flex",
             }}
           >
             {cta}

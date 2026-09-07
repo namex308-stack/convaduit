@@ -15,19 +15,30 @@ export async function loadGoogleFont(
   weight = 700
 ): Promise<ArrayBuffer> {
   const subset = ogFontSubsetText(text);
+  if (!subset) {
+    throw new Error(`Empty font subset for ${font}`);
+  }
+
   const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@${weight}&text=${encodeURIComponent(subset)}`;
-  const css = await (
-    await fetch(url, {
-      // Without a Safari-era UA, Google returns woff2 which Satori cannot parse.
-      headers: { "User-Agent": GOOGLE_FONTS_TTF_UA },
-    })
-  ).text();
+  const cssRes = await fetch(url, {
+    // Without a Safari-era UA, Google returns woff2 which Satori cannot parse.
+    headers: { "User-Agent": GOOGLE_FONTS_TTF_UA },
+    // Cache the CSS response on the Edge so crawlers share one font fetch.
+    next: { revalidate: 86_400 },
+  } as RequestInit);
+  if (!cssRes.ok) {
+    throw new Error(`Font CSS HTTP ${cssRes.status} for ${font}`);
+  }
+  const css = await cssRes.text();
   const match = css.match(/src: url\(([^)]+)\) format\('(opentype|truetype)'\)/);
 
   if (match?.[1]) {
-    const res = await fetch(match[1]);
+    const res = await fetch(match[1], {
+      next: { revalidate: 86_400 },
+    } as RequestInit);
     if (res.status === 200) {
-      return await res.arrayBuffer();
+      const data = await res.arrayBuffer();
+      if (data.byteLength > 0) return data;
     }
   }
 
