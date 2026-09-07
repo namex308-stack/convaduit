@@ -4,6 +4,14 @@ export type ApiErrorState = {
   needsUpgrade: boolean;
 };
 
+/** Append a correlation id to a user-facing error without leaking secrets. */
+export function withRequestId(message: string, requestId?: string | null): string {
+  const id = requestId?.trim();
+  if (!id) return message;
+  if (message.includes(id)) return message;
+  return `${message} رقم التتبع: ${id}`;
+}
+
 /** Parse a failed fetch response into user-facing recovery state. */
 export async function parseApiErrorResponse(
   res: Response,
@@ -15,10 +23,11 @@ export async function parseApiErrorResponse(
   }
 
   try {
-    const body = (await res.json()) as { error?: unknown };
+    const body = (await res.json()) as { error?: unknown; requestId?: unknown };
+    const requestId = typeof body.requestId === "string" ? body.requestId : undefined;
     if (typeof body.error === "string" && body.error.trim()) {
       return {
-        message: body.error,
+        message: withRequestId(body.error, requestId),
         needsAuth: false,
         needsUpgrade: res.status === 403,
       };

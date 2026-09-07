@@ -256,6 +256,10 @@ export interface AuditData {
   generatedContent?: GeneratedContent;
   /** Persisted audit lifecycle status (queued → … → completed|failed). */
   status?: string;
+  /** User-safe failure reason from `audits.error_message` (failed audits). */
+  errorMessage?: string;
+  /** Correlation id for Vercel logs (set on the originating POST /api/audit). */
+  requestId?: string;
 }
 
 export interface OnboardingAnswers {

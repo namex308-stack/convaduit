@@ -108,7 +108,8 @@ export default function ScanningPage() {
         setPhase((p) => Math.max(p, phaseIndexForStatus(status, visiblePhases.length)));
 
         if (status === "failed") {
-          setError(t("scanning.failed"));
+          const detail = data.audit.errorMessage?.trim();
+          setError(detail || t("scanning.failed"));
           return;
         }
 

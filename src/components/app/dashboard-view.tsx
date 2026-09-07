@@ -36,6 +36,7 @@ import type {
   DashboardMetric,
   DashboardMetricSource,
   DashboardPayload,
+  DashboardPillarDelta,
   DashboardPillars,
 } from "@/lib/dashboard/types";
 import {
@@ -295,38 +296,50 @@ function severityLabel(
 }
 
 const PILLAR_ROWS: Array<{
-  key: keyof DashboardPillars;
+  key: "conversion" | "seo" | "geo" | "trust";
   labelKey: TranslationKey;
 }> = [
+  { key: "conversion", labelKey: "dashboard.kpiConversion" },
   { key: "seo", labelKey: "dashboard.kpiSeo" },
   { key: "geo", labelKey: "dashboard.kpiGeo" },
-  { key: "conversion", labelKey: "dashboard.kpiConversion" },
   { key: "trust", labelKey: "dashboard.kpiTrust" },
 ];
 
 function PillarBars({
   latest,
-  previous,
+  rescan,
   t,
 }: {
   latest: DashboardPillars;
-  previous: DashboardPillars | null;
+  rescan: DashboardPillarDelta[] | null;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }) {
+  const byPillar = new Map((rescan ?? []).map((row) => [row.pillar, row]));
   return (
     <ul className="space-y-3">
       {PILLAR_ROWS.map((row) => {
-        const value = latest[row.key];
-        const prev = previous?.[row.key] ?? null;
+        const comparison = byPillar.get(row.key);
+        const value = comparison?.current ?? latest[row.key];
+        const prev = comparison?.previous ?? null;
+        const delta = comparison?.delta ?? null;
         const width = value == null ? 0 : Math.max(0, Math.min(100, value));
-        const delta = value != null && prev != null ? value - prev : null;
         const signed = formatSignedDelta(delta);
         return (
           <li key={row.key}>
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-medium">{t(row.labelKey)}</span>
               <span className="tabular-nums text-muted-foreground">
-                {value == null ? t("dashboard.kpiEmptyValue") : `${value}`}
+                {prev != null && value != null ? (
+                  <>
+                    <span>{prev}</span>
+                    <span className="mx-1">→</span>
+                    <span className="font-semibold text-foreground">{value}</span>
+                  </>
+                ) : value == null ? (
+                  t("dashboard.kpiEmptyValue")
+                ) : (
+                  `${value}`
+                )}
                 {signed ? (
                   <span
                     className={cn(
@@ -340,8 +353,6 @@ function PillarBars({
                   >
                     {signed}
                   </span>
-                ) : prev != null ? (
-                  <span className="ms-1.5">{t("dashboard.pillarPrevious", { value: prev })}</span>
                 ) : null}
               </span>
             </div>
@@ -844,10 +855,18 @@ export function DashboardView({
                   ) : null}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">{t("dashboard.pillarCompare")}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("dashboard.pillarCompareSub")}</p>
+                  <p className="text-sm font-semibold">
+                    {data.urlRescan ? t("dashboard.beforeAfter") : t("dashboard.pillarCompare")}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {data.urlRescan ? t("dashboard.beforeAfterSub") : t("dashboard.pillarCompareSub")}
+                  </p>
                   <div className="mt-4">
-                    <PillarBars latest={data.latestPillars} previous={data.previousPillars} t={t} />
+                    <PillarBars
+                      latest={data.latestPillars}
+                      rescan={data.urlRescan?.pillars ?? null}
+                      t={t}
+                    />
                   </div>
                 </div>
               </div>
@@ -881,6 +900,11 @@ export function DashboardView({
                   <p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
                     {t("dashboard.priorityIssue")}
                   </p>
+                  {data.priorityIssue.quickWin ? (
+                    <Badge className="rounded-full border-0 bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                      {t("report.startWithThis")}
+                    </Badge>
+                  ) : null}
                   <Badge
                     variant="secondary"
                     className={cn(
@@ -914,7 +938,14 @@ export function DashboardView({
                           className="block rounded-lg px-1 py-1 text-sm hover:bg-accent/40"
                         >
                           <span className="text-[11px] text-muted-foreground">{t("dashboard.thenFix")}</span>
-                          <span className="mt-0.5 block line-clamp-2 font-medium">{fix.problem}</span>
+                          <span className="mt-0.5 flex items-start gap-2">
+                            {fix.quickWin ? (
+                              <Badge className="mt-0.5 shrink-0 rounded-full border-0 bg-primary px-1.5 py-0 text-[9px] font-bold text-primary-foreground">
+                                {t("report.startWithThis")}
+                              </Badge>
+                            ) : null}
+                            <span className="line-clamp-2 font-medium">{fix.problem}</span>
+                          </span>
                         </Link>
                       </li>
                     ))}

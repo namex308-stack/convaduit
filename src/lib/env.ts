@@ -85,48 +85,82 @@ const CHECKS: Record<
 };
 
 /**
+ * Strip wrapping quotes/whitespace from dashboard-copied env values.
+ * Production Upstash URL was stored as `"https://…"` which crashes the Redis client.
+ */
+export function sanitizeEnvValue(raw: string | undefined | null): string | undefined {
+  if (raw == null) return undefined;
+  let value = raw.trim();
+  while (
+    (value.startsWith('"') && value.endsWith('"') && value.length >= 2) ||
+    (value.startsWith("'") && value.endsWith("'") && value.length >= 2)
+  ) {
+    value = value.slice(1, -1).trim();
+  }
+  return value || undefined;
+}
+
+/**
  * Static process.env reads so Next.js/Turbopack includes these server vars
  * in the serverless function env (dynamic `process.env[name]` is unreliable).
  */
 function readKnownEnv(name: KnownEnvVar): string | undefined {
+  let raw: string | undefined;
   switch (name) {
     case "NEXT_PUBLIC_SUPABASE_URL":
-      return process.env.NEXT_PUBLIC_SUPABASE_URL;
+      raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      break;
     case "NEXT_PUBLIC_SUPABASE_ANON_KEY":
-      return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      raw = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      break;
     case "SUPABASE_SERVICE_ROLE_KEY":
-      return process.env.SUPABASE_SERVICE_ROLE_KEY;
+      raw = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      break;
     case "GEMINI_API_KEY":
-      return process.env.GEMINI_API_KEY;
+      raw = process.env.GEMINI_API_KEY;
+      break;
     case "GROQ_API_KEY":
-      return process.env.GROQ_API_KEY;
+      raw = process.env.GROQ_API_KEY;
+      break;
     case "FIRECRAWL_API_KEY":
-      return process.env.FIRECRAWL_API_KEY;
+      raw = process.env.FIRECRAWL_API_KEY;
+      break;
     case "PAYMOB_API_KEY":
-      return process.env.PAYMOB_API_KEY;
+      raw = process.env.PAYMOB_API_KEY;
+      break;
     case "PAYMOB_INTEGRATION_ID":
-      return process.env.PAYMOB_INTEGRATION_ID;
+      raw = process.env.PAYMOB_INTEGRATION_ID;
+      break;
     case "PAYMOB_IFRAME_ID":
-      return process.env.PAYMOB_IFRAME_ID;
+      raw = process.env.PAYMOB_IFRAME_ID;
+      break;
     case "PAYMOB_HMAC_SECRET":
-      return process.env.PAYMOB_HMAC_SECRET;
+      raw = process.env.PAYMOB_HMAC_SECRET;
+      break;
     case "PAYMOB_MODE":
-      return process.env.PAYMOB_MODE;
+      raw = process.env.PAYMOB_MODE;
+      break;
     case "UPSTASH_REDIS_REST_URL":
-      return process.env.UPSTASH_REDIS_REST_URL;
+      raw = process.env.UPSTASH_REDIS_REST_URL;
+      break;
     case "UPSTASH_REDIS_REST_TOKEN":
-      return process.env.UPSTASH_REDIS_REST_TOKEN;
+      raw = process.env.UPSTASH_REDIS_REST_TOKEN;
+      break;
     case "GOOGLE_API_KEY":
-      return process.env.GOOGLE_API_KEY;
+      raw = process.env.GOOGLE_API_KEY;
+      break;
     case "GOOGLE_PAGESPEED_API_KEY":
-      return process.env.GOOGLE_PAGESPEED_API_KEY;
+      raw = process.env.GOOGLE_PAGESPEED_API_KEY;
+      break;
     case "GOOGLE_WEB_RISK_API_KEY":
-      return process.env.GOOGLE_WEB_RISK_API_KEY;
+      raw = process.env.GOOGLE_WEB_RISK_API_KEY;
+      break;
     default: {
       const _exhaustive: never = name;
       return _exhaustive;
     }
   }
+  return sanitizeEnvValue(raw);
 }
 
 export function getServiceStatus(key: ServiceKey): ServiceStatus {

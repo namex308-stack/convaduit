@@ -84,6 +84,64 @@ export function buildScoreTrend(
   return labelTrendPoints(points, locale);
 }
 
+export const PILLAR_COMPARE_KEYS = ["conversion", "seo", "geo", "trust"] as const;
+
+export type PillarCompareKey = (typeof PILLAR_COMPARE_KEYS)[number];
+
+export type PillarDelta = {
+  pillar: PillarCompareKey;
+  previous: number | null;
+  current: number | null;
+  delta: number | null;
+};
+
+/** Host + path (+ query) so www/apex and trailing slashes still match a re-scan. */
+export function canonicalizeAuditUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+    const path = parsed.pathname.replace(/\/+$/, "") || "/";
+    return `${host}${path}${parsed.search}`.toLowerCase();
+  } catch {
+    return trimmed.replace(/\/+$/, "").replace(/^www\./i, "").toLowerCase();
+  }
+}
+
+/** Newest-first completed list: previous completed audit of the same URL, if any. */
+export function findPreviousSameUrlAudit<T extends { id: string; productUrl: string }>(
+  latest: T,
+  completedNewestFirst: readonly T[]
+): T | null {
+  const key = canonicalizeAuditUrl(latest.productUrl);
+  if (!key) return null;
+  return (
+    completedNewestFirst.find(
+      (row) => row.id !== latest.id && canonicalizeAuditUrl(row.productUrl) === key
+    ) ?? null
+  );
+}
+
+/** Per-pillar old vs new. Missing scores stay null — never invent 0. */
+export function buildPillarDeltas(
+  current: Record<PillarCompareKey, number | null>,
+  previous: Record<PillarCompareKey, number | null> | null
+): PillarDelta[] {
+  return PILLAR_COMPARE_KEYS.map((pillar) => {
+    const curr = current[pillar];
+    const prev = previous?.[pillar] ?? null;
+    const hasBoth =
+      curr != null && Number.isFinite(curr) && prev != null && Number.isFinite(prev);
+    return {
+      pillar,
+      previous: prev,
+      current: curr,
+      delta: hasBoth ? curr - prev : null,
+    };
+  });
+}
+
 /** Filter trend points to the last N calendar months. */
 export function filterTrendByMonths(
   trend: readonly TrendPoint[],

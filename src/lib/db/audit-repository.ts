@@ -31,6 +31,15 @@ import { getGeminiModelId } from "@/lib/gemini";
 
 export type { AuditHistoryItem } from "@/lib/audits/types";
 
+function throwOnDbError(
+  error: { message: string } | null | undefined,
+  operation: string
+): void {
+  if (error) {
+    throw new Error(`Supabase ${operation} failed: ${error.message}`);
+  }
+}
+
 /** Workspace ids the user belongs to — request-memoized to avoid N+1 membership lookups. */
 export const listWorkspaceIdsForUser = cache(async (userId: string): Promise<string[]> => {
   const sb = getSupabaseAdmin();
@@ -338,12 +347,15 @@ export async function finishAnalysisRun(
 
 export async function persistAuditResults(auditId: string, workspaceId: string, rawAudit: AuditData): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (!sb) return;
+  if (!sb) {
+    throw new Error("Supabase admin client unavailable");
+  }
   const audit = decodeAuditDisplayFields(rawAudit);
 
-  const { data: categories } = await sb
+  const { data: categories, error: categoriesError } = await sb
     .from("analysis_categories")
     .select("id, slug, display_name, description");
+  throwOnDbError(categoriesError, "analysis_categories.select");
   const bySlug = new Map((categories ?? []).map((c) => [c.slug as string, c.id as string]));
   const displayBySlug = new Map(
     (categories ?? []).map((c) => [c.slug as string, c.display_name as string])
@@ -364,10 +376,11 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
   const trustScore = pillarScore(audit.breakdown, "trust");
   const geoDenorm = geoSignalsFromAnalysis(audit.geoAnalysis, audit.geoReadability);
 
-  await sb
+  const { error: auditUpdateError } = await sb
     .from("audits")
     .update({
       status: "completed",
+      error_message: null,
       product_name: audit.productName,
       store_name: audit.storeName,
       overall_score: audit.overallScore,
@@ -384,11 +397,12 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
         : getGeminiModelId(),
     })
     .eq("id", auditId);
+  throwOnDbError(auditUpdateError, "audits.update");
 
   for (const b of audit.breakdown) {
     const categoryId = bySlug.get(b.pillar);
     if (!categoryId) continue;
-    await sb.from("audit_scores").upsert(
+    const { error } = await sb.from("audit_scores").upsert(
       {
         audit_id: auditId,
         category_id: categoryId,
@@ -400,13 +414,14 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
       },
       { onConflict: "audit_id,category_id,subject" }
     );
+    throwOnDbError(error, "audit_scores.upsert");
   }
 
   if (audit.competitorBreakdown) {
     for (const b of audit.competitorBreakdown) {
       const categoryId = bySlug.get(b.pillar);
       if (!categoryId) continue;
-      await sb.from("audit_scores").upsert(
+      const { error } = await sb.from("audit_scores").upsert(
         {
           audit_id: auditId,
           category_id: categoryId,
@@ -418,10 +433,11 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
         },
         { onConflict: "audit_id,category_id,subject" }
       );
+      throwOnDbError(error, "audit_scores.upsert");
     }
   }
 
-  await sb.from("geo_signals").upsert({
+  const { error: geoError } = await sb.from("geo_signals").upsert({
     audit_id: auditId,
     chatgpt: audit.geoReadability.chatgpt,
     perplexity: audit.geoReadability.perplexity,
@@ -433,11 +449,13 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
     ai_readability_score: geoDenorm?.aiReadabilityScore ?? null,
     freshness_score: geoDenorm?.freshnessScore ?? null,
   });
+  throwOnDbError(geoError, "geo_signals.upsert");
 
-  await sb.from("recommendations").delete().eq("audit_id", auditId);
+  const { error: recDeleteError } = await sb.from("recommendations").delete().eq("audit_id", auditId);
+  throwOnDbError(recDeleteError, "recommendations.delete");
 
   if (audit.recommendations.length) {
-    await sb.from("recommendations").insert(
+    const { error: recInsertError } = await sb.from("recommendations").insert(
       audit.recommendations.map((r, i) => ({
         audit_id: auditId,
         category_id: bySlug.get(r.pillar) ?? null,
@@ -459,9 +477,10 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
         sort_order: i,
       }))
     );
+    throwOnDbError(recInsertError, "recommendations.insert");
   }
 
-  await sb.from("reports").upsert(
+  const { error: reportError } = await sb.from("reports").upsert(
     {
       audit_id: auditId,
       workspace_id: workspaceId,
@@ -476,6 +495,7 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
     },
     { onConflict: "audit_id,version" }
   );
+  throwOnDbError(reportError, "reports.upsert");
 
   // Historical GEO tracking only — does not re-run or modify the GEO engine.
   const { data: auditMeta } = await sb
@@ -486,18 +506,22 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
 
   const storeId = (auditMeta?.store_id as string | null) ?? null;
 
-  await recordGeoScoreHistory({
-    workspaceId,
-    storeId,
-    auditId,
-    audit: {
-      ...audit,
-      createdAt:
-        (auditMeta?.completed_at as string) ||
-        audit.createdAt ||
-        new Date().toISOString(),
-    },
-  });
+  try {
+    await recordGeoScoreHistory({
+      workspaceId,
+      storeId,
+      auditId,
+      audit: {
+        ...audit,
+        createdAt:
+          (auditMeta?.completed_at as string) ||
+          audit.createdAt ||
+          new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    console.error("[audits] geo history failed:", err);
+  }
 
   const completedAudit: AuditData = {
     ...audit,
@@ -508,21 +532,27 @@ export async function persistAuditResults(auditId: string, workspaceId: string, 
       new Date().toISOString(),
   };
 
-  // AI Alerts — compare with previous completed audit; never blocks persistence.
-  await emitAlertsForCompletedAudit({
-    workspaceId,
-    storeId,
-    auditId,
-    audit: completedAudit,
-  });
+  try {
+    await emitAlertsForCompletedAudit({
+      workspaceId,
+      storeId,
+      auditId,
+      audit: completedAudit,
+    });
+  } catch (err) {
+    console.error("[audits] alerts emit failed:", err);
+  }
 
-  // Growth Tasks — transform recommendations into durable actionable tasks.
-  await syncGrowthTasksFromAudit({
-    workspaceId,
-    storeId,
-    auditId,
-    audit: completedAudit,
-  });
+  try {
+    await syncGrowthTasksFromAudit({
+      workspaceId,
+      storeId,
+      auditId,
+      audit: completedAudit,
+    });
+  } catch (err) {
+    console.error("[audits] growth tasks failed:", err);
+  }
 }
 
 export async function recordUsageEvent(
@@ -618,8 +648,11 @@ export async function releaseUsageQuota(usageEventId: string): Promise<void> {
 
 export async function markAuditFailed(auditId: string, message: string): Promise<void> {
   const sb = getSupabaseAdmin();
-  if (!sb) return;
-  await sb
+  if (!sb) {
+    console.error("[audits] mark failed skipped: Supabase admin unavailable", { auditId, message });
+    return;
+  }
+  const { error } = await sb
     .from("audits")
     .update({
       status: "failed",
@@ -627,6 +660,7 @@ export async function markAuditFailed(auditId: string, message: string): Promise
       completed_at: new Date().toISOString(),
     })
     .eq("id", auditId);
+  if (error) console.error("[audits] mark failed update error:", error.message, { auditId });
 }
 
 /** List audits the user owns or can access via workspace membership. */
@@ -951,6 +985,10 @@ async function hydrateStoredAudit(row: Record<string, unknown>): Promise<StoredA
         createdAt: (row.created_at as string) || new Date().toISOString(),
         demoMode,
         status: rowStatus,
+        errorMessage:
+          typeof row.error_message === "string" && row.error_message.trim()
+            ? row.error_message
+            : undefined,
       }),
       demoMode,
       aiConfigured,

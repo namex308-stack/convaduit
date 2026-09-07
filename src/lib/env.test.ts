@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { getPagespeedApiKey, getWebRiskApiKey } from "@/lib/env";
+import { getPagespeedApiKey, getWebRiskApiKey, sanitizeEnvValue } from "@/lib/env";
 
 describe("optional Google integration keys", () => {
   afterEach(() => {
@@ -27,5 +27,18 @@ describe("optional Google integration keys", () => {
     vi.stubEnv("GOOGLE_API_KEY", "");
     expect(getPagespeedApiKey()).toBeUndefined();
     expect(getWebRiskApiKey()).toBeUndefined();
+  });
+});
+
+describe("sanitizeEnvValue", () => {
+  it("strips wrapping quotes copied from the Vercel dashboard", () => {
+    expect(sanitizeEnvValue('"https://skilled-flounder-35351.upstash.io"')).toBe(
+      "https://skilled-flounder-35351.upstash.io"
+    );
+    expect(sanitizeEnvValue("'https://example.com'")).toBe("https://example.com");
+    expect(sanitizeEnvValue('""https://example.com""')).toBe("https://example.com");
+    expect(sanitizeEnvValue("https://example.com")).toBe("https://example.com");
+    expect(sanitizeEnvValue("  ")).toBeUndefined();
+    expect(sanitizeEnvValue(undefined)).toBeUndefined();
   });
 });

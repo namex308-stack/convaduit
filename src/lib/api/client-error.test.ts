@@ -50,4 +50,17 @@ describe("parseApiErrorResponse", () => {
       needsUpgrade: false,
     });
   });
+
+  it("appends requestId from the API body", async () => {
+    const parsed = await parseApiErrorResponse(
+      jsonResponse(500, {
+        error: "تعذّر التحقق من حد الاستخدام مؤقتاً. حاول مرة أخرى.",
+        requestId: "req-9",
+      }),
+      "fallback",
+      "sign in"
+    );
+    expect(parsed.message).toContain("تعذّر التحقق من حد الاستخدام");
+    expect(parsed.message).toContain("req-9");
+  });
 });

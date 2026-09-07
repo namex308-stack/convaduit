@@ -32,6 +32,7 @@ export type DashboardPriorityIssue = {
   effort: string | null;
   pillar: string | null;
   projectedImpact: string | null;
+  quickWin: boolean;
 };
 
 export type DashboardTopIssue = {
@@ -69,6 +70,19 @@ export type DashboardPillars = {
   trust: number | null;
 };
 
+export type DashboardPillarDelta = {
+  pillar: "conversion" | "seo" | "geo" | "trust";
+  previous: number | null;
+  current: number | null;
+  delta: number | null;
+};
+
+/** Present only when the latest completed audit has a prior completed audit of the same URL. */
+export type DashboardUrlRescan = {
+  previousAuditId: string;
+  pillars: DashboardPillarDelta[];
+};
+
 /** Payload for GET /api/dashboard — shared by API and client. */
 export type DashboardPayload = {
   plan: PlanLimits;
@@ -96,6 +110,7 @@ export type DashboardPayload = {
   };
   latestPillars: DashboardPillars | null;
   previousPillars: DashboardPillars | null;
+  urlRescan: DashboardUrlRescan | null;
   latestAudit: {
     id: string;
     productName: string;

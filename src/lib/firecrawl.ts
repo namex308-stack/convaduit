@@ -122,6 +122,10 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
       if (credits) {
         console.warn("[firecrawl]", FIRECRAWL_CREDITS_MESSAGE);
       }
+      console.info("[firecrawl] scrape HTTP error — trying HTTP fallback", {
+        status: res.status,
+        credits,
+      });
 
       const fallback = await fetchPageFallback(target);
       if (fallback.page) {
@@ -182,13 +186,17 @@ export async function crawlWithFallback(url: string): Promise<CrawlResult> {
       source: "firecrawl",
     };
   } catch (err) {
+    const timedOut =
+      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
     console.error("[firecrawl] error:", err);
+    console.info("[firecrawl] scrape threw — trying HTTP fallback", {
+      timedOut,
+      name: err instanceof Error ? err.name : "unknown",
+    });
     const fallback = await fetchPageFallback(target);
     if (fallback.page) {
       return { page: fallback.page, errorCode: "FAILED", source: "fallback" };
     }
-    const timedOut =
-      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
     return {
       page: null,
       errorCode: "FAILED",

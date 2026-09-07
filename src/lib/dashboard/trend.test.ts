@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPillarDeltas,
   buildScoreTrend,
+  canonicalizeAuditUrl,
   filterTrendByMonths,
+  findPreviousSameUrlAudit,
   labelTrendPoints,
 } from "@/lib/dashboard/trend";
 
@@ -79,5 +82,49 @@ describe("filterTrendByMonths", () => {
       },
     ];
     expect(filterTrendByMonths(trend, 3).map((p) => p.label)).toEqual(["latest"]);
+  });
+});
+
+describe("same-URL pillar comparison", () => {
+  it("canonicalizes www, trailing slash, and missing protocol", () => {
+    expect(canonicalizeAuditUrl("https://www.store.com/p/1/")).toBe(
+      canonicalizeAuditUrl("http://store.com/p/1")
+    );
+    expect(canonicalizeAuditUrl("store.com/p/1")).toBe("store.com/p/1");
+  });
+
+  it("finds the previous completed audit of the same URL only", () => {
+    const latest = {
+      id: "c",
+      productUrl: "https://shop.example/p/red",
+    };
+    const previous = findPreviousSameUrlAudit(latest, [
+      latest,
+      { id: "b", productUrl: "https://shop.example/other" },
+      { id: "a", productUrl: "https://www.shop.example/p/red/" },
+    ]);
+    expect(previous?.id).toBe("a");
+  });
+
+  it("returns null when the URL has no prior audit", () => {
+    expect(
+      findPreviousSameUrlAudit(
+        { id: "only", productUrl: "https://shop.example/p/1" },
+        [{ id: "only", productUrl: "https://shop.example/p/1" }]
+      )
+    ).toBeNull();
+  });
+
+  it("computes pillar deltas without inventing missing scores", () => {
+    const deltas = buildPillarDeltas(
+      { conversion: 80, seo: 70, geo: null, trust: 60 },
+      { conversion: 70, seo: 74, geo: 50, trust: 60 }
+    );
+    expect(deltas).toEqual([
+      { pillar: "conversion", previous: 70, current: 80, delta: 10 },
+      { pillar: "seo", previous: 74, current: 70, delta: -4 },
+      { pillar: "geo", previous: 50, current: null, delta: null },
+      { pillar: "trust", previous: 60, current: 60, delta: 0 },
+    ]);
   });
 });

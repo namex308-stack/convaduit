@@ -38,6 +38,13 @@ import { analyzeGeo } from "@/lib/audit/geo-analyzer";
 import { applyGeoAnalysisToAudit } from "@/lib/audit/scoring";
 import { applySiteIntegrationsToAudit, runSiteIntegrations } from "@/lib/integrations";
 import {
+  AUDIT_ERROR_CODES,
+  formatFailedAuditMessage,
+  mapUnknownAuditError,
+  type AuditStage,
+} from "@/lib/audit/pipeline-error";
+import { auditRequestHeaders, getAuditRequestId, logAuditStage } from "@/lib/audit/request-id";
+import {
   getOnboardingState,
   toAnalyzerOnboarding,
   type OnboardingState,
@@ -77,6 +84,46 @@ const Body = z
     }
   });
 
+function safeHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "invalid-url";
+  }
+}
+
+function jsonError(
+  requestId: string,
+  input: {
+    error: string;
+    code: string;
+    stage: AuditStage;
+    status: number;
+    extra?: Record<string, unknown>;
+    headers?: HeadersInit;
+  }
+): NextResponse {
+  console.error("[api/audit] request failed", {
+    requestId,
+    stage: input.stage,
+    code: input.code,
+    error: input.error,
+  });
+  return NextResponse.json(
+    {
+      error: input.error,
+      code: input.code,
+      stage: input.stage,
+      requestId,
+      ...input.extra,
+    },
+    {
+      status: input.status,
+      headers: { ...auditRequestHeaders(requestId), ...input.headers },
+    }
+  );
+}
+
 async function validateCrawlUrl(label: string, raw: string): Promise<string | null> {
   const safe = await assertSafePublicHttpUrl(raw);
   if (!safe.ok) return `${label}: ${safe.reason}`;
@@ -95,6 +142,7 @@ async function runAuditPipeline(input: {
   onboardingState: OnboardingState;
   usageEventId: string | null;
   useLoadTestMocks: boolean;
+  requestId: string;
 }): Promise<void> {
   const {
     auditId,
@@ -108,9 +156,13 @@ async function runAuditPipeline(input: {
     onboardingState,
     usageEventId,
     useLoadTestMocks,
+    requestId,
   } = input;
 
+  let stage: AuditStage = "crawl";
+
   try {
+    logAuditStage(requestId, "crawl", { auditId, urlHost: safeHost(primaryUrl) });
     await updateAuditStatus(auditId, "scraping");
 
     const emptyCompetitor = {
@@ -145,20 +197,40 @@ async function runAuditPipeline(input: {
     const competitor = competitorResult.page;
 
     if (!product) {
-      const message =
+      const crawlMessage =
         productResult.errorMessage ||
         (productResult.errorCode === "NOT_CONFIGURED"
           ? FIRECRAWL_NOT_CONFIGURED_MESSAGE
           : productResult.errorCode === "BLOCKED_URL"
             ? "لا يمكن استخراج هذا الرابط."
             : "تعذّر الوصول إلى الصفحة، تحقق من الرابط.");
+      const message = formatFailedAuditMessage({
+        publicMessage: crawlMessage,
+        requestId,
+        stage: "crawl",
+      });
+      console.error("[api/audit] crawl failed", {
+        requestId,
+        auditId,
+        errorCode: productResult.errorCode,
+        source: productResult.source,
+      });
       await markAuditFailed(auditId, message);
       if (usageEventId) await releaseUsageQuota(usageEventId);
       return;
     }
 
+    logAuditStage(requestId, "crawl.ok", {
+      auditId,
+      source: productResult.source,
+      errorCode: productResult.errorCode,
+    });
+
     await saveAuditPage(auditId, "primary", product);
     if (competitor) await saveAuditPage(auditId, "competitor", competitor);
+
+    stage = "analyze";
+    logAuditStage(requestId, "analyze", { auditId });
     await updateAuditStatus(auditId, "analyzing");
 
     const runIds = new Map<AnalyzerName, string>();
@@ -185,6 +257,7 @@ async function runAuditPipeline(input: {
       storeUrl: resolvedStoreUrl || withGeo.storeUrl,
       competitorUrl: resolvedCompetitorUrl || withGeo.competitorUrl,
       demoMode: useLoadTestMocks || (withGeo.demoMode ?? !isGeminiConfigured()),
+      requestId,
       crawlMetadata: {
         source: productResult.source,
         scrapeMs: product.scrapeMs,
@@ -208,7 +281,8 @@ async function runAuditPipeline(input: {
       try {
         const siteIntegrations = await runSiteIntegrations(primaryUrl);
         toPersist = applySiteIntegrationsToAudit(withMeta, siteIntegrations);
-        console.info("[audit] site integrations", {
+        logAuditStage(requestId, "integrations", {
+          auditId,
           ssl: siteIntegrations.sslTls.status,
           pagespeed: siteIntegrations.pageSpeed.status,
           webrisk: siteIntegrations.webRisk.status,
@@ -216,11 +290,14 @@ async function runAuditPipeline(input: {
           whois: siteIntegrations.whois.status,
         });
       } catch (err) {
-        console.error("[audit] site integrations failed:", err);
+        console.error("[audit] site integrations failed:", { requestId, auditId, err });
       }
     }
 
+    stage = "persist";
+    logAuditStage(requestId, "persist", { auditId });
     await persistAuditResults(auditId, workspaceId, toPersist);
+    logAuditStage(requestId, "persist.ok", { auditId });
 
     if (storeId || resolvedStoreUrl) {
       const sd = product.structuredData as Record<string, unknown>;
@@ -247,36 +324,55 @@ async function runAuditPipeline(input: {
       await recordUsageEvent(workspaceId, "competitor_compare", { type: "audit", id: auditId });
     }
   } catch (err) {
-    console.error("[api/audit] pipeline error:", err);
-    await markAuditFailed(auditId, "فشل التحليل. حاول مرة أخرى.");
+    const mapped = mapUnknownAuditError(err, stage);
+    console.error("[api/audit] pipeline error", {
+      requestId,
+      auditId,
+      stage,
+      code: mapped.code,
+      err,
+    });
+    await markAuditFailed(
+      auditId,
+      formatFailedAuditMessage({
+        publicMessage: mapped.publicMessage,
+        requestId,
+        stage,
+      })
+    );
     if (usageEventId) await releaseUsageQuota(usageEventId);
   }
 }
 
 export async function POST(req: NextRequest) {
+  const requestId = getAuditRequestId(req.headers);
+  const requestHeaders = auditRequestHeaders(requestId);
+
   try {
+    logAuditStage(requestId, "accepted");
     const loadTestMode = resolveLoadTestMode(
       loadTestSignalFromHeaders(req.headers, req.nextUrl)
     );
     switch (loadTestMode) {
       case "rejected":
-        return NextResponse.json(
-          {
-            error: "Load-test mocks are disabled in this environment.",
-            code: "LOAD_TEST_REJECTED",
-          },
-          { status: 403 }
-        );
+        return jsonError(requestId, {
+          error: "Load-test mocks are disabled in this environment.",
+          code: AUDIT_ERROR_CODES.LOAD_TEST_REJECTED,
+          stage: "validate",
+          status: 403,
+        });
       case "mock":
       case "off":
         break;
       default: {
         const _exhaustive: never = loadTestMode;
         void _exhaustive;
-        return NextResponse.json(
-          { error: "Load-test mocks are disabled in this environment.", code: "LOAD_TEST_REJECTED" },
-          { status: 403 }
-        );
+        return jsonError(requestId, {
+          error: "Load-test mocks are disabled in this environment.",
+          code: AUDIT_ERROR_CODES.LOAD_TEST_REJECTED,
+          stage: "validate",
+          status: 403,
+        });
       }
     }
     const useLoadTestMocks = loadTestMode === "mock";
@@ -287,10 +383,13 @@ export async function POST(req: NextRequest) {
     const json = await req.json();
     const parsed = Body.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "طلب غير صالح", details: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return jsonError(requestId, {
+        error: "طلب غير صالح",
+        code: AUDIT_ERROR_CODES.INVALID_BODY,
+        stage: "validate",
+        status: 400,
+        extra: { details: parsed.error.flatten() },
+      });
     }
     const productUrlInput = parsed.data.productUrl?.trim() || "";
     const storeUrlInput = parsed.data.storeUrl?.trim() || "";
@@ -298,14 +397,13 @@ export async function POST(req: NextRequest) {
 
     const onboardingState = await getOnboardingState(auth.user.id);
     if (!onboardingState?.completed) {
-      return NextResponse.json(
-        {
-          error: "أكمل التهيئة قبل تشغيل تحليل.",
-          code: "ONBOARDING_REQUIRED",
-          resumePath: onboardingState?.resumePath ?? "/onboarding",
-        },
-        { status: 403 }
-      );
+      return jsonError(requestId, {
+        error: "أكمل التهيئة قبل تشغيل تحليل.",
+        code: AUDIT_ERROR_CODES.ONBOARDING_REQUIRED,
+        stage: "onboarding",
+        status: 403,
+        extra: { resumePath: onboardingState?.resumePath ?? "/onboarding" },
+      });
     }
     const onboarding = toAnalyzerOnboarding(onboardingState);
 
@@ -323,47 +421,54 @@ export async function POST(req: NextRequest) {
           : null) ||
         (competitorCandidate ? await validateCrawlUrl("رابط المنافس", competitorCandidate) : null);
     if (urlError) {
-      return NextResponse.json({ error: urlError, code: "BLOCKED_URL" }, { status: 400 });
+      return jsonError(requestId, {
+        error: urlError,
+        code: AUDIT_ERROR_CODES.BLOCKED_URL,
+        stage: "validate",
+        status: 400,
+      });
     }
 
     const workspaceId = await ensurePersonalWorkspace(auth.user.id);
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: "تعذّر تجهيز مساحة العمل. حاول مرة أخرى." },
-        { status: 503 }
-      );
+      return jsonError(requestId, {
+        error: "تعذّر تجهيز مساحة العمل. حاول مرة أخرى.",
+        code: AUDIT_ERROR_CODES.WORKSPACE_UNAVAILABLE,
+        stage: "workspace",
+        status: 503,
+      });
     }
 
     const plan = await getPlanForWorkspace(workspaceId);
 
     const rateKey = `user:${auth.user.id}`;
+    logAuditStage(requestId, "rate_limit", { plan: plan.planId });
     const { success, remaining, limit } = useLoadTestMocks
       ? { success: true, remaining: Number.POSITIVE_INFINITY, limit: Number.POSITIVE_INFINITY }
       : await checkRateLimit(rateKey, plan.planId);
     if (!success) {
-      return NextResponse.json(
-        { error: "تم تجاوز الحد المسموح. حاول لاحقاً أو قم بترقية باقتك." },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": String(limit),
-            "X-RateLimit-Remaining": String(remaining),
-          },
-        }
-      );
+      return jsonError(requestId, {
+        error: "تم تجاوز الحد المسموح. حاول لاحقاً أو قم بترقية باقتك.",
+        code: AUDIT_ERROR_CODES.RATE_LIMITED,
+        stage: "rate_limit",
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(remaining),
+        },
+      });
     }
 
     let resolvedCompetitorUrl = competitorCandidate;
     if (resolvedCompetitorUrl && !isPlanFeatureEnabled(plan, "competitor")) {
       if (competitorUrlInput) {
-        return NextResponse.json(
-          {
-            error: competitorLockedMessage(),
-            code: ENTITLEMENT_CODES.COMPETITOR_LOCKED,
-            plan: plan.planId,
-          },
-          { status: 403 }
-        );
+        return jsonError(requestId, {
+          error: competitorLockedMessage(),
+          code: ENTITLEMENT_CODES.COMPETITOR_LOCKED,
+          stage: "entitlement",
+          status: 403,
+          extra: { plan: plan.planId },
+        });
       }
       resolvedCompetitorUrl = undefined;
     }
@@ -384,14 +489,16 @@ export async function POST(req: NextRequest) {
       if (!storeResult.ok) {
         if (storeResult.code === "STORE_LIMIT_REACHED") {
           return NextResponse.json(
-            storeLimitReachedBody(plan, storeResult.used),
-            { status: 403 }
+            { ...storeLimitReachedBody(plan, storeResult.used), requestId, stage: "store" },
+            { status: 403, headers: requestHeaders }
           );
         }
-        return NextResponse.json(
-          { error: "تعذّر تجهيز المتجر. حاول مرة أخرى." },
-          { status: 503 }
-        );
+        return jsonError(requestId, {
+          error: "تعذّر تجهيز المتجر. حاول مرة أخرى.",
+          code: AUDIT_ERROR_CODES.STORE_UNAVAILABLE,
+          stage: "store",
+          status: 503,
+        });
       }
       storeId = storeResult.storeId;
     }
@@ -406,10 +513,12 @@ export async function POST(req: NextRequest) {
     });
 
     if (!auditId) {
-      return NextResponse.json(
-        { error: "تعذّر إنشاء سجل التحليل. حاول مرة أخرى." },
-        { status: 503 }
-      );
+      return jsonError(requestId, {
+        error: "تعذّر إنشاء سجل التحليل. حاول مرة أخرى.",
+        code: AUDIT_ERROR_CODES.CREATE_RECORD_FAILED,
+        stage: "create_record",
+        status: 503,
+      });
     }
 
     const { start: periodStart, end: periodEnd } = getCurrentUsagePeriod();
@@ -433,16 +542,17 @@ export async function POST(req: NextRequest) {
         kind: "quota_exhausted",
         metricLabel: "تحليلات الشهر",
       });
-      return NextResponse.json(
-        {
-          error: message,
-          code: "AUDIT_LIMIT_REACHED",
+      return jsonError(requestId, {
+        error: message,
+        code: AUDIT_ERROR_CODES.AUDIT_LIMIT_REACHED,
+        stage: "quota",
+        status: 403,
+        extra: {
           plan: plan.planId,
           limit: plan.auditsPerMonth,
           used: quota.used,
         },
-        { status: 403 }
-      );
+      });
     }
 
     const usageEventId = quota.usageEventId;
@@ -460,32 +570,49 @@ export async function POST(req: NextRequest) {
         onboardingState,
         usageEventId,
         useLoadTestMocks,
+        requestId,
       })
     );
 
-    return NextResponse.json({
-      audit: {
-        id: auditId,
-        productUrl: primaryUrl,
-        storeUrl: resolvedStoreUrl,
-        competitorUrl: resolvedCompetitorUrl,
-        status: "queued",
-      },
-      meta: {
-        rateLimit: { remaining, limit },
-        auditId,
-        workspaceId,
-        accepted: true,
-        demoMode: {
-          firecrawl: useLoadTestMocks || !isFirecrawlConfigured(),
-          gemini: useLoadTestMocks || !isGeminiConfigured(),
+    return NextResponse.json(
+      {
+        audit: {
+          id: auditId,
+          productUrl: primaryUrl,
+          storeUrl: resolvedStoreUrl,
+          competitorUrl: resolvedCompetitorUrl,
+          status: "queued",
         },
-        loadTest: useLoadTestMocks,
+        requestId,
+        meta: {
+          rateLimit: { remaining, limit },
+          auditId,
+          workspaceId,
+          requestId,
+          accepted: true,
+          demoMode: {
+            firecrawl: useLoadTestMocks || !isFirecrawlConfigured(),
+            gemini: useLoadTestMocks || !isGeminiConfigured(),
+          },
+          loadTest: useLoadTestMocks,
+        },
       },
-    });
+      { headers: requestHeaders }
+    );
   } catch (err) {
-    console.error("[api/audit] error:", err);
-    return NextResponse.json({ error: "فشل التحليل. حاول مرة أخرى." }, { status: 500 });
+    const mapped = mapUnknownAuditError(err);
+    console.error("[api/audit] error", {
+      requestId,
+      stage: mapped.stage,
+      code: mapped.code,
+      err,
+    });
+    return jsonError(requestId, {
+      error: mapped.publicMessage,
+      code: mapped.code,
+      stage: mapped.stage,
+      status: mapped.status,
+    });
   }
 }
 

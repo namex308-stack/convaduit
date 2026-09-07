@@ -4,6 +4,8 @@
  * Retry resolves URLs via POST /api/audit/[id], then reuses POST /api/audit.
  */
 
+import { withRequestId } from "@/lib/api/client-error";
+
 export { canRetryAuditStatus } from "@/lib/audits/types";
 
 export type AuditActionFailureCode =
@@ -66,16 +68,19 @@ export async function retryAuditRequest(
   const data = (await res.json().catch(() => ({}))) as {
     error?: string;
     code?: string;
+    requestId?: string;
     resumePath?: string;
     audit?: { id?: string };
-    meta?: { auditId?: string | null };
+    meta?: { auditId?: string | null; requestId?: string };
   };
 
   if (!res.ok) {
     return {
       ok: false,
       code: data.code || "retry_failed",
-      error: data.error,
+      error: data.error
+        ? withRequestId(data.error, data.requestId || data.meta?.requestId)
+        : data.error,
       resumePath: data.resumePath,
     };
   }

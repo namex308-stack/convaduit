@@ -10,6 +10,7 @@ const requireApiUser = vi.fn();
 const crawlWithFallback = vi.fn();
 const runAudit = vi.fn();
 const persistAuditResults = vi.fn();
+const markAuditFailed = vi.fn();
 const runSiteIntegrations = vi.fn();
 const applySiteIntegrationsToAudit = vi.fn(
   (audit: Record<string, unknown>, integrations: unknown) => ({
@@ -42,7 +43,7 @@ vi.mock("@/lib/db/audit-repository", () => ({
   ensurePersonalWorkspace: vi.fn(async () => "ws-1"),
   ensureWorkspaceStore: vi.fn(async () => ({ ok: true, storeId: "store-1" })),
   finishAnalysisRun: vi.fn(),
-  markAuditFailed: vi.fn(),
+  markAuditFailed: (...args: unknown[]) => markAuditFailed(...args),
   persistAuditResults: (...args: unknown[]) => persistAuditResults(...args),
   recordUsageEvent: vi.fn(),
   releaseUsageQuota: vi.fn(),
@@ -153,6 +154,7 @@ describe("POST /api/audit site integrations pipeline", () => {
   beforeEach(() => {
     afterQueue.length = 0;
     persistAuditResults.mockClear();
+    markAuditFailed.mockClear();
     runSiteIntegrations.mockReset();
     applySiteIntegrationsToAudit.mockReset();
     requireApiUser.mockResolvedValue({ ok: true, user: { id: "user-1" } });
@@ -199,5 +201,25 @@ describe("POST /api/audit site integrations pipeline", () => {
     expect(persistAuditResults).toHaveBeenCalled();
     const persisted = persistAuditResults.mock.calls.at(-1)?.[2] as { siteIntegrations?: unknown };
     expect(persisted.siteIntegrations).toBeUndefined();
+  });
+
+  it("records the persist stage and request id instead of a generic failure", async () => {
+    persistAuditResults.mockRejectedValue(new Error("Supabase reports.upsert failed: RLS"));
+    const res = await POST(
+      new NextRequest("http://localhost/api/audit", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-request-id": "audit-test-01" },
+        body: JSON.stringify({ productUrl: "https://shop.example/p/1" }),
+      })
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { requestId?: string };
+    expect(body.requestId).toBe("audit-test-01");
+    for (const task of afterQueue.splice(0)) await task();
+    expect(markAuditFailed).toHaveBeenCalled();
+    const message = markAuditFailed.mock.calls.at(-1)?.[1] as string;
+    expect(message).toContain("audit-test-01");
+    expect(message).toMatch(/حفظ النتائج/);
+    expect(message).not.toBe("فشل التحليل. حاول مرة أخرى.");
   });
 });

@@ -7,4 +7,10 @@ describe("dashboard copy honesty", () => {
     expect(arMessages["dashboard.sinceMay"]).not.toMatch(/\+\d+/);
     expect(arMessages["dashboard.auditsPerMonth"]).not.toMatch(/^\d+/);
   });
+
+  it("asks for a second real audit instead of drawing a one-point trend", () => {
+    expect(arMessages["dashboard.trendEmpty"]).toBe(
+      "شغّل تحليل تاني بعد ما تصلح المشاكل عشان تشوف تقدمك هنا"
+    );
+  });
 });

@@ -2176,7 +2176,7 @@ function RecommendationCard({ rec, index }: { rec: Recommendation; index: number
   const t = useT();
   const meta = PILLAR_META[rec.pillar];
   const isCritical = rec.severity === "critical";
-  const isQuickWin = Boolean(rec.quickWin) || index < 3;
+  const isQuickWin = rec.quickWin === true;
   const rank = rec.priorityRank ?? index + 1;
   const impactKey = impactLabelKey(rec.impact);
   const badgeLevel = priorityBadgeLevel(rec);

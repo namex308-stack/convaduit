@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale/resolve";
+import { withRequestId } from "@/lib/api/client-error";
 const REPORT_FEATURES = [
   {
     id: "health",
@@ -242,10 +243,12 @@ function AuditNewPageInner() {
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
         code?: string;
+        requestId?: string;
         resumePath?: string;
         audit?: { id?: string; status?: string };
         meta?: {
           auditId?: string | null;
+          requestId?: string;
           warning?: string;
           demoMode?: { gemini?: boolean; firecrawl?: boolean };
         };
@@ -256,13 +259,15 @@ function AuditNewPageInner() {
           window.location.href = data.resumePath || "/onboarding";
           return;
         }
-        const message =
+        const message = withRequestId(
           data.error ||
-          (res.status === 503
-            ? t("auditNew.scrapingUnavailable")
-            : res.status === 422
-              ? t("auditNew.urlUnreachable")
-              : t("auditNew.auditFailed"));
+            (res.status === 503
+              ? t("auditNew.scrapingUnavailable")
+              : res.status === 422
+                ? t("auditNew.urlUnreachable")
+                : t("auditNew.auditFailed")),
+          data.requestId || data.meta?.requestId
+        );
         setErrorMessage(message);
         toast.error(message);
         setAnalyzing(false);

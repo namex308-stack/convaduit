@@ -143,7 +143,7 @@ export function DashboardRecentAudits({
               </th>
               <th className="px-3 py-3 text-start font-semibold">{t("dashboard.colIssues")}</th>
               <th className="px-3 py-3 text-start font-semibold">{t("dashboard.colDate")}</th>
-              <th className="w-24 px-4 py-3 text-end" />
+              <th className="min-w-[9rem] px-4 py-3 text-end" />
             </tr>
           </thead>
           <tbody>

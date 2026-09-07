@@ -30,7 +30,8 @@ export function AuditRowActions({
   const router = useRouter();
   const [busy, setBusy] = React.useState<"delete" | "retry" | null>(null);
 
-  const showRetry = canRetryAuditStatus(status);
+  const showRetry = canRetryAuditStatus(status) && status === "failed";
+  const showRescan = canRetryAuditStatus(status) && status === "completed";
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -88,6 +89,24 @@ export function AuditRowActions({
       className={cn("flex items-center gap-0.5 shrink-0", className)}
       onClick={(e) => e.stopPropagation()}
     >
+      {showRescan && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold"
+          disabled={busy != null}
+          aria-label={t("dashboard.rescan")}
+          onClick={handleRetry}
+        >
+          {busy === "retry" ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <RotateCcw className="size-3.5" />
+          )}
+          {t("dashboard.rescan")}
+        </Button>
+      )}
       {showRetry && (
         <Button
           type="button"

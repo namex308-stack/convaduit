@@ -11,8 +11,13 @@ import { countUnreadNotificationsForUser } from "@/lib/db/notifications-reposito
 import { emitSubscriptionWarningNotification } from "@/lib/notifications/emit";
 import type { PlanId, UsageMetric } from "@/lib/db/types";
 import { PLAN_LIMITS } from "@/lib/billing/plans";
-import { parseImpact, parseSeverity } from "@/lib/audits/parse";
-import { buildScoreTrend } from "@/lib/dashboard/trend";
+import { prioritizeRecommendations } from "@/lib/ai/recommendations";
+import { parseImpact, parsePillar, parseSeverity } from "@/lib/audits/parse";
+import {
+  buildPillarDeltas,
+  buildScoreTrend,
+  findPreviousSameUrlAudit,
+} from "@/lib/dashboard/trend";
 import {
   buildMetric,
   mergePillarSnapshot,
@@ -342,7 +347,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
     audits.filter((a) => a.status === "completed" && a.overallScore != null)
   );
   const latest = completed[0] ?? null;
-  const previous = completed[1] ?? null;
+  const previous = latest ? findPreviousSameUrlAudit(latest, completed) : null;
 
   const scores = completed.map((a) => a.overallScore as number);
   const avgScore =
@@ -378,7 +383,9 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
       fetchReportPillarRows(completedIds),
       fetchAuditScoreRows(completedIds),
       fetchAnalysisCategories(),
-      fetchAuditGeoScores(completedIds.slice(0, 2)),
+      fetchAuditGeoScores(
+        [latest?.id, previous?.id].filter((id): id is string => Boolean(id))
+      ),
     ]);
 
   const recStats = recommendationStatsFromRows(recRows, listedIdSet);
@@ -405,6 +412,28 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
 
   const latestPillars = latestMerged?.pillars ?? null;
   const previousPillars = previousMerged?.pillars ?? null;
+  const urlRescan =
+    previous && latestPillars
+      ? {
+          previousAuditId: previous.id,
+          pillars: buildPillarDeltas(
+            {
+              conversion: latestPillars.conversion,
+              seo: latestPillars.seo,
+              geo: latestPillars.geo,
+              trust: latestPillars.trust,
+            },
+            previousPillars
+              ? {
+                  conversion: previousPillars.conversion,
+                  seo: previousPillars.seo,
+                  geo: previousPillars.geo,
+                  trust: previousPillars.trust,
+                }
+              : null
+          ),
+        }
+      : null;
   const asOf = latest?.completedAt ?? latest?.createdAt ?? null;
 
   const kpis: DashboardPayload["kpis"] = {
@@ -473,6 +502,7 @@ export async function getDashboardForUser(userId: string): Promise<DashboardPayl
     kpis,
     latestPillars,
     previousPillars,
+    urlRescan,
     latestAudit: latest
       ? {
           id: latest.id,
@@ -528,18 +558,6 @@ async function getLatestGeoSignals(
   };
 }
 
-const SEVERITY_RANK: Record<string, number> = {
-  critical: 0,
-  warning: 1,
-  opportunity: 2,
-};
-
-const IMPACT_RANK: Record<string, number> = {
-  high: 0,
-  medium: 1,
-  low: 2,
-};
-
 function mapPriorityRow(
   row: {
     id: string;
@@ -551,7 +569,8 @@ function mapPriorityRow(
     effort: string | null;
     pillar: string | null;
     projected_impact: string | null;
-  }
+  },
+  quickWin: boolean
 ): DashboardPriorityIssue {
   const severity = parseSeverity(row.severity);
   const impact = parseImpact(row.impact);
@@ -566,6 +585,7 @@ function mapPriorityRow(
     effort: row.effort,
     pillar: row.pillar,
     projectedImpact: row.projected_impact,
+    quickWin,
   };
 }
 
@@ -589,31 +609,37 @@ async function getDecisionRecommendations(
     return { priority: null, next: [] };
   }
 
-  const sorted = [...data].sort((a, b) => {
-    const s =
-      (SEVERITY_RANK[a.severity as string] ?? 9) - (SEVERITY_RANK[b.severity as string] ?? 9);
-    if (s !== 0) return s;
-    const i =
-      (IMPACT_RANK[a.impact as string] ?? 9) - (IMPACT_RANK[b.impact as string] ?? 9);
-    if (i !== 0) return i;
-    return (a.sort_order as number) - (b.sort_order as number);
-  });
-
-  const mapped = sorted.map((row) =>
-    mapPriorityRow(
-      row as {
-        id: string;
-        audit_id: string;
-        problem: string;
-        solution: string;
-        severity: string;
-        impact: string;
-        effort: string | null;
-        pillar: string | null;
-        projected_impact: string | null;
-      }
-    )
+  const ranked = prioritizeRecommendations(
+    data.map((row) => ({
+      id: String(row.id),
+      pillar: parsePillar(row.pillar),
+      severity: parseSeverity(row.severity),
+      impact: parseImpact(row.impact),
+      problem: String(row.problem ?? ""),
+      solution: String(row.solution ?? ""),
+    }))
   );
+  const quickWinById = new Map(ranked.map((rec) => [rec.id, Boolean(rec.quickWin)]));
+  const order = new Map(ranked.map((rec, index) => [rec.id, index]));
+
+  const mapped = [...data]
+    .sort((a, b) => (order.get(String(a.id)) ?? 99) - (order.get(String(b.id)) ?? 99))
+    .map((row) =>
+      mapPriorityRow(
+        row as {
+          id: string;
+          audit_id: string;
+          problem: string;
+          solution: string;
+          severity: string;
+          impact: string;
+          effort: string | null;
+          pillar: string | null;
+          projected_impact: string | null;
+        },
+        quickWinById.get(String(row.id)) === true
+      )
+    );
 
   return {
     priority: mapped[0] ?? null,
