@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { ThemeToggle } from "./ThemeToggle";
+import { AdPreferencesToggle } from "@/components/ads/AdPreferencesToggle";
 import { TOOLS } from "@/lib/tools";
 
 /**
@@ -71,6 +72,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1">
+          <AdPreferencesToggle />
           <ThemeToggle />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>

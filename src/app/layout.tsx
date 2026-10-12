@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { AdPreferencesProvider } from "@/components/ads/AdPreferences";
+import { AdBlockDetector } from "@/components/ads/AdBlockDetector";
 import { SITE_CONFIG } from "@/lib/tools";
 
 const geistSans = Geist({
@@ -140,12 +142,15 @@ export default function RootLayout({
           `}
         </Script>
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-          <Toaster />
+          <AdPreferencesProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            <Toaster />
+            <AdBlockDetector />
+          </AdPreferencesProvider>
 
           {/* Sitewide JSON-LD: Organization + WebSite with SearchAction.
               These appear in the root layout so they're present on every page. */}

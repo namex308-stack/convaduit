@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +19,7 @@ import {
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedTools } from "./RelatedTools";
 import { SITE_CONFIG, type Tool } from "@/lib/tools";
+import { getToolContent } from "@/lib/tool-content";
 
 type ToolLayoutProps = {
   tool: Tool;
@@ -181,8 +184,8 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
         </p>
       </header>
 
-      {/* Ad: top of page (after H1) */}
-      <AdSlot slot="1111111111" label="Advertisement" />
+      {/* Ad: top of page (after H1) — essential, always shown */}
+      <AdSlot slot="1111111111" label="Advertisement" importance="essential" />
 
       {/* The interactive tool component */}
       <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm sm:p-7">
@@ -192,6 +195,20 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
       <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
         {tool.longDescription}
       </p>
+
+      {/* Tool blog post — unique SEO content per tool */}
+      {(() => {
+        const content = getToolContent(tool.slug);
+        if (!content) return null;
+        return (
+          <section className="prose mt-10" aria-labelledby="tool-content-heading">
+            <h2 id="tool-content-heading" className="sr-only">
+              About {tool.name}
+            </h2>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          </section>
+        );
+      })()}
 
       {/* Ad: after the tool component */}
       <AdSlot slot="2222222222" label="Advertisement" />
@@ -249,8 +266,8 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
         </Accordion>
       </section>
 
-      {/* Ad: bottom of page */}
-      <AdSlot slot="4444444444" label="Advertisement" />
+      {/* Ad: bottom of page — essential, always shown */}
+      <AdSlot slot="4444444444" label="Advertisement" importance="essential" />
 
       {/* Internal linking: related tools + blog post */}
       <RelatedTools currentSlug={tool.slug} category={tool.category} />
