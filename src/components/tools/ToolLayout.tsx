@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { RelatedTools } from "./RelatedTools";
 import { SITE_CONFIG, type Tool } from "@/lib/tools";
 
 type ToolLayoutProps = {
@@ -26,19 +27,25 @@ type ToolLayoutProps = {
 /**
  * Layout shared by every tool page.
  *
- * - Breadcrumb for navigation context
- * - H1 + description
- * - Top ad slot
- * - The interactive tool component (passed as children)
- * - Ad after the tool
- * - "How to use" section
- * - Ad before FAQ
- * - FAQ accordion
- * - Bottom ad
- * - JSON-LD structured data for SoftwareApplication + FAQPage
+ * Structured data injected:
+ *  - SoftwareApplication (name, category, offers, aggregateRating)
+ *  - FAQPage (5+ Q&A from the tool's faqs array)
+ *  - HowTo (step-by-step from the tool's howToSteps array)
+ *  - BreadcrumbList (Home > Category > Tool)
+ *
+ * UI sections:
+ *  - Breadcrumb (visual)
+ *  - H1 + description
+ *  - 4 AdSense slots (top, after tool, before FAQ, bottom)
+ *  - Interactive tool component
+ *  - How-to section
+ *  - FAQ accordion
+ *  - Related tools + blog post (internal linking)
  */
 export function ToolLayout({ tool, children }: ToolLayoutProps) {
-  // Build JSON-LD structured data for rich results.
+  const toolUrl = `${SITE_CONFIG.url}/tools/${tool.slug}`;
+
+  // SoftwareApplication — describes the tool to search engines.
   const softwareAppLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -46,7 +53,7 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any (web-based)",
     description: tool.description,
-    url: `${SITE_CONFIG.url}/tools/${tool.slug}`,
+    url: toolUrl,
     offers: {
       "@type": "Offer",
       price: "0",
@@ -59,6 +66,7 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
     },
   };
 
+  // FAQPage — eligible for rich results in Google search.
   const faqLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -72,6 +80,7 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
     })),
   };
 
+  // HowTo — step-by-step instructions, eligible for rich results.
   const howToLd = {
     "@context": "https://schema.org",
     "@type": "HowTo",
@@ -81,6 +90,32 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
       position: i + 1,
       text: step,
     })),
+  };
+
+  // BreadcrumbList — Home > Category > Tool
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_CONFIG.url,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `${tool.category} Tools`,
+        item: `${SITE_CONFIG.url}/#tools`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: tool.name,
+        item: toolUrl,
+      },
+    ],
   };
 
   return (
@@ -98,12 +133,24 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
 
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link href="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator>
+            <ChevronRight className="h-4 w-4" />
+          </BreadcrumbSeparator>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/#tools">{tool.category}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
@@ -204,6 +251,9 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
 
       {/* Ad: bottom of page */}
       <AdSlot slot="4444444444" label="Advertisement" />
+
+      {/* Internal linking: related tools + blog post */}
+      <RelatedTools currentSlug={tool.slug} category={tool.category} />
     </article>
   );
 }

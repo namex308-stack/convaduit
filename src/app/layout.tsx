@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   publisher: SITE_CONFIG.name,
   alternates: {
     canonical: "/",
-    types: { "application/rss+xml": `${SITE_CONFIG.url}/feed.xml` },
+    types: { "application/rss+xml": `${SITE_CONFIG.url}/rss.xml` },
     languages: {
       en: SITE_CONFIG.url,
       ar: SITE_CONFIG.url,
@@ -146,6 +146,55 @@ export default function RootLayout({
             <Footer />
           </div>
           <Toaster />
+
+          {/* Sitewide JSON-LD: Organization + WebSite with SearchAction.
+              These appear in the root layout so they're present on every page. */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: SITE_CONFIG.name,
+                url: SITE_CONFIG.url,
+                logo: `${SITE_CONFIG.url}/logo.svg`,
+                description: SITE_CONFIG.description,
+                // Replace with your real social profiles when available.
+                sameAs: [
+                  "https://twitter.com/convaduit",
+                  "https://github.com/convaduit",
+                  "https://www.youtube.com/@convaduit",
+                ],
+              }),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: SITE_CONFIG.name,
+                url: SITE_CONFIG.url,
+                description: SITE_CONFIG.description,
+                publisher: {
+                  "@type": "Organization",
+                  name: SITE_CONFIG.name,
+                  url: SITE_CONFIG.url,
+                },
+                // Sitelinks search box — tells Google we support search.
+                // The /search?q={query} path is reserved for a future search page.
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: `${SITE_CONFIG.url}/search?q={search_term_string}`,
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              }),
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

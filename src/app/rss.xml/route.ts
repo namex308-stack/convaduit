@@ -2,7 +2,7 @@ import { SITE_CONFIG } from "@/lib/tools";
 import { getAllPosts } from "@/lib/blog";
 
 /**
- * RSS feed available at /feed.xml.
+ * RSS 2.0 feed available at /rss.xml.
  *
  * Returns RSS 2.0 XML with all blog posts. The feed helps readers subscribe
  * via RSS readers and provides another entry point for search engines.
@@ -36,7 +36,7 @@ export function GET() {
     <description>${escapeXml(SITE_CONFIG.description)}</description>
     <language>en-us</language>
     <lastBuildDate>${pubDate}</lastBuildDate>
-    <atom:link href="${SITE_CONFIG.url}/feed.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${SITE_CONFIG.url}/rss.xml" rel="self" type="application/rss+xml" />
 ${items}
   </channel>
 </rss>`;

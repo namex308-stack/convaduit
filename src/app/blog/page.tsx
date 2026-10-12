@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { getAllPosts, formatDate, type BlogPostMeta } from "@/lib/blog";
 import { SITE_CONFIG } from "@/lib/tools";
 
@@ -59,6 +67,37 @@ export default function BlogPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-8">
+      {/* BreadcrumbList JSON-LD for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: SITE_CONFIG.url },
+              { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_CONFIG.url}/blog` },
+            ],
+          }),
+        }}
+      />
+
+      <Breadcrumb className="mb-8">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator>
+            <ChevronRight className="h-4 w-4" />
+          </BreadcrumbSeparator>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Blog</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <header className="mb-12 max-w-2xl">
         <Badge variant="outline" className="mb-3 text-xs font-medium">
           {posts.length} article{posts.length === 1 ? "" : "s"}

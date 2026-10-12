@@ -2,7 +2,9 @@ import type { MetadataRoute } from "next";
 import { SITE_CONFIG } from "@/lib/tools";
 
 /**
- * robots.txt — allow all crawlers, point to the sitemap.
+ * robots.txt — allow all crawlers, disallow the API directory, point to
+ * the sitemap and RSS feed.
+ *
  * Available at /robots.txt.
  */
 export default function robots(): MetadataRoute.Robots {
@@ -11,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/api/", "/search"],
       },
     ],
     sitemap: `${SITE_CONFIG.url}/sitemap.xml`,

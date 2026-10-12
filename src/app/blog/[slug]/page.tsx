@@ -84,11 +84,26 @@ export default async function BlogPostPage({
     keywords: post.tags.join(", "),
   };
 
+  // BreadcrumbList JSON-LD — Home > Blog > Post
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_CONFIG.url },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_CONFIG.url}/blog` },
+      { "@type": "ListItem", position: 3, name: post.title, item: `${SITE_CONFIG.url}/blog/${post.slug}` },
+    ],
+  };
+
   return (
     <article className="mx-auto max-w-3xl px-5 py-12 sm:px-6 lg:px-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
       <Breadcrumb className="mb-8">
