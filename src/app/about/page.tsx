@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SITE_CONFIG } from "@/lib/tools";
+import { buildStaticPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildStaticPageMetadata({
   title: "About",
   description:
-    "Learn about Convaduit — a free, private, browser-based collection of online tools for images and PDFs.",
-  alternates: { canonical: "/about" },
-};
+    "Learn about Convaduit — free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up, no backend.",
+  path: "/about",
+  keywords: [
+    "about convaduit",
+    "free online tools",
+    "private image tools",
+    "browser based pdf tools",
+    "youtube creator tools",
+    "no upload tools",
+  ],
+});
 
 /**
  * Static About page. Explains the project's mission and how the tools

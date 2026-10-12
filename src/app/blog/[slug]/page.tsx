@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getAllPosts, getPostBySlug, formatDate } from "@/lib/blog";
 import { SITE_CONFIG } from "@/lib/tools";
+import { buildBlogPostMetadata } from "@/lib/seo";
 import { AdSlot } from "@/components/ads/AdSlot";
 
 /**
@@ -27,6 +28,7 @@ export function generateStaticParams() {
 
 /**
  * Generate SEO metadata for each blog post.
+ * Uses the centralized buildBlogPostMetadata helper for consistency.
  */
 export function generateMetadata({
   params,
@@ -37,29 +39,7 @@ export function generateMetadata({
     const { slug } = await params;
     const post = getPostBySlug(slug);
     if (!post) return { title: "Post not found" };
-
-    const canonical = `${SITE_CONFIG.url}/blog/${post.slug}`;
-    return {
-      title: post.title,
-      description: post.description,
-      keywords: post.tags,
-      alternates: { canonical },
-      openGraph: {
-        title: post.title,
-        description: post.description,
-        url: canonical,
-        type: "article",
-        siteName: SITE_CONFIG.name,
-        publishedTime: post.date,
-        authors: [post.author],
-        tags: post.tags,
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: post.title,
-        description: post.description,
-      },
-    };
+    return buildBlogPostMetadata(post);
   })();
 }
 

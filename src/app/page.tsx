@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ShieldCheck,
   Zap,
@@ -12,9 +13,63 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TOOLS } from "@/lib/tools";
+import { TOOLS, SITE_CONFIG } from "@/lib/tools";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { getRecentPosts, formatDate } from "@/lib/blog";
+
+export const metadata: Metadata = {
+  title: "Convaduit — Free Online Tools for Creators",
+  description:
+    "Free, private, browser-based tools for images, PDFs, and YouTube creators. Compress images, convert HEIC, merge PDFs, download YouTube thumbnails — no uploads, no sign-up.",
+  keywords: [
+    "free online tools",
+    "image compressor online",
+    "heic to jpg converter",
+    "merge pdf online free",
+    "split pdf online",
+    "compress pdf online",
+    "youtube thumbnail downloader",
+    "youtube title generator",
+    "youtube money calculator",
+    "webp to png converter",
+    "png to jpg converter",
+    "browser based tools no upload",
+  ],
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: `${SITE_CONFIG.url}/`,
+      ar: `${SITE_CONFIG.url}/`,
+    },
+  },
+  openGraph: {
+    title: "Convaduit — Free Online Tools for Creators",
+    description:
+      "Free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up.",
+    url: SITE_CONFIG.url,
+    type: "website",
+    siteName: SITE_CONFIG.name,
+    locale: "en_US",
+    alternateLocale: ["ar_AR"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Convaduit — Free Online Tools for Creators",
+    description:
+      "Free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
 
 /**
  * Convaduit landing page.

@@ -6,16 +6,43 @@ import { getAllPosts, formatDate, type BlogPostMeta } from "@/lib/blog";
 import { SITE_CONFIG } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Blog — Guides for Images, PDFs & YouTube",
   description:
-    "Guides, comparisons, and best practices for working with images and PDFs. From HEIC vs JPG to PDF compression and WebP optimization.",
-  alternates: { canonical: "/blog" },
+    "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools. Practical tips backed by real data.",
+  keywords: [
+    "image compression guide",
+    "heic vs jpg",
+    "pdf compression tips",
+    "webp optimization",
+    "youtube creator tools blog",
+    "merge pdf without uploading",
+    "reduce pdf file size",
+    "image formats comparison",
+  ],
+  alternates: {
+    canonical: "/blog",
+    languages: {
+      en: `${SITE_CONFIG.url}/blog`,
+      ar: `${SITE_CONFIG.url}/blog`,
+    },
+  },
   openGraph: {
-    title: `${SITE_CONFIG.name} Blog`,
+    title: "Convaduit Blog — Guides for Images, PDFs & YouTube",
     description:
-      "Guides, comparisons, and best practices for working with images and PDFs.",
+      "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
     url: `${SITE_CONFIG.url}/blog`,
     type: "website",
+    siteName: SITE_CONFIG.name,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Convaduit Blog — Guides for Images, PDFs & YouTube",
+    description:
+      "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
