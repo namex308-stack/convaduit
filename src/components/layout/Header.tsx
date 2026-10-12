@@ -57,6 +57,9 @@ export function Header() {
             <Link href="/#tools">Tools</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Link href="/blog">Blog</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
             <Link href="/about">About</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
@@ -87,6 +90,9 @@ export function Header() {
               <div className="mt-4 flex flex-col gap-1">
                 <Button asChild variant="ghost" className="justify-start" onClick={() => setOpen(false)}>
                   <Link href="/">Home</Link>
+                </Button>
+                <Button asChild variant="ghost" className="justify-start" onClick={() => setOpen(false)}>
+                  <Link href="/blog">Blog</Link>
                 </Button>
                 <Button asChild variant="ghost" className="justify-start" onClick={() => setOpen(false)}>
                   <Link href="/about">About</Link>

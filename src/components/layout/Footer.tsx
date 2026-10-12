@@ -63,6 +63,14 @@ export function Footer() {
             <ul className="mt-4 flex flex-col gap-2.5 text-sm">
               <li>
                 <Link
+                  href="/blog"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/about"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >

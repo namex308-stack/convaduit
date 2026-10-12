@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TOOLS } from "@/lib/tools";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { getRecentPosts, formatDate } from "@/lib/blog";
 
 /**
  * Convaduit landing page.
@@ -22,6 +23,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
  */
 export default function HomePage() {
   const categories = Array.from(new Set(TOOLS.map((t) => t.category)));
+  const recentPosts = getRecentPosts(3);
 
   return (
     <>
@@ -172,6 +174,69 @@ export default function HomePage() {
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-8">
         <AdSlot slot="6666666666" className="my-2" />
       </div>
+
+      {/* From the blog */}
+      {recentPosts.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <Badge variant="outline" className="mb-3 text-xs font-medium">
+                From the blog
+              </Badge>
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Guides &amp; best practices
+              </h2>
+            </div>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
+            >
+              <Link href="/blog">
+                View all
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recentPosts.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group flex flex-col gap-2 rounded-xl border border-border/70 bg-card p-5 transition-all hover:border-border hover:shadow-sm"
+              >
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <time dateTime={post.date}>{formatDate(post.date)}</time>
+                  <span aria-hidden>·</span>
+                  <span>{post.readingTime} min read</span>
+                </div>
+                <h3 className="text-lg font-semibold tracking-tight">
+                  {post.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">
+                  {post.description}
+                </p>
+                <span className="mt-auto inline-flex items-center pt-3 text-sm font-medium text-foreground">
+                  Read article
+                  <ArrowRight
+                    className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 sm:hidden">
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <Link href="/blog">
+                View all articles
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-8">
