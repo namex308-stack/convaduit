@@ -120,6 +120,25 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        {/* Google Analytics 4 — measurement ID G-MDR2NP5CJ3.
+            Loaded with afterInteractive strategy so it doesn't block
+            first paint. */}
+        <Script
+          id="ga-src"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-MDR2NP5CJ3"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MDR2NP5CJ3', {
+              anonymize_ip: true,
+              cookie_flags: 'SameSite=None;Secure',
+            });
+          `}
+        </Script>
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
             <Header />
