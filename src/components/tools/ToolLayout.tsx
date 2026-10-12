@@ -84,7 +84,7 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
   };
 
   return (
-    <article className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <article className="mx-auto max-w-4xl px-5 py-12 sm:px-6 lg:px-8">
       {/* Structured data for SEO */}
       <script
         type="application/ld+json"
@@ -99,7 +99,7 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
       />
 
-      <Breadcrumb className="mb-4">
+      <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -115,10 +115,10 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <header className="mb-6">
+      <header className="mb-8">
         <div className="mb-3 inline-flex items-center gap-2">
           <span
-            className="inline-block h-2.5 w-2.5 rounded-full"
+            className="inline-block h-2 w-2 rounded-full"
             style={{ backgroundColor: tool.accent }}
             aria-hidden
           />
@@ -126,10 +126,10 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
             {tool.category} Tool
           </span>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           {tool.name}
         </h1>
-        <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+        <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
           {tool.description}
         </p>
       </header>
@@ -138,11 +138,11 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
       <AdSlot slot="1111111111" label="Advertisement" />
 
       {/* The interactive tool component */}
-      <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-6">
+      <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm sm:p-7">
         {children}
       </section>
 
-      <p className="mt-4 text-sm text-muted-foreground">
+      <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
         {tool.longDescription}
       </p>
 
@@ -150,20 +150,28 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
       <AdSlot slot="2222222222" label="Advertisement" />
 
       {/* How to use */}
-      <section className="mt-8" aria-labelledby="how-to-heading">
-        <h2 id="how-to-heading" className="text-2xl font-semibold tracking-tight">
+      <section className="mt-12" aria-labelledby="how-to-heading">
+        <h2
+          id="how-to-heading"
+          className="text-xl font-semibold tracking-tight sm:text-2xl"
+        >
           How to use {tool.name}
         </h2>
-        <ol className="mt-4 space-y-3">
+        <ol className="mt-5 space-y-3">
           {tool.howToSteps.map((step, i) => (
-            <li key={i} className="flex gap-3">
+            <li
+              key={i}
+              className="flex items-start gap-3 rounded-lg border border-border/60 bg-card p-3.5"
+            >
               <span
-                className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+                className="flex h-6 w-6 flex-none items-center justify-center rounded-md bg-foreground text-xs font-semibold text-background"
                 aria-hidden
               >
                 {i + 1}
               </span>
-              <span className="pt-0.5 text-sm text-foreground/90">{step}</span>
+              <span className="pt-0.5 text-sm leading-relaxed text-foreground/90">
+                {step}
+              </span>
             </li>
           ))}
         </ol>
@@ -173,17 +181,20 @@ export function ToolLayout({ tool, children }: ToolLayoutProps) {
       <AdSlot slot="3333333333" label="Advertisement" />
 
       {/* FAQ */}
-      <section className="mt-8" aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className="text-2xl font-semibold tracking-tight">
+      <section className="mt-12" aria-labelledby="faq-heading">
+        <h2
+          id="faq-heading"
+          className="text-xl font-semibold tracking-tight sm:text-2xl"
+        >
           Frequently Asked Questions
         </h2>
-        <Accordion type="single" collapsible className="mt-4">
+        <Accordion type="single" collapsible className="mt-5">
           {tool.faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`}>
-              <AccordionTrigger className="text-left">
+            <AccordionItem key={i} value={`faq-${i}`} className="border-border/60">
+              <AccordionTrigger className="text-left text-[15px]">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
                 {faq.a}
               </AccordionContent>
             </AccordionItem>

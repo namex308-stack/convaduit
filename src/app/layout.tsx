@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     "webp to png",
     "png to jpg",
     "jpg to webp",
+    "convaduit",
   ],
   authors: [{ name: SITE_CONFIG.name }],
   metadataBase: new URL(SITE_CONFIG.url),

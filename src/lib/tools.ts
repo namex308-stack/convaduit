@@ -441,11 +441,11 @@ export const TOOLS: Tool[] = [
 
 /** Site-wide config used for metadata, sitemap, and JSON-LD */
 export const SITE_CONFIG = {
-  name: "ToolKit",
-  title: "ToolKit — Free Online Image & PDF Tools",
+  name: "Convaduit",
+  title: "Convaduit — Free Online File & Image Tools",
   description:
-    "Free, private, browser-based tools to compress images, convert HEIC to JPG, merge and split PDFs, and more. No uploads, no sign-up.",
-  url: "https://your-toolkit.example.com",
+    "Free, private, browser-based tools to compress images, convert HEIC to JPG, merge and split PDFs, and more. No uploads. No sign-up. Just open and use.",
+  url: "https://convaduit.com",
   // Placeholder AdSense publisher ID — replace with your own.
   adsenseClient: "ca-pub-XXXXXXXXXXXXXXXX",
 };
