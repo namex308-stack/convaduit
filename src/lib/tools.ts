@@ -13,7 +13,7 @@ export type Tool = {
   /** SEO-friendly short description (under 160 chars recommended) */
   description: string;
   /** Category for grouping on the homepage */
-  category: "Image" | "PDF" | "Conversion";
+  category: "Image" | "PDF" | "Conversion" | "YouTube";
   /** Search keywords for filtering / SEO meta */
   keywords: string[];
   /** Long-form description used inside the tool page body */
@@ -436,6 +436,417 @@ export const TOOLS: Tool[] = [
       "Download each WebP file individually or all as a ZIP.",
     ],
     accent: "#22c55e",
+  },
+  // ─── YouTube Creator Tools ───────────────────────────────────────
+  {
+    slug: "youtube-thumbnail-downloader",
+    name: "YouTube Thumbnail Downloader",
+    description:
+      "Download HD thumbnails from any YouTube video in one click. Supports maxres, SD, HQ, and MQ resolutions — no sign-up, no watermark.",
+    category: "YouTube",
+    keywords: [
+      "youtube thumbnail downloader",
+      "download youtube thumbnail",
+      "youtube thumbnail grabber",
+      "save youtube thumbnail hd",
+      "get youtube thumbnail",
+    ],
+    longDescription:
+      "Paste any YouTube URL and instantly get download links for every available thumbnail resolution — from the full 1280×720 HD version down to the small 120×90 default. Perfect for studying what makes top creators' thumbnails click-worthy, or for grabbing a still frame from a video. Everything happens in your browser using YouTube's public thumbnail CDN.",
+    faqs: [
+      {
+        q: "Is this thumbnail downloader free?",
+        a: "Yes, completely free with no sign-up, no watermark, and no limits on how many thumbnails you download.",
+      },
+      {
+        q: "Which resolutions can I download?",
+        a: "We check maxresdefault (1280×720), sddefault (640×480), hqdefault (480×360), mqdefault (320×180), and default (120×90). Not all videos have maxres — older uploads may only go up to SD.",
+      },
+      {
+        q: "Can I use downloaded thumbnails commercially?",
+        a: "Thumbnails are owned by the video creator. Downloading for research, inspiration, or personal use is fine, but you should not republish someone else's thumbnail without permission.",
+      },
+      {
+        q: "Why does maxresdefault sometimes fail?",
+        a: "Not all videos have a maxres thumbnail. Videos uploaded before 2013 or those with low-quality source files may not have a 1280×720 version. We automatically fall back to the next best resolution.",
+      },
+    ],
+    howToSteps: [
+      "Copy the YouTube video URL from your browser's address bar or the share button.",
+      "Paste the URL into the input field above.",
+      "Click Fetch Thumbnails and wait for the preview to load.",
+      "Click Download on the resolution you want — the image saves directly to your device.",
+    ],
+    accent: "#ff0000",
+  },
+  {
+    slug: "youtube-thumbnail-resizer",
+    name: "YouTube Thumbnail Resizer",
+    description:
+      "Resize and crop your thumbnail to YouTube's required 1280×720 with a safe-zone overlay so text isn't cut off on mobile.",
+    category: "YouTube",
+    keywords: [
+      "youtube thumbnail resizer",
+      "resize youtube thumbnail",
+      "thumbnail crop 1280x720",
+      "youtube thumbnail safe zone",
+      "thumbnail size converter",
+    ],
+    longDescription:
+      "YouTube requires thumbnails to be exactly 1280×720 pixels. Our resizer crops your image to that exact size while showing a safe-zone overlay — the area where text and faces won't be cut off by YouTube's player UI on mobile devices. Drag to reposition, then download a production-ready thumbnail.",
+    faqs: [
+      {
+        q: "What is the YouTube thumbnail safe zone?",
+        a: "YouTube's player overlays a timestamp and progress bar at the bottom of thumbnails, and mobile interfaces can crop the edges. The safe zone is roughly the central 80% of the image where important text and faces should be placed.",
+      },
+      {
+        q: "What size should a YouTube thumbnail be?",
+        a: "1280×720 pixels (16:9 aspect ratio), under 2 MB, in JPG, PNG, BMP, or GIF format. Our tool crops to exactly 1280×720.",
+      },
+      {
+        q: "Can I upload any image format?",
+        a: "Yes, we support JPG, PNG, WebP, and GIF (first frame). The output is always a PNG to preserve quality.",
+      },
+      {
+        q: "Are my images uploaded to a server?",
+        a: "No. All cropping and resizing happens in your browser using the Canvas API. Your image never leaves your device.",
+      },
+    ],
+    howToSteps: [
+      "Upload an image by dragging it into the drop zone or clicking to browse.",
+      "Drag the image to reposition it within the 1280×720 crop frame.",
+      "Toggle the safe-zone overlay to see where text won't be cut off.",
+      "Click Download to save the cropped thumbnail as a PNG.",
+    ],
+    accent: "#ff0033",
+  },
+  {
+    slug: "youtube-tags-extractor",
+    name: "YouTube Tags Extractor",
+    description:
+      "Extract the hidden tags and keywords from any YouTube video. See exactly what keywords top creators are ranking for.",
+    category: "YouTube",
+    keywords: [
+      "youtube tags extractor",
+      "extract youtube tags",
+      "youtube keyword extractor",
+      "see youtube video tags",
+      "youtube tag finder",
+    ],
+    longDescription:
+      "YouTube tags are hidden from viewers but play a role in search discovery. Our extractor fetches the video page and parses the keyword metadata, showing you exactly which tags a creator is targeting. Great for competitor research and finding keyword gaps in your own content strategy.",
+    faqs: [
+      {
+        q: "How does the tags extractor work?",
+        a: "We fetch the video page through a CORS proxy and parse the <meta name=\"keywords\"> tag, which contains the creator's tags. Everything runs in your browser — no server-side processing.",
+      },
+      {
+        q: "Why are no tags showing for some videos?",
+        a: "Some creators don't add tags, and YouTube has de-emphasized them in recent years. If the keyword meta tag is empty, the video simply has no tags.",
+      },
+      {
+        q: "Do YouTube tags still matter for SEO?",
+        a: "YouTube has stated tags play a minimal role for search, but they can help with disambiguation and related-video suggestions. Title, description, and engagement matter far more.",
+      },
+      {
+        q: "Can I copy the tags for my own video?",
+        a: "You can copy them, but blindly copying a competitor's tags won't help. Use them as research to understand the topic landscape, then craft your own relevant tags.",
+      },
+    ],
+    howToSteps: [
+      "Copy a YouTube video URL from the address bar or share button.",
+      "Paste it into the input field above.",
+      "Click Extract Tags and wait a few seconds for the page to be fetched.",
+      "Copy individual tags or all of them at once to your clipboard.",
+    ],
+    accent: "#cc0000",
+  },
+  {
+    slug: "youtube-title-generator",
+    name: "YouTube Title Generator",
+    description:
+      "Generate SEO-optimized YouTube titles from your topic. Includes a live character counter so you stay under 100 characters.",
+    category: "YouTube",
+    keywords: [
+      "youtube title generator",
+      "generate youtube titles",
+      "youtube title ideas",
+      "seo title generator youtube",
+      "youtube title optimizer",
+    ],
+    longDescription:
+      "A great title is the single biggest factor in YouTube click-through rate. Our generator takes your topic and produces proven title patterns — how-to, listicle, question, curiosity gap, and more. Each title includes a live character counter so you stay within YouTube's 100-character display limit.",
+    faqs: [
+      {
+        q: "How does the title generator work?",
+        a: "We use proven title templates backed by YouTube CTR research. Enter your topic and we generate variations using patterns like 'How to X', 'X Tips for Y', 'The Truth About X', and more.",
+      },
+      {
+        q: "What's the ideal YouTube title length?",
+        a: "YouTube displays up to 100 characters in search results and 70 on mobile. Aim for 60-70 characters to ensure the full title is visible. Our counter turns red past 100.",
+      },
+      {
+        q: "Are the generated titles unique?",
+        a: "The templates produce combinations from your input. You should always review and customize the title to match your specific video content and brand voice.",
+      },
+      {
+        q: "Can I use this for free?",
+        a: "Yes, completely free with no sign-up. Generate as many titles as you need.",
+      },
+    ],
+    howToSteps: [
+      "Type your video topic or main keyword into the input field.",
+      "Click Generate Titles to produce variations using proven templates.",
+      "Review the character count — green means good, red means too long.",
+      "Click any title to copy it to your clipboard.",
+    ],
+    accent: "#e60000",
+  },
+  {
+    slug: "youtube-description-generator",
+    name: "YouTube Description Generator",
+    description:
+      "Generate structured YouTube descriptions with timestamps, social links, and hashtags. SEO-ready in seconds.",
+    category: "YouTube",
+    keywords: [
+      "youtube description generator",
+      "generate youtube description",
+      "youtube description template",
+      "youtube description with timestamps",
+      "seo description youtube",
+    ],
+    longDescription:
+      "YouTube's algorithm reads your description for SEO, and viewers scan it for navigation. Our generator produces a structured description with a hook, summary, timestamp chapters, social links, and hashtags — all editable. Just fill in your video details and copy the result.",
+    faqs: [
+      {
+        q: "Why do YouTube descriptions matter?",
+        a: "The first 125 characters appear in search results and influence click-through. The full description is parsed for keywords that help your video rank. Timestamps also create chapters in the player.",
+      },
+      {
+        q: "How do timestamps work?",
+        a: "Add lines starting with a time (e.g. 0:00 Intro, 1:23 Main Topic) and YouTube automatically creates chapter markers in the video player. Our generator formats these correctly for you.",
+      },
+      {
+        q: "How long should a YouTube description be?",
+        a: "YouTube allows up to 5,000 characters. Aim for at least 250 characters with a clear summary, links, and relevant keywords. The first two lines matter most.",
+      },
+      {
+        q: "Should I include hashtags?",
+        a: "Yes — the first three hashtags appear above the title on mobile. Use relevant, specific hashtags (not generic ones like #youtube). Our generator includes a hashtag section.",
+      },
+    ],
+    howToSteps: [
+      "Enter your video title, topic, and a one-sentence summary.",
+      "Add timestamp entries (e.g. 0:00 Intro, 2:15 Tips, 5:30 Outro).",
+      "Fill in your social media links and channel description.",
+      "Click Copy Description and paste it into YouTube Studio.",
+    ],
+    accent: "#ff1a1a",
+  },
+  {
+    slug: "youtube-hashtag-generator",
+    name: "YouTube Hashtag Generator",
+    description:
+      "Generate relevant YouTube hashtags for your niche or topic. Boost discoverability with researched tag combinations.",
+    category: "YouTube",
+    keywords: [
+      "youtube hashtag generator",
+      "generate youtube hashtags",
+      "youtube tags generator",
+      "youtube hashtag ideas",
+      "hashtag generator for youtube",
+    ],
+    longDescription:
+      "Hashtags help YouTube understand your video's topic and surface it in related content. Our generator takes your niche or topic and produces a mix of broad, niche, and long-tail hashtags. The first three hashtags you use appear above your title on mobile, so choose wisely.",
+    faqs: [
+      {
+        q: "How many hashtags should I use on YouTube?",
+        a: "YouTube allows up to 60 hashtags in the description, but more than 15 can be flagged as spam. We recommend 5-10 highly relevant hashtags. The first three appear above the title.",
+      },
+      {
+        q: "Do hashtags help with YouTube SEO?",
+        a: "Yes, but modestly. They help YouTube group your video with related content. They're most useful for trending or niche topics. Overusing generic hashtags can hurt.",
+      },
+      {
+        q: "Should I use the same hashtags on every video?",
+        a: "No. Tailor hashtags to each specific video's topic. Repeating the same tags across unrelated videos can be seen as tag stuffing.",
+      },
+      {
+        q: "Are these hashtags researched or random?",
+        a: "We generate hashtags by combining your topic with proven patterns (#howto, #tutorial, #2025, niche modifiers). Always review and select the ones most relevant to your specific content.",
+      },
+    ],
+    howToSteps: [
+      "Enter your video topic, niche, or main keyword.",
+      "Click Generate Hashtags to produce a list of relevant tags.",
+      "Click any hashtag to copy it, or use Copy All.",
+      "Paste 5-10 of the most relevant hashtags into your video description.",
+    ],
+    accent: "#cc0033",
+  },
+  {
+    slug: "youtube-money-calculator",
+    name: "YouTube Money Calculator",
+    description:
+      "Estimate YouTube earnings based on views, niche, and CPM. See potential ad revenue across 16 content categories.",
+    category: "YouTube",
+    keywords: [
+      "youtube money calculator",
+      "youtube earnings calculator",
+      "youtube revenue estimator",
+      "youtube cpm calculator",
+      "how much youtube pays",
+    ],
+    longDescription:
+      "Wondering how much a YouTube channel earns? Our calculator estimates ad revenue based on monthly views and content niche. We use real-world CPM ranges from 16 categories — from finance ($15-35 CPM) to gaming ($3-8 CPM) — and apply YouTube's revenue share to give you a realistic range.",
+    faqs: [
+      {
+        q: "How accurate is the YouTube money calculator?",
+        a: "Our estimates use publicly reported CPM ranges and YouTube's ~55% revenue share. Actual earnings vary based on audience geography, watch time, ad format, and whether the creator has brand deals or merchandise.",
+      },
+      {
+        q: "What is CPM?",
+        a: "CPM (cost per mille) is what advertisers pay per 1,000 ad impressions. RPM (revenue per mille) is what the creator actually receives after YouTube's cut. Our calculator factors in both.",
+      },
+      {
+        q: "Does this include sponsorships or merchandise?",
+        a: "No. This calculator only estimates ad revenue. Sponsorships, channel memberships, Super Chat, and merchandise can add significantly to a creator's income — often more than ads for larger channels.",
+      },
+      {
+        q: "Which niches pay the most on YouTube?",
+        a: "Finance, investing, and business/tech typically have the highest CPMs ($15-35). Entertainment and music have the lowest ($1-4). Educational content sits in the middle.",
+      },
+    ],
+    howToSteps: [
+      "Enter the channel's monthly views (e.g. 500000).",
+      "Select the content niche that best matches the channel.",
+      "Click Calculate to see the estimated monthly earnings range.",
+      "Review the low, mid, and high estimates based on niche CPM data.",
+    ],
+    accent: "#00cc44",
+  },
+  {
+    slug: "youtube-thumbnail-tester",
+    name: "YouTube Thumbnail Tester",
+    description:
+      "Preview your thumbnail at real-world sizes — mobile feed, desktop search, TV, and tiny preview. See it as viewers will.",
+    category: "YouTube",
+    keywords: [
+      "youtube thumbnail tester",
+      "preview youtube thumbnail",
+      "thumbnail size preview",
+      "youtube thumbnail mockup",
+      "test thumbnail mobile desktop",
+    ],
+    longDescription:
+      "A thumbnail that looks great full-size might be unreadable as a 120px preview on mobile. Our tester shows your thumbnail at the actual sizes YouTube uses — mobile feed, desktop search results, sidebar suggestions, and the tiny notification preview — so you can verify text is legible and faces are visible before publishing.",
+    faqs: [
+      {
+        q: "Which sizes does the tester show?",
+        a: "We render your thumbnail at the real-world display sizes YouTube uses: mobile feed (210×118), desktop search (246×138), sidebar suggestion (168×94), TV (1280×720), and notification (120×68).",
+      },
+      {
+        q: "Why should I test my thumbnail at different sizes?",
+        a: "Over 70% of YouTube watch time is on mobile. If your title text or face isn't legible at 210 pixels wide, viewers will scroll past. Testing helps you design for the smallest size first.",
+      },
+      {
+        q: "Are my images uploaded anywhere?",
+        a: "No. The thumbnail is loaded locally in your browser and rendered at different sizes using CSS. Nothing leaves your device.",
+      },
+      {
+        q: "Can I test a thumbnail from an existing YouTube video?",
+        a: "Yes — paste a YouTube URL and we'll fetch the video's current thumbnail for testing. Or upload your own image to test before publishing.",
+      },
+    ],
+    howToSteps: [
+      "Upload an image or paste a YouTube URL to load a thumbnail.",
+      "Scroll through the preview cards showing different display sizes.",
+      "Check that text is legible and faces are visible at the smallest sizes.",
+      "Redesign if needed and re-test until the thumbnail works at every size.",
+    ],
+    accent: "#ff3333",
+  },
+  {
+    slug: "youtube-channel-id-finder",
+    name: "YouTube Channel ID Finder",
+    description:
+      "Find any YouTube channel ID from a video URL, handle, or channel link. Get the UC... ID instantly for APIs and integrations.",
+    category: "YouTube",
+    keywords: [
+      "youtube channel id finder",
+      "find youtube channel id",
+      "get youtube channel id",
+      "youtube channel id extractor",
+      "youtube uc id",
+    ],
+    longDescription:
+      "Need a channel ID for the YouTube API, RSS feeds, or third-party tools? Our finder extracts the UC... channel ID from any YouTube URL — video, handle (@name), or channel link — using the public oEmbed API. No API key required.",
+    faqs: [
+      {
+        q: "What is a YouTube channel ID?",
+        a: "It's a unique 24-character identifier starting with 'UC' (e.g. UCxxxxxxxxxxxxxxxxxxxxxx). YouTube uses it internally for API calls, RSS feeds, and analytics integrations.",
+      },
+      {
+        q: "Can I find a channel ID from a @handle?",
+        a: "Yes. Paste the handle URL (youtube.com/@name) and we'll resolve it. We use a CORS proxy to fetch the channel page and extract the ID from the meta tags.",
+      },
+      {
+        q: "Can I find a channel ID from a video URL?",
+        a: "Yes — this is the most reliable method. We use YouTube's oEmbed API to get the channel URL from a video, then extract the channel ID. This works without any proxy.",
+      },
+      {
+        q: "Is this free?",
+        a: "Yes, completely free with no sign-up and no API key. We use YouTube's public oEmbed endpoint and public channel pages.",
+      },
+    ],
+    howToSteps: [
+      "Copy a YouTube URL — either a video URL or a channel/handle URL.",
+      "Paste it into the input field above.",
+      "Click Find Channel ID.",
+      "Copy the channel ID to your clipboard for use in APIs or tools.",
+    ],
+    accent: "#ff0066",
+  },
+  {
+    slug: "youtube-timestamp-link-generator",
+    name: "YouTube Timestamp Link Generator",
+    description:
+      "Create shareable YouTube links that start at a specific timestamp. Skip intros and link directly to the good part.",
+    category: "YouTube",
+    keywords: [
+      "youtube timestamp link generator",
+      "youtube link with timestamp",
+      "share youtube video at specific time",
+      "youtube t parameter link",
+      "deep link youtube video",
+    ],
+    longDescription:
+      "Want to share a YouTube video starting at a specific moment? Our generator creates a timestamped link (youtu.be/VIDEO_ID?t=123s) from any video URL and time. Perfect for sharing the relevant part of a long podcast, tutorial, or stream without making viewers scrub.",
+    faqs: [
+      {
+        q: "How do YouTube timestamp links work?",
+        a: "YouTube supports a ?t= parameter on video URLs that specifies the start time in seconds. For example, youtu.be/dQw4w9WgXcQ?t=43 starts the video at 43 seconds.",
+      },
+      {
+        q: "Can I use minutes and seconds instead of counting seconds?",
+        a: "Yes. Enter '1:30' and we'll convert it to 90 seconds automatically. You can also enter pure seconds (90) or hours:minutes:seconds (1:02:03).",
+      },
+      {
+        q: "Do timestamp links work on mobile?",
+        a: "Yes. The youtu.be short URL with ?t= works in the YouTube mobile app and in mobile browsers. The app opens and starts at the specified time.",
+      },
+      {
+        q: "Can I create multiple timestamp links at once?",
+        a: "Yes — add as many timestamps as you need and we'll generate a link for each. Great for creating a table of contents for a long video.",
+      },
+    ],
+    howToSteps: [
+      "Paste a YouTube video URL (or just the video ID).",
+      "Enter the timestamp you want to link to (e.g. 1:30 or 90).",
+      "Click Generate Link to create the shareable URL.",
+      "Copy the link and share it anywhere — it opens at your chosen time.",
+    ],
+    accent: "#ff0099",
   },
 ];
 

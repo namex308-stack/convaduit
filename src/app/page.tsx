@@ -5,6 +5,10 @@ import {
   ServerOff,
   ArrowRight,
   Sparkles,
+  ImageIcon,
+  FileText,
+  RefreshCw,
+  Youtube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,9 +140,15 @@ export default function HomePage() {
           return (
             <div key={cat} className="mb-12">
               <div className="mb-4 flex items-baseline gap-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  {cat}
-                </h3>
+                <div className="flex items-center gap-2">
+                  {cat === "Image" && <ImageIcon className="h-4 w-4 text-muted-foreground" />}
+                  {cat === "PDF" && <FileText className="h-4 w-4 text-muted-foreground" />}
+                  {cat === "Conversion" && <RefreshCw className="h-4 w-4 text-muted-foreground" />}
+                  {cat === "YouTube" && <Youtube className="h-4 w-4 text-red-600" />}
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    {cat}
+                  </h3>
+                </div>
                 <span className="text-xs text-muted-foreground/70">
                   {tools.length}
                 </span>
