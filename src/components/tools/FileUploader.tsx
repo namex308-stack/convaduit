@@ -108,16 +108,17 @@ export function FileUploader({
           Drop files here, or click to browse
         </p>
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={handleChange}
-          className="hidden"
-          disabled={disabled}
-        />
       </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        onChange={handleChange}
+        className="hidden"
+        tabIndex={-1}
+        disabled={disabled}
+      />
 
       {files.length > 0 && (
         <ul className="mt-4 space-y-2">

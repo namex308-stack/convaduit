@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (keep .env.example as a template)
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -52,3 +54,13 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Prisma dev database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Auto-generated agent files (re-created by `next dev`)
+AGENTS.md
+
+# Tool results (runtime output)
+/tool-results/
