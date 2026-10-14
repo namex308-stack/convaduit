@@ -205,6 +205,8 @@ export default function RootLayout({
             }}
           />
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
