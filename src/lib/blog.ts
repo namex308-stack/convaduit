@@ -27,6 +27,8 @@ export type BlogPostMeta = {
   coverImage?: string;
   /** Estimated reading time in minutes (computed) */
   readingTime: number;
+  /** Optional slug of the primary tool associated with this article */
+  toolSlug?: string;
 };
 
 export type BlogPost = BlogPostMeta & {
@@ -77,10 +79,11 @@ export function getAllPosts(): BlogPostMeta[] {
       title: String(data.title ?? filename),
       description: String(data.description ?? ""),
       date: String(data.date ?? new Date().toISOString().split("T")[0]),
-      author: String(data.author ?? "Convaduit Team"),
+      author: String(data.author ?? "Convaudit Team"),
       tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
       coverImage: data.coverImage ? String(data.coverImage) : undefined,
       readingTime: estimateReadingTime(content),
+      toolSlug: data.toolSlug ? String(data.toolSlug) : undefined,
     };
   });
 
@@ -104,10 +107,11 @@ export function getPostBySlug(slug: string): BlogPost | undefined {
     title: String(data.title ?? slug),
     description: String(data.description ?? ""),
     date: String(data.date ?? new Date().toISOString().split("T")[0]),
-    author: String(data.author ?? "Convaduit Team"),
+    author: String(data.author ?? "Convaudit Team"),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     coverImage: data.coverImage ? String(data.coverImage) : undefined,
     readingTime: estimateReadingTime(content),
+    toolSlug: data.toolSlug ? String(data.toolSlug) : undefined,
     content,
   };
 }

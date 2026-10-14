@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
  * the DOM, and check if it was hidden. If it was, an ad blocker is active.
  *
  * When an ad blocker is detected, we show a polite, dismissible banner
- * asking the user to whitelist Convaduit. The banner:
+ * asking the user to whitelist Convaudit. The banner:
  *  - Only appears once per session (sessionStorage flag)
  *  - Is dismissible (X button)
  *  - Doesn't block content
@@ -29,7 +29,7 @@ export function AdBlockDetector() {
     // Check if the user already dismissed the banner this session.
     // Use a microtask to defer setState and avoid the synchronous-setState-in-effect rule.
     try {
-      if (sessionStorage.getItem("convaduit-adblock-dismissed") === "1") {
+      if (sessionStorage.getItem("convaudit-adblock-dismissed") === "1") {
         Promise.resolve().then(() => setDismissed(true));
         return;
       }
@@ -70,7 +70,7 @@ export function AdBlockDetector() {
   const handleDismiss = () => {
     setDismissed(true);
     try {
-      sessionStorage.setItem("convaduit-adblock-dismissed", "1");
+      sessionStorage.setItem("convaudit-adblock-dismissed", "1");
     } catch {
       // Silently fail
     }
@@ -95,8 +95,8 @@ export function AdBlockDetector() {
           <div className="flex-1">
             <p className="text-sm font-semibold">Ad blocker detected</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Ads keep Convaduit&apos;s tools free. If you enjoy using them,
-              please whitelist convaduit.com in your ad blocker — or use our
+              Ads keep Convaudit&apos;s tools free. If you enjoy using them,
+              please whitelist convaudit.com in your ad blocker — or use our
               built-in reduced-ads mode.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">

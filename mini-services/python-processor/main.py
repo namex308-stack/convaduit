@@ -1,9 +1,9 @@
 """
-Convaduit Python Processor
+Convaudit Python Processor
 ==========================
 
 A FastAPI service for rapid server-side processing of images and PDFs.
-Used as an optional "fast mode" backend by the Convaduit Next.js frontend.
+Used as an optional "fast mode" backend by the Convaudit Next.js frontend.
 
 Endpoints
 ---------
@@ -38,9 +38,9 @@ from pypdf import PdfReader, PdfWriter
 # --------------------------------------------------------------------------- #
 
 app = FastAPI(
-    title="Convaduit Python Processor",
+    title="Convaudit Python Processor",
     version="1.0.0",
-    description="Server-side image & PDF processing for the Convaduit frontend.",
+    description="Server-side image & PDF processing for the Convaudit frontend.",
 )
 
 # Permissive CORS so the Next.js frontend (and the sandbox gateway) can call us.
@@ -55,7 +55,7 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict:
     """Liveness probe — returns 200 if the service is up."""
-    return {"status": "ok", "service": "convaduit-python-processor", "version": "1.0.0"}
+    return {"status": "ok", "service": "convaudit-python-processor", "version": "1.0.0"}
 
 
 # --------------------------------------------------------------------------- #

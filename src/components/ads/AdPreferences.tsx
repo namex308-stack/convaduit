@@ -27,7 +27,7 @@ type AdPreferences = {
   toggle: () => void;
 };
 
-const STORAGE_KEY = "convaduit-ad-mode";
+const STORAGE_KEY = "convaudit-ad-mode";
 const DEFAULT_MODE: AdMode = "default";
 
 const AdPreferencesContext = createContext<AdPreferences | null>(null);

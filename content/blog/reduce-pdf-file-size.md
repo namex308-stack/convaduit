@@ -2,8 +2,9 @@
 title: "5 Ways to Reduce PDF File Size Without Losing Quality"
 description: "Practical techniques to shrink oversized PDF files — from image optimization to font subsetting, all without paying for premium tools."
 date: "2025-09-20"
-author: "Convaduit Team"
+author: "Convaudit Team"
 tags: ["pdf", "compression", "optimization"]
+toolSlug: "compress-pdf"
 coverImage: ""
 ---
 

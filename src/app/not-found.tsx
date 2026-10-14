@@ -8,7 +8,7 @@ import { TOOLS } from "@/lib/tools";
 export const metadata: Metadata = {
   title: "Page not found (404)",
   description:
-    "The page you're looking for doesn't exist. Browse our free online tools or search Convaduit.",
+    "The page you're looking for doesn't exist. Browse our free online tools or search Convaudit.",
   robots: { index: false, follow: true },
 };
 
@@ -47,9 +47,9 @@ export default function NotFound() {
           <Input
             type="search"
             name="q"
-            placeholder="Search Convaduit..."
+            placeholder="Search Convaudit..."
             className="pl-9"
-            aria-label="Search Convaduit"
+            aria-label="Search Convaudit"
           />
         </div>
         <Button type="submit">Search</Button>

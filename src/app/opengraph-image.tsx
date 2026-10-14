@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "nodejs";
-export const alt = "Convaduit — Free Online Tools for Creators";
+export const alt = "Convaudit — Free Online File Converter, PDF & Image Tools";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -43,7 +43,7 @@ export default async function Image() {
             C
           </div>
           <div style={{ display: "flex", color: "#fafafa", fontSize: "32px", fontWeight: 600 }}>
-            Convaduit
+            Convaudit
           </div>
         </div>
 
@@ -58,7 +58,7 @@ export default async function Image() {
               lineHeight: 1.05,
             }}
           >
-            Free Online Tools for Creators
+            Free Online File Converter & Tools
           </div>
           <div
             style={{
@@ -67,7 +67,7 @@ export default async function Image() {
               fontSize: "28px",
             }}
           >
-            Compress images, convert HEIC, merge PDFs, download YouTube thumbnails — all in your browser.
+            Compress images, convert PDF, HEIC to JPG, merge documents — 100% private in your browser.
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export default async function Image() {
             fontSize: "22px",
           }}
         >
-          <div style={{ display: "flex" }}>convaduit.com</div>
+          <div style={{ display: "flex" }}>convaudit.com</div>
           <div style={{ display: "flex" }}>20+ tools · 100% client-side</div>
         </div>
       </div>

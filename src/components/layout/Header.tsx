@@ -26,7 +26,7 @@ export function Header() {
         <Link
           href="/"
           className="group flex items-center gap-2.5"
-          aria-label="Convaduit home"
+          aria-label="Convaudit home"
         >
           <span
             className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background transition-transform group-hover:scale-105"
@@ -45,7 +45,7 @@ export function Header() {
             </svg>
           </span>
           <span className="text-[17px] font-semibold tracking-tight">
-            Convaduit
+            Convaudit
           </span>
         </Link>
 

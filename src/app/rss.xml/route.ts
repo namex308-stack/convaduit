@@ -22,7 +22,7 @@ export function GET() {
       <guid isPermaLink="true">${url}</guid>
       <description>${escapeXml(post.description)}</description>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <author>Convaduit Team</author>
+      <author>Convaudit Team</author>
       ${post.tags.map((t) => `<category>${escapeXml(t)}</category>`).join("\n      ")}
     </item>`;
     })

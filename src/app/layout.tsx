@@ -23,20 +23,20 @@ const geistMono = Geist_Mono({
 /**
  * Global metadata — applies to every page unless overridden.
  *
- * - title.template: "%s | Convaduit" — per-page titles get the brand appended
+ * - title.template: "%s | Convaudit" — per-page titles get the brand appended
  * - title.default: shown on the home page and when no title is set
- * - metadataBase: resolves all relative metadata URLs against convaduit.com
+ * - metadataBase: resolves all relative metadata URLs against convaudit.com
  * - verification: Google Search Console + AdSense placeholder tokens
  */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.url),
   title: {
-    default: "Convaduit — Free Online Tools for Creators",
-    template: "%s | Convaduit",
+    default: SITE_CONFIG.title,
+    template: "%s | Convaudit",
   },
   description: SITE_CONFIG.description,
   keywords: [
-    "online tools",
+    "online file converter",
     "free online tools",
     "image compressor online",
     "heic to jpg converter",
@@ -48,13 +48,15 @@ export const metadata: Metadata = {
     "webp to png converter",
     "png to jpg converter",
     "jpg to webp converter",
-    "youtube thumbnail downloader",
-    "youtube title generator",
-    "youtube money calculator",
-    "youtube tags extractor",
-    "convaduit",
+    "remove exif online",
+    "pdf to image converter",
+    "client side file converter",
+    "private file converter",
     "browser based tools",
-    "no upload tools",
+    "no upload file tools",
+    "youtube thumbnail downloader",
+    "youtube tags extractor",
+    "convaudit",
   ],
   authors: [{ name: SITE_CONFIG.name }],
   creator: SITE_CONFIG.name,
@@ -68,7 +70,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Convaduit — Free Online Tools for Creators",
+    title: SITE_CONFIG.title,
     description: SITE_CONFIG.description,
     url: SITE_CONFIG.url,
     siteName: SITE_CONFIG.name,
@@ -78,7 +80,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Convaduit — Free Online Tools for Creators",
+    title: SITE_CONFIG.title,
     description: SITE_CONFIG.description,
   },
   robots: {
@@ -166,9 +168,9 @@ export default function RootLayout({
                 description: SITE_CONFIG.description,
                 // Replace with your real social profiles when available.
                 sameAs: [
-                  "https://twitter.com/convaduit",
-                  "https://github.com/convaduit",
-                  "https://www.youtube.com/@convaduit",
+                  "https://twitter.com/convaudit",
+                  "https://github.com/convaudit",
+                  "https://www.youtube.com/@convaudit",
                 ],
               }),
             }}

@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Convaduit Blog — Guides for Images, PDFs & YouTube",
+    title: "Convaudit Blog — Guides for Images, PDFs & YouTube",
     description:
       "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
     url: `${SITE_CONFIG.url}/blog`,
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Convaduit Blog — Guides for Images, PDFs & YouTube",
+    title: "Convaudit Blog — Guides for Images, PDFs & YouTube",
     description:
       "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
   },
@@ -103,7 +103,7 @@ export default function BlogPage() {
           {posts.length} article{posts.length === 1 ? "" : "s"}
         </Badge>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          The Convaduit Blog
+          The Convaudit Blog
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
           Guides, comparisons, and best practices for working with images and

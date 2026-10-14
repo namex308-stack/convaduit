@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { TOOLS, getToolBySlug } from "@/lib/tools";
 
 export const runtime = "nodejs";
-export const alt = "Convaduit tool";
+export const alt = "Convaudit tool";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,7 +22,7 @@ export default async function Image({
   const { slug } = await params;
   const tool = getToolBySlug(slug);
 
-  const name = tool?.name ?? "Convaduit";
+  const name = tool?.name ?? "Convaudit";
   const category = tool?.category ?? "Tools";
 
   return new ImageResponse(
@@ -58,7 +58,7 @@ export default async function Image({
             C
           </div>
           <div style={{ display: "flex", color: "#fafafa", fontSize: "28px", fontWeight: 600 }}>
-            Convaduit
+            Convaudit
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default async function Image({
             fontSize: "20px",
           }}
         >
-          <div style={{ display: "flex" }}>convaduit.com/tools/{slug}</div>
+          <div style={{ display: "flex" }}>convaudit.com/tools/{slug}</div>
           <div style={{ display: "flex" }}>100% client-side</div>
         </div>
       </div>

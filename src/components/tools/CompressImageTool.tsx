@@ -24,7 +24,7 @@ type ProcessingMode = "browser" | "python";
  *
  * - "Browser (private)" mode: uses browser-image-compression entirely
  *   client-side. Files never leave the device. This is the default and
- *   preserves Convaduit's privacy promise.
+ *   preserves Convaudit's privacy promise.
  *
  * - "Python (fast)" mode: uploads files to the Python FastAPI service
  *   running on port 3030 (Pillow-based). Faster for large batches and

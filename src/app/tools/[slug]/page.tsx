@@ -16,10 +16,10 @@ export function generateStaticParams() {
 /**
  * Generate unique SEO metadata for each tool page.
  * Uses the centralized buildToolMetadata helper which produces:
- *  - title: "{Tool Name} — Free Online {Category} Tool" (template adds | Convaduit)
+ *  - title: "{Tool Name} — Free Online {Category} Tool" (template adds | Convaudit)
  *  - description: 150-160 chars, action-oriented
  *  - keywords: 8-12 long-tail keywords (base + modifier patterns)
- *  - canonical: https://convaduit.com/tools/{slug}
+ *  - canonical: https://convaudit.com/tools/{slug}
  *  - openGraph: title, description, url, type, siteName
  *  - twitter: summary_large_image card
  *  - alternates: canonical + languages (en, ar) for hreflang

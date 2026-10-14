@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="public/logo.svg" alt="Convaduit" width="48" height="48" />
-  <h1 align="center">Convaduit</h1>
+  <img src="public/logo.svg" alt="Convaudit" width="48" height="48" />
+  <h1 align="center">Convaudit</h1>
   <p align="center">
     <strong>Free, private, browser-based tools for creators.</strong>
   </p>
@@ -10,7 +10,7 @@
     <em>No uploads. No sign-up. No watermarks.</em>
   </p>
   <p align="center">
-    <a href="https://convaduit.com">Website</a> ·
+    <a href="https://convaudit.com">Website</a> ·
     <a href="#features">Features</a> ·
     <a href="#getting-started">Get Started</a> ·
     <a href="#contributing">Contributing</a>
@@ -19,9 +19,9 @@
 
 ---
 
-## What is Convaduit?
+## What is Convaudit?
 
-Convaduit is a collection of **20+ free online tools** designed for creators, developers, and everyday users who value privacy. Every tool runs **100% in your browser** — files are never uploaded to a server. Built with modern web technologies and powered by proven open-source libraries.
+Convaudit is a collection of **20+ free online tools** designed for creators, developers, and everyday users who value privacy. Every tool runs **100% in your browser** — files are never uploaded to a server. Built with modern web technologies and powered by proven open-source libraries.
 
 ## Features
 
@@ -174,7 +174,7 @@ caddy run
 
 ## SEO
 
-Convaduit includes comprehensive SEO out of the box:
+Convaudit includes comprehensive SEO out of the box:
 - **JSON-LD** structured data (Organization, WebSite, HowTo, FAQPage per tool)
 - **OpenGraph** and **Twitter Card** meta tags on every page
 - **Dynamic sitemap** at `/sitemap.xml`
@@ -196,10 +196,10 @@ Please make sure your code passes linting (`npm run lint`) before submitting.
 
 ## License
 
-This project is proprietary. All rights reserved. See the [Terms of Service](https://convaduit.com/terms) for usage details.
+This project is proprietary. All rights reserved. See the [Terms of Service](https://convaudit.com/terms) for usage details.
 
 ---
 
 <p align="center">
-  Built with ❤️ by the <a href="https://convaduit.com">Convaduit</a> team
+  Built with ❤️ by the <a href="https://convaudit.com">Convaudit</a> team
 </p>

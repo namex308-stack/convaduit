@@ -24,6 +24,10 @@ export type Tool = {
   howToSteps: string[];
   /** Accent color used for the tool card icon badge */
   accent: string;
+  /** Promotional badge like "Popular", "New", "Essential" */
+  badge?: string;
+  /** Slug of companion in-depth blog post */
+  blogSlug?: string;
 };
 
 export const TOOLS: Tool[] = [
@@ -848,15 +852,101 @@ export const TOOLS: Tool[] = [
     ],
     accent: "#ff0099",
   },
+  {
+    slug: "remove-exif",
+    name: "Remove EXIF Data",
+    description:
+      "Strip EXIF, GPS location, camera details, and privacy metadata from JPG, PNG, and WebP images. 100% private in your browser.",
+    category: "Image",
+    keywords: [
+      "remove exif",
+      "exif remover",
+      "remove metadata from photo",
+      "strip gps from image",
+      "delete photo metadata",
+      "clean exif online",
+      "remove photo location",
+    ],
+    longDescription:
+      "Protect your personal privacy by stripping hidden EXIF metadata from photos before sharing them online. Modern smartphone photos contain sensitive data like exact GPS coordinates, date taken, camera make and model, device serial numbers, and software version. Our Remove EXIF tool extracts and displays all embedded metadata, alerts you if GPS coordinates are found, and cleanly wipes it all directly in your browser without uploading your files.",
+    faqs: [
+      {
+        q: "What metadata is removed from my photos?",
+        a: "All EXIF, GPS coordinates (latitude, longitude, altitude), camera make/model, date & time, lens info, software tags, thumbnail data, and device serial numbers are completely stripped.",
+      },
+      {
+        q: "Are my photos uploaded to a server?",
+        a: "No. All inspection and stripping happens locally in your browser using HTML5 Canvas and WebAssembly. Your photos never leave your device.",
+      },
+      {
+        q: "Will removing EXIF reduce photo quality?",
+        a: "No. You can choose Lossless PNG or high-quality JPG (95-100%) to preserve full visual fidelity while stripping all hidden tracking tags.",
+      },
+      {
+        q: "Can I batch process multiple images?",
+        a: "Yes. Drag and drop multiple photos to clean them all at once, then download them individually or as a single ZIP archive.",
+      },
+    ],
+    howToSteps: [
+      "Upload one or more images using drag-and-drop or the file picker.",
+      "Review the detected EXIF metadata and GPS location tags.",
+      "Select your output format and quality settings.",
+      "Click Remove EXIF and download your cleaned, privacy-safe photos.",
+    ],
+    accent: "#6366f1",
+  },
+  {
+    slug: "pdf-to-image",
+    name: "PDF to Image",
+    description:
+      "Convert PDF pages to high-resolution JPG, PNG, or WebP images in up to 300 DPI print quality. 100% in-browser, no upload.",
+    category: "PDF",
+    keywords: [
+      "pdf to image",
+      "pdf to jpg",
+      "pdf to png",
+      "convert pdf to image high quality",
+      "pdf to high resolution image",
+      "pdf to 300 dpi image",
+      "extract pdf pages as images",
+    ],
+    longDescription:
+      "Convert every page of a PDF document into high-resolution, crystal-clear images. Select from standard 72 DPI up to ultra 300 DPI / 400 DPI print quality, or use custom scaling for razor-sharp text and vector graphics. Choose between lossless PNG, JPEG, or modern WebP, preview all rendered pages in real time, and download single pages or the entire document as a ZIP file.",
+    faqs: [
+      {
+        q: "What resolution / DPI can I convert PDFs to?",
+        a: "You can choose from Screen (72 DPI), Balanced (150 DPI), Super HD (200 DPI), Ultra Print (300 DPI), or Maximum 4K (400 DPI). You can also set a custom scale multiplier up to 5x.",
+      },
+      {
+        q: "Which image formats are supported?",
+        a: "You can export pages as lossless PNG (best for text and diagrams), high-quality JPG, or modern WebP.",
+      },
+      {
+        q: "Can I convert only specific pages?",
+        a: "Yes. Enter a page range like 1-3, 5 to convert selected pages, or leave blank to convert all pages in the PDF.",
+      },
+      {
+        q: "Are my PDF files uploaded anywhere?",
+        a: "No. Conversion uses pdfjs-dist entirely inside your browser. Your sensitive documents never leave your computer.",
+      },
+    ],
+    howToSteps: [
+      "Upload a PDF document using drag-and-drop or the file browser.",
+      "Choose your desired resolution (e.g. Ultra Print 300 DPI) and output format (PNG, JPG, or WebP).",
+      "Optionally specify a page range.",
+      "Click Convert PDF to Images and download your high-quality images individually or as a ZIP.",
+    ],
+    accent: "#0ea5e9",
+  },
 ];
 
 /** Site-wide config used for metadata, sitemap, and JSON-LD */
 export const SITE_CONFIG = {
-  name: "Convaduit",
-  title: "Convaduit — Free Online File & Image Tools",
+  name: "Convaudit",
+  title: "Convaudit — Free Online File Converter, PDF & Image Tools",
   description:
-    "Free, private, browser-based tools to compress images, convert HEIC to JPG, merge and split PDFs, and more. No uploads. No sign-up. Just open and use.",
-  url: "https://convaduit.com",
+    "Free, private online tools to compress images, convert PDF, HEIC to JPG, merge documents, and more. 100% client-side — your files never leave your device.",
+  url: "https://convaudit.com",
   // Placeholder AdSense publisher ID — replace with your own.
   adsenseClient: "ca-pub-XXXXXXXXXXXXXXXX",
 };
@@ -864,3 +954,4 @@ export const SITE_CONFIG = {
 export function getToolBySlug(slug: string): Tool | undefined {
   return TOOLS.find((t) => t.slug === slug);
 }
+

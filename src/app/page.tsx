@@ -18,22 +18,25 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { getRecentPosts, formatDate } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Convaduit — Free Online Tools for Creators",
-  description:
-    "Free, private, browser-based tools for images, PDFs, and YouTube creators. Compress images, convert HEIC, merge PDFs, download YouTube thumbnails — no uploads, no sign-up.",
+  title: SITE_CONFIG.title,
+  description: SITE_CONFIG.description,
   keywords: [
+    "online file converter",
     "free online tools",
     "image compressor online",
     "heic to jpg converter",
     "merge pdf online free",
     "split pdf online",
     "compress pdf online",
-    "youtube thumbnail downloader",
-    "youtube title generator",
-    "youtube money calculator",
+    "remove exif online",
+    "pdf to image converter",
     "webp to png converter",
     "png to jpg converter",
+    "client side file converter",
+    "private file converter",
     "browser based tools no upload",
+    "youtube thumbnail downloader",
+    "youtube tags extractor",
   ],
   alternates: {
     canonical: "/",
@@ -43,9 +46,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Convaduit — Free Online Tools for Creators",
-    description:
-      "Free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up.",
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
     url: SITE_CONFIG.url,
     type: "website",
     siteName: SITE_CONFIG.name,
@@ -54,9 +56,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Convaduit — Free Online Tools for Creators",
-    description:
-      "Free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up.",
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
   },
   robots: {
     index: true,
@@ -72,7 +73,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Convaduit landing page.
+ * Convaudit landing page.
  *
  * Design language: Linear / Vercel / Raycast.
  *  - Generous vertical spacing
@@ -164,7 +165,7 @@ export default function HomePage() {
           <Feature
             icon={<ServerOff className="h-4 w-4" />}
             title="No backend"
-            description="Convaduit has no file server. There's nothing to hack, nothing to leak."
+            description="Convaudit has no file server. There's nothing to hack, nothing to leak."
           />
         </div>
       </section>
@@ -319,7 +320,7 @@ export default function HomePage() {
               Built for people who care about privacy
             </h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
-              Every tool on Convaduit runs entirely in your browser. We
+              Every tool on Convaudit runs entirely in your browser. We
               don&apos;t have a server that stores your files — because we
               never receive them in the first place.
             </p>

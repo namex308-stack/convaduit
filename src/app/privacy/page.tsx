@@ -4,10 +4,10 @@ import { buildStaticPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildStaticPageMetadata({
   title: "Privacy Policy",
   description:
-    "Convaduit privacy policy — all file processing happens in your browser. We never upload, store, or transmit your files. Learn what data we collect.",
+    "Convaudit privacy policy — all file processing happens in your browser. We never upload, store, or transmit your files. Learn what data we collect.",
   path: "/privacy",
   keywords: [
-    "convaduit privacy policy",
+    "convaudit privacy policy",
     "private online tools",
     "browser based tools privacy",
     "no upload tools",
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-lg font-semibold tracking-tight">1. Overview</h2>
           <p className="mt-3 leading-relaxed text-muted-foreground">
-            Convaduit (&quot;we&quot;, &quot;us&quot;) operates a website at
-            convaduit.com (the &quot;Site&quot;). The Site provides free,
+            Convaudit (&quot;we&quot;, &quot;us&quot;) operates a website at
+            convaudit.com (the &quot;Site&quot;). The Site provides free,
             browser-based tools for working with images and PDFs. We are
             committed to protecting your privacy.
           </p>
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
           <p className="mt-3 leading-relaxed text-muted-foreground">
             If you have questions about this Privacy Policy, contact us at{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-              privacy@convaduit.com
+              privacy@convaudit.com
             </code>
             .
           </p>

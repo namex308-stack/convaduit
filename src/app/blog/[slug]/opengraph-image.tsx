@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getAllPosts, getPostBySlug } from "@/lib/blog";
 
 export const runtime = "nodejs";
-export const alt = "Convaduit blog post";
+export const alt = "Convaudit blog post";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,7 +22,7 @@ export default async function Image({
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
-  const title = post?.title ?? "Convaduit Blog";
+  const title = post?.title ?? "Convaudit Blog";
   const date = post
     ? new Date(post.date).toLocaleDateString("en-US", {
         year: "numeric",
@@ -64,7 +64,7 @@ export default async function Image({
             C
           </div>
           <div style={{ display: "flex", color: "#fafafa", fontSize: "28px", fontWeight: 600 }}>
-            Convaduit Blog
+            Convaudit Blog
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export default async function Image({
           }}
         >
           <div style={{ display: "flex" }}>{date}</div>
-          <div style={{ display: "flex" }}>convaduit.com/blog</div>
+          <div style={{ display: "flex" }}>convaudit.com/blog</div>
         </div>
       </div>
     ),

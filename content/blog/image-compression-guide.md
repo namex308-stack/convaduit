@@ -2,8 +2,9 @@
 title: "The Complete Guide to Image Compression for the Web"
 description: "Everything you need to know about compressing images for the web — formats, quality settings, responsive images, and the tools that actually work."
 date: "2025-10-10"
-author: "Convaduit Team"
+author: "Convaudit Team"
 tags: ["image", "compression", "performance", "web"]
+toolSlug: "compress-image"
 coverImage: ""
 ---
 
@@ -112,7 +113,7 @@ Generate multiple sizes at build time using sharp (Node.js), libvips, or an imag
 
 - **Squoosh.app**: Google's open-source web app
 - **TinyPNG**: Popular hosted tool (uploads files)
-- **Convaduit's Compress Image**: Runs entirely in your browser, no uploads
+- **Convaudit's Compress Image**: Runs entirely in your browser, no uploads
 
 For sensitive images — passport scans, medical photos, internal documents — the browser-based tools are the only safe option.
 

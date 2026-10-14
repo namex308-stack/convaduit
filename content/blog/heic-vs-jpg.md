@@ -2,8 +2,9 @@
 title: "HEIC vs JPG: Which Format Should You Use?"
 description: "A practical comparison of HEIC and JPG — file sizes, quality, compatibility, and when to use each format."
 date: "2025-09-12"
-author: "Convaduit Team"
+author: "Convaudit Team"
 tags: ["image", "heic", "jpg", "formats"]
+toolSlug: "heic-to-jpg"
 coverImage: ""
 ---
 

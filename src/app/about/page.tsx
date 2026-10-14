@@ -6,10 +6,10 @@ import { buildStaticPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildStaticPageMetadata({
   title: "About",
   description:
-    "Learn about Convaduit — free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up, no backend.",
+    "Learn about Convaudit — free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up, no backend.",
   path: "/about",
   keywords: [
-    "about convaduit",
+    "about convaudit",
     "free online tools",
     "private image tools",
     "browser based pdf tools",
@@ -123,7 +123,7 @@ export default function AboutPage() {
         <p className="leading-relaxed text-muted-foreground">
           Found a bug or have a tool request? Email us at{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-            support@convaduit.com
+            support@convaudit.com
           </code>
           . We&apos;d love to hear from you.
         </p>

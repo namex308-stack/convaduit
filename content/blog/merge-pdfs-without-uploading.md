@@ -2,8 +2,9 @@
 title: "How to Merge PDFs Without Uploading Them to a Stranger's Server"
 description: "Most free PDF merge tools upload your documents. Here's why that's risky, and how to merge PDFs entirely in your browser."
 date: "2025-10-05"
-author: "Convaduit Team"
+author: "Convaudit Team"
 tags: ["pdf", "privacy", "security", "merge"]
+toolSlug: "merge-pdf"
 coverImage: ""
 ---
 
@@ -79,7 +80,7 @@ Vague claims like "your privacy matters" are meaningless. Look for specific tech
 
 Even better if the tool explains how it works and links to the libraries used.
 
-## Merging PDFs client-side with Convaduit
+## Merging PDFs client-side with Convaudit
 
 Our [Merge PDF tool](/tools/merge-pdf) is built on this principle. Here's how to use it:
 

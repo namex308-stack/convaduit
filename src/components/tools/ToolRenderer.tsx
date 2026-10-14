@@ -8,6 +8,8 @@ import { PdfToWordTool } from "./PdfToWordTool";
 import { ImageToPdfTool } from "./ImageToPdfTool";
 import { CompressPdfTool } from "./CompressPdfTool";
 import { WebpToPngTool, PngToJpgTool, JpgToWebpTool } from "./ImageFormatConverter";
+import { RemoveExifTool } from "./RemoveExifTool";
+import { PdfToImageTool } from "./PdfToImageTool";
 import { YouTubeThumbnailDownloader } from "./youtube/YouTubeThumbnailDownloader";
 import { YouTubeThumbnailResizer } from "./youtube/YouTubeThumbnailResizer";
 import { YouTubeTagsExtractor } from "./youtube/YouTubeTagsExtractor";
@@ -48,6 +50,10 @@ export function ToolRenderer({ slug }: { slug: string }) {
       return <PngToJpgTool />;
     case "jpg-to-webp":
       return <JpgToWebpTool />;
+    case "remove-exif":
+      return <RemoveExifTool />;
+    case "pdf-to-image":
+      return <PdfToImageTool />;
     // YouTube Creator Tools
     case "youtube-thumbnail-downloader":
       return <YouTubeThumbnailDownloader />;

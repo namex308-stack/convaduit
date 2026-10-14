@@ -12,7 +12,7 @@ import { SITE_CONFIG, type Tool } from "./tools";
 /** Build the per-page title following the site pattern. */
 export function buildToolTitle(tool: Tool): string {
   // Pattern: "{Tool Name} — Free Online {Category} Tool"
-  // The layout template appends " | Convaduit" automatically.
+  // The layout template appends " | Convaudit" automatically.
   return `${tool.name} — Free Online ${tool.category} Tool`;
 }
 
@@ -113,7 +113,7 @@ export function buildBlogPostMetadata(post: {
   tags: string[];
 }): Metadata {
   const canonical = `${SITE_CONFIG.url}/blog/${post.slug}`;
-  const keywords = [...post.tags, `${post.title.toLowerCase()}`, "convaduit blog"];
+  const keywords = [...post.tags, `${post.title.toLowerCase()}`, "convaudit blog"];
 
   return {
     title: post.title,

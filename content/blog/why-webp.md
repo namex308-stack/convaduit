@@ -2,8 +2,9 @@
 title: "Why WebP Is the Default Image Format for the Modern Web"
 description: "WebP delivers 25-35% smaller files than JPG and PNG with no quality loss. Here's why it should be your default web image format."
 date: "2025-09-28"
-author: "Convaduit Team"
+author: "Convaudit Team"
 tags: ["image", "webp", "performance", "web"]
+toolSlug: "webp-to-png"
 coverImage: ""
 ---
 

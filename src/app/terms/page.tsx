@@ -4,10 +4,10 @@ import { buildStaticPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildStaticPageMetadata({
   title: "Terms of Service",
   description:
-    "Convaduit terms of service — free, browser-based tools provided as-is. By using the site you agree to these terms. No warranty, no liability.",
+    "Convaudit terms of service — free, browser-based tools provided as-is. By using the site you agree to these terms. No warranty, no liability.",
   path: "/terms",
   keywords: [
-    "convaduit terms of service",
+    "convaudit terms of service",
     "terms of use",
     "free tools terms",
     "browser tools terms",
@@ -40,7 +40,7 @@ export default function TermsPage() {
             1. Acceptance of terms
           </h2>
           <p className="mt-3 leading-relaxed text-muted-foreground">
-            By accessing or using Convaduit (the &quot;Service&quot;), you
+            By accessing or using Convaudit (the &quot;Service&quot;), you
             agree to be bound by these Terms of Service. If you do not agree,
             please do not use the Service.
           </p>
@@ -133,7 +133,7 @@ export default function TermsPage() {
           <p className="mt-3 leading-relaxed text-muted-foreground">
             Questions about these Terms? Contact us at{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-              legal@convaduit.com
+              legal@convaudit.com
             </code>
             .
           </p>

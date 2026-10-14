@@ -45,7 +45,7 @@ export function RelatedTools({ currentSlug, category }: RelatedToolsProps) {
         Related tools &amp; guides
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Keep exploring Convaduit with these related resources.
+        Keep exploring Convaudit with these related resources.
       </p>
 
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
