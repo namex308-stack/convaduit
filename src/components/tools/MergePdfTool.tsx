@@ -68,7 +68,10 @@ export function MergePdfTool() {
     }
     setIsProcessing(true);
     setError(null);
-    setOutputUrl(null);
+    setOutputUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
     try {
       const merged = await PDFDocument.create();
       for (const entry of files) {
@@ -188,5 +191,3 @@ export function MergePdfTool() {
     </div>
   );
 }
-
-export { downloadBytes };

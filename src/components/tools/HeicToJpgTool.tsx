@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import JSZip from "jszip";
+import { Download, Loader2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -29,11 +30,15 @@ export function HeicToJpgTool() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFilesAdded = (newFiles: File[]) => {
+    // Note: many browsers report HEIC files with an empty MIME type,
+    // so we accept by extension as well as by MIME.
     const accepted = newFiles.filter(
       (f) =>
         f.type === "image/heic" ||
         f.type === "image/heif" ||
-        /\.heic$|\.heif$/i.test(f.name)
+        f.type === "image/heic-sequence" ||
+        f.type === "image/heif-sequence" ||
+        /\.hei[cf]$/i.test(f.name)
     );
     if (accepted.length < newFiles.length) {
       setError("Some files were skipped — only HEIC/HEIF files are supported.");
@@ -144,7 +149,23 @@ export function HeicToJpgTool() {
 
       {results.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">Results</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Results</h3>
+            {results.length > 1 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  const zip = new JSZip();
+                  for (const r of results) zip.file(r.name, r.blob);
+                  const blob = await zip.generateAsync({ type: "blob" });
+                  downloadBlob(blob, "convaudit-converted-jpgs.zip");
+                }}
+              >
+                <Archive className="mr-1 h-3.5 w-3.5" /> Download all as ZIP
+              </Button>
+            )}
+          </div>
           <ul className="space-y-2">
             {results.map((r, i) => (
               <li

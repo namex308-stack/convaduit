@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/download";
 
 const MAX_CHARS = 100;
 const IDEAL_CHARS = 70;
+const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * Generate title variations from a topic using proven CTR templates.
@@ -23,7 +25,7 @@ function generateTitles(topic: string): { title: string; chars: number }[] {
 
   const templates: string[] = [
     `How to ${t} (Complete Guide)`,
-    `The Ultimate Guide to ${t} in 2025`,
+    `The Ultimate Guide to ${t} in ${CURRENT_YEAR}`,
     `${topicCap}: 7 Things Nobody Tells You`,
     `I Tried ${t} for 30 Days — Here's What Happened`,
     `The Truth About ${t} (No One Talks About This)`,
@@ -41,7 +43,7 @@ function generateTitles(topic: string): { title: string; chars: number }[] {
     `The Fastest Way to ${t}`,
     `${topicCap} Mistakes to Avoid at All Costs`,
     `Everything You Need to Know About ${t}`,
-    `${topicCap} in 2025: What's Changed?`,
+    `${topicCap} in ${CURRENT_YEAR}: What's Changed?`,
   ];
 
   return templates
@@ -66,10 +68,12 @@ export function YouTubeTitleGenerator() {
     setResults(titles);
   };
 
-  const copyTitle = (title: string, idx: number) => {
-    navigator.clipboard.writeText(title);
-    setCopiedIdx(idx);
-    setTimeout(() => setCopiedIdx(null), 2000);
+  const copyTitle = async (title: string, idx: number) => {
+    const ok = await copyText(title);
+    if (ok) {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    }
   };
 
   const getCharColor = (chars: number) => {

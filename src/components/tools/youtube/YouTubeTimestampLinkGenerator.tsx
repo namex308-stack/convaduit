@@ -11,6 +11,7 @@ import {
   formatSecondsToTimestamp,
   buildTimestampLink,
 } from "@/lib/youtube";
+import { copyText } from "@/lib/download";
 
 type TimestampEntry = {
   id: string;
@@ -58,10 +59,12 @@ export function YouTubeTimestampLinkGenerator() {
     );
   };
 
-  const copyLink = (link: string, id: string) => {
-    navigator.clipboard.writeText(link);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const copyLink = async (link: string, id: string) => {
+    const ok = await copyText(link);
+    if (ok) {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
   };
 
   const validEntries = entries.filter((e) => e.time.trim() && parseTimestampToSeconds(e.time) >= 0);
@@ -98,7 +101,8 @@ export function YouTubeTimestampLinkGenerator() {
         <div className="space-y-2">
           {entries.map((entry) => {
             const seconds = parseTimestampToSeconds(entry.time);
-            const link = videoId && entry.time.trim()
+            const valid = entry.time.trim() !== "" && seconds >= 0;
+            const link = videoId && valid
               ? buildTimestampLink(videoId, seconds)
               : "";
             return (
@@ -127,7 +131,7 @@ export function YouTubeTimestampLinkGenerator() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                {link && (
+                {link ? (
                   <div className="flex items-center gap-2 rounded-md bg-muted/40 p-2">
                     <Link2 className="h-3.5 w-3.5 flex-none text-muted-foreground" />
                     <code className="min-w-0 flex-1 truncate text-xs">
@@ -149,7 +153,11 @@ export function YouTubeTimestampLinkGenerator() {
                       )}
                     </Button>
                   </div>
-                )}
+                ) : entry.time.trim() !== "" && !valid ? (
+                  <p className="text-xs text-destructive">
+                    Invalid timestamp — use seconds (90), M:SS (1:30), or H:MM:SS (1:02:03).
+                  </p>
+                ) : null}
               </div>
             );
           })}
@@ -181,7 +189,7 @@ export function YouTubeTimestampLinkGenerator() {
                 const link = buildTimestampLink(videoId, seconds);
                 return `${formatSecondsToTimestamp(seconds)}${e.label.trim() ? ` — ${e.label.trim()}` : ""}\n${link}`;
               }).join("\n\n");
-              navigator.clipboard.writeText(text);
+              copyText(text);
             }}
           >
             <Copy className="mr-1 h-3.5 w-3.5" /> Copy all links

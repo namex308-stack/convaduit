@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   extractVideoId,
   getThumbnailUrls,
+  THUMBNAIL_FALLBACK_ORDER,
 } from "@/lib/youtube";
 
 type PreviewSize = {
@@ -40,15 +41,26 @@ const PREVIEW_SIZES: PreviewSize[] = [
  */
 export function YouTubeThumbnailTester() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [fallbackIdx, setFallbackIdx] = useState(0);
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleFile = (file: File) => {
     setError(null);
-    if (!file.type.startsWith("image/")) {
+    const looksLikeImage =
+      file.type.startsWith("image/") ||
+      /\.(jpe?g|png|webp|gif|bmp|avif|tiff?|heic|heif)$/i.test(file.name);
+    if (!looksLikeImage) {
       setError("Please upload an image file.");
       return;
     }
+    // Revoke the previous object URL to avoid leaking memory on
+    // repeated uploads.
+    setImageUrl((prev) => {
+      if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return prev;
+    });
+    setFallbackIdx(0);
     setImageUrl(URL.createObjectURL(file));
   };
 
@@ -60,7 +72,24 @@ export function YouTubeThumbnailTester() {
       return;
     }
     const thumbs = getThumbnailUrls(id);
-    setImageUrl(thumbs.maxres);
+    // Don't assume maxres exists — older videos 404 on it. Start from
+    // the best URL and let onError walk down the fallback chain.
+    setFallbackIdx(0);
+    setImageUrl(thumbs[THUMBNAIL_FALLBACK_ORDER[0]]);
+  };
+
+  const handlePreviewError = () => {
+    if (!url) return;
+    const id = extractVideoId(url);
+    if (!id) return;
+    const thumbs = getThumbnailUrls(id);
+    const next = fallbackIdx + 1;
+    if (next < THUMBNAIL_FALLBACK_ORDER.length) {
+      setFallbackIdx(next);
+      setImageUrl(thumbs[THUMBNAIL_FALLBACK_ORDER[next]]);
+    } else {
+      setError("Failed to load image. If using a YouTube URL, the thumbnail may not be available — try uploading instead.");
+    }
   };
 
   return (
@@ -69,7 +98,7 @@ export function YouTubeThumbnailTester() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Upload your thumbnail</Label>
-          <label className="flex min-h-[80px] cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/30">
+          <label className="flex min-h-20 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/30">
             <Upload className="h-4 w-4" />
             Click to browse
             <input
@@ -118,7 +147,7 @@ export function YouTubeThumbnailTester() {
               src={imageUrl}
               alt="Full-size thumbnail"
               className="mx-auto max-w-full rounded-lg"
-              onError={() => setError("Failed to load image. If using a YouTube URL, maxres may not be available — try uploading instead.")}
+              onError={handlePreviewError}
             />
           </div>
 

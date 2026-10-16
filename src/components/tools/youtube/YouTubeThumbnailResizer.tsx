@@ -34,10 +34,21 @@ export function YouTubeThumbnailResizer() {
 
   const handleFile = useCallback((file: File) => {
     setError(null);
-    if (!file.type.startsWith("image/")) {
+    // Accept by extension too: some browsers report an empty MIME for
+    // valid images, which previously rejected them outright.
+    const looksLikeImage =
+      file.type.startsWith("image/") ||
+      /\.(jpe?g|png|webp|gif|bmp|avif|tiff?|heic|heif)$/i.test(file.name);
+    if (!looksLikeImage) {
       setError("Please upload an image file (JPG, PNG, WebP).");
       return;
     }
+    // Revoke the previous object URL to avoid leaking memory on
+    // repeated uploads.
+    setImageData((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return prev;
+    });
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
@@ -151,7 +162,7 @@ export function YouTubeThumbnailResizer() {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => fileInputRef.current?.click()}
-          className="flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/30"
+          className="flex min-h-50 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/30"
         >
           <Upload className="h-10 w-10 text-muted-foreground" />
           <p className="mt-3 text-sm font-medium">Drop an image here, or click to browse</p>

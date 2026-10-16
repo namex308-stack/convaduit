@@ -10,11 +10,12 @@ import {
   getThumbnailUrls,
   fetchOEmbed,
   type YouTubeOEmbed,
+  type ThumbnailSet,
 } from "@/lib/youtube";
 import { downloadBlob } from "@/lib/download";
 
 type ThumbVariant = {
-  key: keyof ReturnType<typeof getThumbnailUrls>;
+  key: keyof ThumbnailSet;
   label: string;
   width: number;
   height: number;

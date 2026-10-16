@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Zap, Shield, Sparkles } from "lucide-react";
+import JSZip from "jszip";
+import { Loader2, Zap, Shield, Sparkles, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -41,7 +42,14 @@ export function CompressImageTool() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFilesAdded = (newFiles: File[]) => {
-    const accepted = newFiles.filter((f) => f.type.startsWith("image/"));
+    // Browsers may report an empty MIME type for some formats (notably
+    // HEIC), so fall back to extension matching to avoid silently
+    // dropping valid files.
+    const accepted = newFiles.filter(
+      (f) =>
+        f.type.startsWith("image/") ||
+        /\.(jpe?g|png|webp|gif|bmp|avif|tiff?|heic|heif)$/i.test(f.name)
+    );
     setFiles((prev) => [
       ...prev,
       ...accepted.map((f) => ({ file: f, id: shortId() })),
@@ -290,7 +298,23 @@ export function CompressImageTool() {
 
       {results.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">Results</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Results</h3>
+            {results.length > 1 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  const zip = new JSZip();
+                  for (const r of results) zip.file(r.name, r.blob);
+                  const blob = await zip.generateAsync({ type: "blob" });
+                  downloadBlob(blob, "convaudit-compressed-images.zip");
+                }}
+              >
+                <Archive className="mr-1 h-3.5 w-3.5" /> Download all as ZIP
+              </Button>
+            )}
+          </div>
           <ul className="space-y-2">
             {results.map((r, i) => {
               const savedPct = Math.round(

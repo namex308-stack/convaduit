@@ -2,21 +2,26 @@ import type { MetadataRoute } from "next";
 import { SITE_CONFIG } from "@/lib/tools";
 
 /**
- * robots.txt — allow all crawlers, disallow the API directory, point to
- * the sitemap and RSS feed.
+ * robots.txt — keep the site crawlable while excluding the API endpoints.
  *
- * Available at /robots.txt.
+ * Explicitly allow major AI crawler bots to read the public content and
+ * discover the llms.txt summary in addition to the sitemap.
  */
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/search"],
+        allow: ["/", "/blog", "/about", "/privacy", "/terms", "/search"],
+        disallow: ["/api/"],
+      },
+      {
+        userAgent: ["GPTBot", "ChatGPT", "ClaudeBot", "Google-Extended", "PerplexityBot", "CCBot"],
+        allow: ["/", "/blog", "/about", "/privacy", "/terms", "/search"],
+        disallow: ["/api/"],
       },
     ],
-    sitemap: `${SITE_CONFIG.url}/sitemap.xml`,
+    sitemap: [`${SITE_CONFIG.url}/sitemap.xml`, `${SITE_CONFIG.url}/rss.xml`],
     host: SITE_CONFIG.url,
   };
 }

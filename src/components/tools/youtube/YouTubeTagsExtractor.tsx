@@ -12,6 +12,7 @@ import {
   fetchVideoTags,
   type YouTubeOEmbed,
 } from "@/lib/youtube";
+import { copyText } from "@/lib/download";
 
 /**
  * YouTube Tags Extractor.
@@ -64,14 +65,14 @@ export function YouTubeTagsExtractor() {
     }
   };
 
-  const copyAllTags = () => {
-    navigator.clipboard.writeText(tags.join(", "));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyAllTags = async () => {
+    const ok = await copyText(tags.join(", "));
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 2000);
   };
 
   const copyTag = (tag: string) => {
-    navigator.clipboard.writeText(tag);
+    copyText(tag);
   };
 
   return (

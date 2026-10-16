@@ -11,6 +11,7 @@ import {
   extractChannelId,
   type YouTubeOEmbed,
 } from "@/lib/youtube";
+import { copyText } from "@/lib/download";
 
 type Result = {
   channelId: string;
@@ -112,11 +113,11 @@ export function YouTubeChannelIdFinder() {
     }
   };
 
-  const copyId = () => {
+  const copyId = async () => {
     if (result) {
-      navigator.clipboard.writeText(result.channelId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const ok = await copyText(result.channelId);
+      setCopied(ok);
+      if (ok) setTimeout(() => setCopied(false), 2000);
     }
   };
 

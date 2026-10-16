@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUploader, type UploadedFile } from "./FileUploader";
-import { downloadBytes, shortId } from "@/lib/download";
+import { downloadBlob, downloadBytes, shortId } from "@/lib/download";
 
 type Range = { from: number; to: number };
 type SplitResult = { name: string; bytes: Uint8Array };
@@ -162,9 +163,26 @@ export function SplitPdfTool() {
 
       {results.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">
-            Results ({results.length} file{results.length === 1 ? "" : "s"})
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">
+              Results ({results.length} file{results.length === 1 ? "" : "s"})
+            </h3>
+            {results.length > 1 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  const zip = new JSZip();
+                  for (const r of results) zip.file(r.name, r.bytes);
+                  const blob = await zip.generateAsync({ type: "blob" });
+                  const base = file?.file.name.replace(/\.pdf$/i, "") ?? "split";
+                  downloadBlob(blob, `${base}-split.zip`);
+                }}
+              >
+                <Archive className="mr-1 h-3.5 w-3.5" /> Download all as ZIP
+              </Button>
+            )}
+          </div>
           <ul className="space-y-2">
             {results.map((r, i) => (
               <li

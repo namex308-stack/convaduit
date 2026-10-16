@@ -139,7 +139,14 @@ export function RemoveExifTool() {
   };
 
   const handleFilesAdded = async (newFiles: File[]) => {
-    const imageFiles = newFiles.filter((f) => f.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|heic|tiff|tif)$/i.test(f.name));
+    // Accept by extension too: browsers often report HEIC/TIFF with an
+    // empty or generic MIME type, which previously caused valid files
+    // to be silently dropped here.
+    const imageFiles = newFiles.filter(
+      (f) =>
+        f.type.startsWith("image/") ||
+        /\.(jpg|jpeg|png|webp|heic|heif|tiff|tif|bmp|avif)$/i.test(f.name)
+    );
     if (imageFiles.length === 0) return;
 
     const newItems: ImageItem[] = imageFiles.map((file) => ({
@@ -380,7 +387,7 @@ export function RemoveExifTool() {
                   value={outputFormat}
                   onValueChange={(v: "original" | "image/jpeg" | "image/png" | "image/webp") => setOutputFormat(v)}
                 >
-                  <SelectTrigger id="output-format" className="w-[180px] h-9">
+                  <SelectTrigger id="output-format" className="w-45 h-9">
                     <SelectValue placeholder="Format" />
                   </SelectTrigger>
                   <SelectContent>
@@ -655,7 +662,7 @@ export function RemoveExifTool() {
                 {Object.entries(activeExifModal.exif.rawTags).map(([k, v]) => (
                   <div key={k} className="py-1.5 flex justify-between gap-4">
                     <span className="text-muted-foreground truncate">{k}</span>
-                    <span className="text-foreground text-right truncate max-w-[240px]">
+                    <span className="text-foreground text-right truncate max-w-60">
                       {typeof v === "object" ? JSON.stringify(v) : String(v)}
                     </span>
                   </div>

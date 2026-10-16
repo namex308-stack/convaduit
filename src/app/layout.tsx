@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -30,6 +30,13 @@ const geistMono = Geist_Mono({
  * - metadataBase: resolves all relative metadata URLs against convaudit.com
  * - verification: Google Search Console + AdSense placeholder tokens
  */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.url),
   title: {
@@ -65,11 +72,17 @@ export const metadata: Metadata = {
   publisher: SITE_CONFIG.name,
   alternates: {
     canonical: "/",
-    types: { "application/rss+xml": `${SITE_CONFIG.url}/rss.xml` },
+    types: {
+      "application/rss+xml": `${SITE_CONFIG.url}/rss.xml`,
+      "text/plain": `${SITE_CONFIG.url}/llms.txt`,
+    },
     languages: {
       en: SITE_CONFIG.url,
       ar: SITE_CONFIG.url,
     },
+  },
+  other: {
+    "llms.txt": `${SITE_CONFIG.url}/llms.txt`,
   },
   openGraph: {
     title: SITE_CONFIG.title,

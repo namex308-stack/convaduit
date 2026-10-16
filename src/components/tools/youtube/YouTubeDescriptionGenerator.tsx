@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { copyText } from "@/lib/download";
 
 type Timestamp = { id: string; time: string; label: string };
 
@@ -99,11 +100,11 @@ export function YouTubeDescriptionGenerator() {
     return lines.join("\n");
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const desc = generateDescription();
-    navigator.clipboard.writeText(desc);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const ok = await copyText(desc);
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 2000);
   };
 
   const description = generateDescription();
@@ -203,7 +204,7 @@ export function YouTubeDescriptionGenerator() {
           id="hashtags"
           value={hashtags}
           onChange={(e) => setHashtags(e.target.value)}
-          placeholder="#howto #tutorial #2025"
+          placeholder="#howto #tutorial #2026"
         />
       </div>
 
@@ -222,7 +223,7 @@ export function YouTubeDescriptionGenerator() {
         <Textarea
           value={description}
           readOnly
-          className="min-h-[300px] resize-y font-mono text-xs"
+          className="min-h-75 resize-y font-mono text-xs"
           placeholder="Fill in the fields above to generate your description..."
         />
         <p className="text-xs text-muted-foreground">

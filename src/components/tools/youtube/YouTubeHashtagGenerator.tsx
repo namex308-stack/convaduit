@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { copyText } from "@/lib/download";
 
 /**
  * Generate hashtags from a topic by combining it with proven patterns.
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 function generateHashtags(topic: string): string[] {
   const t = topic.trim().toLowerCase().replace(/\s+/g, "");
   if (!t) return [];
+  const year = new Date().getFullYear();
 
   const topicWords = topic.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const topicPhrase = topicWords.join("");
@@ -29,7 +31,7 @@ function generateHashtags(topic: string): string[] {
     `#${topicPhrase}tips`,
     `#${topicPhrase}tutorial`,
     `#${topicPhrase}guide`,
-    `#${topicPhrase}2025`,
+    `#${topicPhrase}${year}`,
     `#${topicPhrase}hacks`,
     `#${topicPhrase}forbeginners`,
     `#${topicPhrase}masterclass`,
@@ -50,7 +52,7 @@ function generateHashtags(topic: string): string[] {
     "#howto",
     "#viral",
     "#trending",
-    "#2025",
+    `#${year}`,
     "#shorts",
     "#educational",
     "#learning",
@@ -77,16 +79,18 @@ export function YouTubeHashtagGenerator() {
     setResults(generateHashtags(topic));
   };
 
-  const copyAll = () => {
-    navigator.clipboard.writeText(results.slice(0, 10).join(" "));
-    setCopiedAll(true);
-    setTimeout(() => setCopiedAll(false), 2000);
+  const copyAll = async () => {
+    const ok = await copyText(results.slice(0, 10).join(" "));
+    setCopiedAll(ok);
+    if (ok) setTimeout(() => setCopiedAll(false), 2000);
   };
 
-  const copyTag = (tag: string) => {
-    navigator.clipboard.writeText(tag);
-    setCopiedTag(tag);
-    setTimeout(() => setCopiedTag(null), 2000);
+  const copyTag = async (tag: string) => {
+    const ok = await copyText(tag);
+    if (ok) {
+      setCopiedTag(tag);
+      setTimeout(() => setCopiedTag(null), 2000);
+    }
   };
 
   return (

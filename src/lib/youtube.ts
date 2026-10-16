@@ -34,6 +34,19 @@ export type ThumbnailSet = {
 };
 
 /**
+ * Ordered fallback chain, best → worst. maxres 404s on older/low-res
+ * videos, so callers should walk this list instead of assuming
+ * maxres exists.
+ */
+export const THUMBNAIL_FALLBACK_ORDER: (keyof ThumbnailSet)[] = [
+  "maxres",
+  "sd",
+  "hq",
+  "mq",
+  "default",
+];
+
+/**
  * Extract the 11-character video ID from any common YouTube URL format:
  *  - https://www.youtube.com/watch?v=VIDEO_ID
  *  - https://youtu.be/VIDEO_ID
@@ -146,16 +159,20 @@ export async function fetchVideoTags(videoUrl: string): Promise<string[]> {
 
 /**
  * Parse a timestamp string ("1:23", "01:23:45", "83") into seconds.
+ * Returns -1 for invalid input so callers can distinguish "0:00"
+ * (valid) from garbage (invalid). Previously every invalid string
+ * returned 0, so "abc" silently generated a link to the start of
+ * the video.
  */
 export function parseTimestampToSeconds(input: string): number {
   const trimmed = input.trim();
-  if (!trimmed) return 0;
+  if (!trimmed) return -1;
 
   // Pure number → seconds
   if (/^\d+$/.test(trimmed)) return parseInt(trimmed, 10);
 
   const parts = trimmed.split(":").map((p) => p.trim());
-  if (parts.some((p) => !/^\d+$/.test(p))) return 0;
+  if (parts.some((p) => !/^\d+$/.test(p))) return -1;
 
   if (parts.length === 2) {
     // MM:SS
@@ -169,7 +186,7 @@ export function parseTimestampToSeconds(input: string): number {
       parseInt(parts[2], 10)
     );
   }
-  return 0;
+  return -1;
 }
 
 /**

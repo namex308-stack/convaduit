@@ -20,6 +20,44 @@ export function downloadBytes(bytes: Uint8Array, filename: string, mime: string)
 }
 
 /**
+ * Copy text to the clipboard.
+ *
+ * navigator.clipboard.writeText() only exists in secure contexts
+ * (HTTPS or localhost) and can reject when permission is denied.
+ * Every copy button in the app called it bare — on plain HTTP
+ * (or with clipboard permission blocked) the click handler threw
+ * "Cannot read properties of undefined" and the "Copied!" UI
+ * showed even though nothing was copied. This helper falls back
+ * to the legacy execCommand path and returns success/failure.
+ */
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function"
+    ) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to legacy path
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;opacity:0;pointer-events:none;";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Generate a short unique id (good enough for client-side lists).
  */
 export function shortId(): string {
