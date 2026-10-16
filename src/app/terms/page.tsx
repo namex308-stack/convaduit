@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { buildStaticPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildStaticPageMetadata({
-  title: "Terms of Service",
+  title: "Convaudit Terms of Service for Online Tools",
   description:
     "Convaudit terms of service — free, browser-based tools provided as-is. By using the site you agree to these terms. No warranty, no liability.",
   path: "/terms",

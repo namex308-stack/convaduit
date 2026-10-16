@@ -14,9 +14,9 @@ import { getAllPosts, formatDate, type BlogPostMeta } from "@/lib/blog";
 import { SITE_CONFIG } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Blog — Guides for Images, PDFs & YouTube",
+  title: "Image, PDF & YouTube Guides for Everyday Tasks",
   description:
-    "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools. Practical tips backed by real data.",
+    "Practical guides to image formats, photo metadata, PDF workflows, and YouTube thumbnail requirements.",
   keywords: [
     "image compression guide",
     "heic vs jpg",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Convaudit Blog — Guides for Images, PDFs & YouTube",
     description:
-      "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
+      "Practical guides to image formats, photo metadata, PDF workflows, and YouTube thumbnail requirements.",
     url: `${SITE_CONFIG.url}/blog`,
     type: "website",
     siteName: SITE_CONFIG.name,
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Convaudit Blog — Guides for Images, PDFs & YouTube",
     description:
-      "In-depth guides on image compression, HEIC vs JPG, PDF optimization, WebP, and YouTube creator tools.",
+      "Practical guides to image formats, photo metadata, PDF workflows, and YouTube thumbnail requirements.",
   },
   robots: {
     index: true,

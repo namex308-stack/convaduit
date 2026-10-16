@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata = buildStaticPageMetadata({
-  title: "Search",
+  title: "Search Free Image, PDF & YouTube Creator Tools",
   description:
     "Search Convaudit tools and guides — images, PDFs, YouTube creator tools.",
   path: "/search",
@@ -52,7 +52,10 @@ export default async function SearchPage({ searchParams }: Props) {
       <p className="mt-3 text-base text-muted-foreground">
         Search across all {TOOLS.length} tools and blog guides.
       </p>
-      <form action="/search" method="get" className="mt-8 flex items-center gap-2">
+      <h2 className="mt-8 text-xl font-semibold tracking-tight">
+        Search image, PDF, and YouTube tools
+      </h2>
+      <form action="/search" method="get" className="mt-4 flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input type="search" name="q" defaultValue={query}

@@ -1,78 +1,41 @@
 ---
-title: "HEIC vs JPG: Which Format Should You Use?"
-description: "A practical comparison of HEIC and JPG — file sizes, quality, compatibility, and when to use each format."
+title: "HEIC vs JPG: Key Differences and Best Uses"
+description: "Compare HEIC and JPG for storage, image quality, and compatibility, then choose a format for taking, sharing, or uploading photos."
 date: "2025-09-12"
+modifiedDate: "2026-10-16"
 author: "Convaudit Team"
-tags: ["image", "heic", "jpg", "formats"]
+tags: ["HEIC vs JPG", "HEIC to JPG", "image formats"]
 toolSlug: "heic-to-jpg"
 coverImage: ""
 ---
 
-If you've ever copied photos from a recent iPhone to a Windows PC or uploaded them to a website that rejected them, you've hit the HEIC vs JPG problem. Apple defaults to HEIC for photos because it produces smaller files, but the rest of the world still largely expects JPG. In this article, we'll compare the two formats in detail so you know exactly when to use each.
+**Choose HEIC when the devices and apps you use support it; choose JPG when you need broad compatibility.** HEIC can store photos more efficiently, but the size and visual result depend on the image and how each format is encoded. JPG remains a common choice for websites, email, and older software.
 
-## What is HEIC?
+Apple describes HEIF/HEIC as a space-saving format and notes that compatibility depends on the receiving device and app. Its guide explains how to select more compatible JPEG capture on supported iPhones and iPads: [Apple’s HEIF and HEVC media guidance](https://support.apple.com/en-us/116944).
 
-HEIC (High Efficiency Image Container) is the image format Apple adopted starting with iOS 11 in 2017. It uses the HEVC (H.265) video codec to compress still images. A typical HEIC file is roughly half the size of an equivalent JPG at the same visual quality, which is a meaningful win when you're shooting hundreds of photos a month.
+## HEIC and JPG compared
 
-HEIC also supports some features JPG doesn't:
+| Consideration | HEIC | JPG / JPEG |
+| --- | --- | --- |
+| **Storage** | Often more space-efficient for comparable photos, but the result varies | Widely used; size depends on image dimensions and compression quality |
+| **Compatibility** | Support varies by operating system, browser, website, and app | Accepted by most common photo apps, websites, and devices |
+| **Transparency** | Capabilities depend on the HEIF image and software | Standard JPEG does not support transparency |
+| **Best use** | Keeping photos in an ecosystem that supports HEIC | Uploading, emailing, or sharing when compatibility is uncertain |
 
-- **16-bit color** (vs JPG's 8-bit), which gives smoother gradients
-- **Alpha channels** for transparency
-- **Multiple images per file** (think Live Photos or image bursts)
-- **Depth maps** for portrait-mode effects
+No fixed percentage predicts the size difference for every image. A new conversion can also change compression, color handling, or other properties; converting to JPG does not restore information already lost in a source image.
 
-The downside: not every app, browser, or operating system supports HEIC natively. While Safari, Chrome, and Firefox have all added support, many content management systems, email clients, and older apps still reject it.
+## Which should you use?
 
-## What is JPG?
+- **Keep HEIC** if you want to save device storage and your photo library, backup, and sharing workflow all support it.
+- **Use JPG** if an upload form rejects HEIC, you are sending files to someone with unknown software, or a required workflow specifies JPEG.
+- **Keep the original** before converting if you may need the source format later.
 
-JPG (Joint Photographic Experts Group) has been the dominant photo format since the early 1990s. It's a lossy format that throws away information the human eye is least likely to notice, achieving file sizes 5-10x smaller than uncompressed bitmaps.
+On supported Apple devices, Camera settings include a **Formats** option: **High Efficiency** uses HEIF/HEVC, while **Most Compatible** uses JPEG/H.264 for new captures. Availability and menu wording vary by device and operating-system version.
 
-JPG's biggest advantage is universal compatibility. Every browser, every operating system, every image editor, and every social media platform accepts JPG. If you're not sure what to use, JPG is the safe default.
+## Convert a HEIC photo to JPG
 
-The format's limitations:
+On a Mac, Preview can export an opened HEIC image as JPEG. Apple also describes choosing JPEG when exporting from Photos or Preview in its [format guidance](https://support.apple.com/en-us/116944).
 
-- **No transparency** (white background is your only option)
-- **8-bit color only** (potential banding in smooth gradients like blue skies)
-- **Generational loss** (each re-save degrades quality slightly)
-- **No multi-image containers**
+You can also use the [HEIC to JPG tool](/tools/heic-to-jpg) to convert images in the browser. The conversion creates a new JPG, so compare it with the original and keep a copy of the HEIC if preserving the original matters.
 
-## File size comparison
-
-For a typical 12-megapixel smartphone photo at default quality:
-
-| Format | Typical size | Quality loss |
-|--------|--------------|--------------|
-| JPG (quality 85) | 3.5 MB | Noticeable on close inspection |
-| HEIC | 1.8 MB | Visually identical to JPG |
-| JPG (quality 70) | 1.6 MB | Visible artifacts in detail areas |
-
-HEIC's advantage shrinks at lower quality settings, but for everyday photography where visual quality matters, HEIC delivers the same perceptual quality at roughly half the file size.
-
-## When to use HEIC
-
-- **On your phone**: If you're shooting photos that will live on your device or in iCloud, keep HEIC. The storage savings add up fast.
-- **For archival storage**: If disk space matters more than compatibility, HEIC is a reasonable archival format.
-- **When you control the playback environment**: If you know the photos will only be viewed on Apple devices or modern browsers, HEIC's smaller size is a clear win.
-
-## When to use JPG
-
-- **Uploading to websites**: Most web forms, CMS platforms, and email clients still expect JPG. Save yourself a support ticket and convert first.
-- **Sharing with non-Apple users**: Android and Windows users may not have HEIC codecs installed by default.
-- **When you need maximum compatibility**: Print shops, older software, and embedded systems often only understand JPG.
-- **For web publishing**: While modern browsers support HEIC, the JPG fallback is universal and the file size difference matters less when properly compressed.
-
-## How to convert HEIC to JPG
-
-If you need to convert HEIC files to JPG, you have a few options:
-
-1. **On iPhone**: Settings → Photos → Transfer to Mac or PC → "Automatic" will convert HEIC to JPG during USB transfer.
-2. **On macOS**: Preview can open and export HEIC files as JPG.
-3. **Online**: Our [HEIC to JPG tool](/tools/heic-to-jpg) runs entirely in your browser using WebAssembly — your photos never leave your device.
-
-The browser-based approach is especially nice for sensitive photos because there's no server upload to worry about.
-
-## The bottom line
-
-For most people, the answer is simple: **shoot in HEIC, share in JPG**. Keep HEIC as your default on iPhone to save storage, then convert to JPG when you need to share, upload, or send a photo to someone who might not have HEIC support.
-
-Both formats have their place, and with the right tools, switching between them takes seconds.
+For a broader comparison of image formats and their use cases, read the guide to [choosing WebP, JPG, and PNG](/blog/why-webp).

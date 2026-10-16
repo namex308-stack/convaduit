@@ -19,6 +19,8 @@ export type BlogPostMeta = {
   description: string;
   /** Publication date (ISO string, from frontmatter) */
   date: string;
+  /** Optional last-modified date (ISO string, from frontmatter) */
+  modifiedDate?: string;
   /** Author name (from frontmatter) */
   author: string;
   /** Tags for categorization (from frontmatter) */
@@ -79,6 +81,7 @@ export function getAllPosts(): BlogPostMeta[] {
       title: String(data.title ?? filename),
       description: String(data.description ?? ""),
       date: String(data.date ?? new Date().toISOString().split("T")[0]),
+      modifiedDate: data.modifiedDate ? String(data.modifiedDate) : undefined,
       author: String(data.author ?? "Convaudit Team"),
       tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
       coverImage: data.coverImage ? String(data.coverImage) : undefined,
@@ -107,6 +110,7 @@ export function getPostBySlug(slug: string): BlogPost | undefined {
     title: String(data.title ?? slug),
     description: String(data.description ?? ""),
     date: String(data.date ?? new Date().toISOString().split("T")[0]),
+    modifiedDate: data.modifiedDate ? String(data.modifiedDate) : undefined,
     author: String(data.author ?? "Convaudit Team"),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     coverImage: data.coverImage ? String(data.coverImage) : undefined,

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Page not found (404)",
+  title: "Page Not Found: Browse Convaudit Online Tools",
   description:
     "The page you're looking for doesn't exist. Browse our free online tools or search Convaudit.",
   robots: { index: false, follow: true },

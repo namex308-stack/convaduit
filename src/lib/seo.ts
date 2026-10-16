@@ -11,9 +11,31 @@ import { SITE_CONFIG, type Tool } from "./tools";
 
 /** Build the per-page title following the site pattern. */
 export function buildToolTitle(tool: Tool): string {
-  // Pattern: "{Tool Name} — Free Online {Category} Tool"
-  // The layout template appends " | Convaudit" automatically.
-  return `${tool.name} — Free Online ${tool.category} Tool`;
+  const audienceBySlug: Record<string, string> = {
+    "compress-pdf": "for Email",
+    "image-to-pdf": "from Photos",
+    "merge-pdf": "in Your Browser",
+    "pdf-to-image": "for Pages",
+    "split-pdf": "for Page Ranges",
+    "webp-to-png": "for Web Images",
+  };
+  const brandLength = " | Convaudit".length;
+  const audience = audienceBySlug[tool.slug];
+  const candidates = [
+    `${tool.name} — Free Online ${tool.category} Tool`,
+    `${tool.name} — Free Tool`,
+    `${tool.name} — Free Online Tool`,
+    audience ? `${tool.name} — Free Online ${tool.category} Tool ${audience}` : "",
+  ].filter(Boolean);
+  const title = candidates.find(
+    (candidate) => candidate.length + brandLength >= 50 && candidate.length + brandLength <= 60,
+  );
+
+  if (!title) {
+    throw new Error(`No 50–60 character SEO title is defined for tool "${tool.slug}".`);
+  }
+
+  return title;
 }
 
 /**
@@ -109,6 +131,7 @@ export function buildBlogPostMetadata(post: {
   title: string;
   description: string;
   date: string;
+  modifiedDate?: string;
   author: string;
   tags: string[];
 }): Metadata {
@@ -133,6 +156,7 @@ export function buildBlogPostMetadata(post: {
       type: "article",
       siteName: SITE_CONFIG.name,
       publishedTime: post.date,
+      modifiedTime: post.modifiedDate,
       authors: [post.author],
       tags: post.tags,
     },

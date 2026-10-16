@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { buildStaticPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildStaticPageMetadata({
-  title: "Privacy Policy",
+  title: "Convaudit Privacy Policy for Online File Tools",
   description:
     "Convaudit privacy policy — all file processing happens in your browser. We never upload, store, or transmit your files. Learn what data we collect.",
   path: "/privacy",

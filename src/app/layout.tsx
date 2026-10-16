@@ -43,6 +43,10 @@ export const metadata: Metadata = {
     default: SITE_CONFIG.title,
     template: "%s | Convaudit",
   },
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+  },
   description: SITE_CONFIG.description,
   keywords: [
     "online file converter",

@@ -4,7 +4,7 @@ import { SITE_CONFIG } from "@/lib/tools";
 import { buildStaticPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildStaticPageMetadata({
-  title: "About",
+  title: "About Convaudit and Its Browser-Based File Tools",
   description:
     "Learn about Convaudit — free, private, browser-based tools for images, PDFs, and YouTube creators. No uploads, no sign-up, no backend.",
   path: "/about",

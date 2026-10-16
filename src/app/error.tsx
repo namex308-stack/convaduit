@@ -37,6 +37,9 @@ export default function Error({
       <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
         Something went wrong
       </h1>
+      <h2 className="mt-6 text-lg font-semibold tracking-tight">
+        How to recover from this error
+      </h2>
       <p className="mt-3 max-w-md text-base text-muted-foreground">
         An unexpected error occurred while loading this page. Please try again,
         or return to the home page.

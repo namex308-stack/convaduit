@@ -1,205 +1,100 @@
 <p align="center">
   <img src="public/logo.svg" alt="Convaudit" width="48" height="48" />
-  <h1 align="center">Convaudit</h1>
-  <p align="center">
-    <strong>Free, private, browser-based tools for creators.</strong>
-  </p>
-  <p align="center">
-    Compress images · Convert HEIC · Merge & split PDFs · YouTube creator tools
-    <br />
-    <em>No uploads. No sign-up. No watermarks.</em>
-  </p>
-  <p align="center">
-    <a href="https://convaudit.com">Website</a> ·
-    <a href="#features">Features</a> ·
-    <a href="#getting-started">Get Started</a> ·
-    <a href="#contributing">Contributing</a>
-  </p>
+</p>
+
+<h1 align="center">Convaudit</h1>
+
+<p align="center">
+  Free online tools for images, PDFs, and YouTube workflows.
+  <br />
+  Browser-based file processing is available for supported tools and modes.
+</p>
+
+<p align="center">
+  <a href="https://convaudit.com">Website</a> ·
+  <a href="https://convaudit.com/tools">Tools</a> ·
+  <a href="https://convaudit.com/blog">Guides</a>
 </p>
 
 ---
 
-## What is Convaudit?
+## About
 
-Convaudit is a collection of **20+ free online tools** designed for creators, developers, and everyday users who value privacy. Every tool runs **100% in your browser** — files are never uploaded to a server. Built with modern web technologies and powered by proven open-source libraries.
+Convaudit is a web application with image converters, PDF utilities, creator tools, and practical guides. The site is built with Next.js and is designed to make common file and creator workflows straightforward.
 
-## Features
+Processing behavior depends on the tool and its selected mode. Many image and PDF operations run locally in the browser. The image compressor also offers a Python mode that uploads the selected image to the configured backend. Some creator features contact third-party services. Check the relevant tool and the [privacy policy](https://convaudit.com/privacy) before using sensitive data.
 
-### 🖼️ Image Tools
-- **Compress Image** — Reduce JPG, PNG, and WebP file sizes with adjustable quality
-- **HEIC to JPG** — Convert iPhone photos to universally compatible JPG
-- **WebP to PNG** — Convert WebP to PNG with full transparency support
-- **PNG to JPG** — Convert PNG to JPG with customizable background color
-- **JPG to WebP** — Convert to modern WebP for 25-35% smaller file sizes
+## Tools
 
-### 📄 PDF Tools
-- **Merge PDF** — Combine multiple PDFs with drag-to-reorder
-- **Split PDF** — Extract pages by range (e.g., `1-3, 5, 7-9`)
-- **Compress PDF** — Shrink PDF size by rasterizing at configurable DPI
-- **PDF to Word** — Extract text into an editable `.doc` file
-- **Image to PDF** — Turn images into a single PDF with page size options
+- **Images:** Compress images, remove image metadata, convert HEIC to JPG, and convert between JPG, PNG, and WebP.
+- **PDFs:** Merge and split documents, compress PDFs, convert PDFs to images or Word documents, and create PDFs from images.
+- **YouTube:** Download available thumbnails, resize and preview artwork, inspect video tags, and use channel, title, description, hashtag, money, and timestamp utilities.
+- **Guides:** Read practical articles about image formats and compression, photo metadata, PDF workflows, and thumbnail requirements.
 
-### 🎬 YouTube Creator Tools
-- **Thumbnail Downloader** — Grab HD thumbnails in all available resolutions
-- **Thumbnail Resizer** — Crop to 1280×720 with safe-zone overlay
-- **Thumbnail Tester** — Preview thumbnails at real-world display sizes
-- **Tags Extractor** — Reveal hidden keywords from any video
-- **Title Generator** — SEO-optimized titles with character counter
-- **Description Generator** — Structured descriptions with timestamps & hashtags
-- **Hashtag Generator** — Niche-specific hashtag suggestions
-- **Money Calculator** — Estimate earnings across 16 content niches
-- **Channel ID Finder** — Extract UC... channel IDs for APIs
-- **Timestamp Link Generator** — Create shareable links to specific moments
+See the complete collection at [convaudit.com/tools](https://convaudit.com/tools).
 
-### 🔒 Privacy First
-- All processing happens locally via **WebAssembly** and the **Canvas API**
-- Zero server-side file handling — there's nothing to hack, nothing to leak
-- No account required, no tracking cookies for tool usage
+## Technology
 
-## Tech Stack
+- Next.js App Router, React, and TypeScript
+- Tailwind CSS and Radix UI
+- `pdf-lib` and Mozilla PDF.js for PDF workflows
+- Canvas and browser image-processing libraries for image workflows
+- Prisma with SQLite for database-backed features
 
-| Layer           | Technology                                                |
-| --------------- | --------------------------------------------------------- |
-| **Framework**   | [Next.js 16](https://nextjs.org/) (App Router, Turbopack) |
-| **UI**          | [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) (Radix) |
-| **PDF**         | [pdf-lib](https://pdf-lib.js.org/), [pdfjs-dist](https://mozilla.github.io/pdf.js/) |
-| **Images**      | [browser-image-compression](https://github.com/nicedayfor/browser-image-compression), [heic2any](https://github.com/nicedayfor/heic2any), [sharp](https://sharp.pixelplumbing.com/) |
-| **Animations**  | [Framer Motion](https://www.framer.com/motion/)           |
-| **State**       | [Zustand](https://zustand-demo.pmnd.rs/), [TanStack Query](https://tanstack.com/query) |
-| **Database**    | SQLite via [Prisma](https://www.prisma.io/)               |
-| **Auth**        | [NextAuth.js](https://next-auth.js.org/)                  |
-| **Analytics**   | Google Analytics 4, Google AdSense                        |
+## Development
 
-## Getting Started
+### Requirements
 
-### Prerequisites
+- Node.js 20.9 or newer
+- npm
 
-- **Node.js** ≥ 18.x (recommended: 20+)
-- **npm** ≥ 9.x (ships with Node)
-
-### Installation
+### Set up
 
 ```bash
-# Clone the repository
 git clone https://github.com/namex308-stack/convaduit.git
 cd convaduit
-
-# Install dependencies
 npm install
+```
 
-# Generate the Prisma client
+Create a local `.env` from `.env.example` and set values appropriate for your environment. Do not commit secrets. For local database-backed features, configure `DATABASE_URL` to a SQLite database file, then run:
+
+```bash
 npx prisma generate
-
-# Push the database schema (creates SQLite dev.db)
 npx prisma db push
-
-# Start the development server
 npm run dev
 ```
 
-The app will be available at **[http://localhost:3000](http://localhost:3000)**.
+Open [http://localhost:3000](http://localhost:3000) to use the development server.
 
-### Environment Variables
+### Useful commands
 
-Create a `.env` file in the project root:
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local development server |
+| `npm run lint` | Run ESLint |
+| `npx tsc --noEmit` | Check TypeScript types |
+| `npm run build` | Create the production standalone build |
+| `npm run start` | Start the standalone production server |
+| `npx prisma generate` | Generate the Prisma client |
+| `npx prisma db push` | Apply the Prisma schema to the configured database |
 
-```env
-DATABASE_URL="file:./dev.db"
-NEXTAUTH_SECRET="your-secret-here"
-NEXTAUTH_URL="http://localhost:3000"
+## Repository layout
+
+```text
+content/blog/       Markdown articles
+prisma/             Prisma schema and migrations
+public/             Static assets
+src/app/            App Router pages and route handlers
+src/components/     Shared UI and tool components
+src/lib/             Tool definitions and application helpers
+tests/              Runtime build integration scripts
+mini-services/      Supporting services
 ```
-
-### Available Scripts
-
-| Script           | Description                                    |
-| ---------------- | ---------------------------------------------- |
-| `npm run dev`    | Start dev server with Turbopack on port 3000   |
-| `npm run build`  | Production build with standalone output        |
-| `npm run start`  | Start the production server                    |
-| `npm run lint`   | Run ESLint                                     |
-| `npm run db:push`| Push Prisma schema to database                 |
-| `npm run db:generate` | Regenerate Prisma client                  |
-| `npm run db:migrate`  | Run Prisma migrations (dev)               |
-
-## Project Structure
-
-```
-convaduit/
-├── prisma/                 # Prisma schema & migrations
-│   └── schema.prisma
-├── public/                 # Static assets (logo, favicons)
-├── src/
-│   ├── app/                # Next.js App Router pages
-│   │   ├── about/          # About page
-│   │   ├── api/            # API routes
-│   │   ├── blog/           # Blog pages (MDX)
-│   │   ├── privacy/        # Privacy policy
-│   │   ├── terms/          # Terms of service
-│   │   ├── tools/[slug]/   # Dynamic tool pages
-│   │   ├── layout.tsx      # Root layout
-│   │   └── page.tsx        # Homepage
-│   ├── components/
-│   │   ├── ads/            # AdSense components
-│   │   ├── layout/         # Header, Footer, ThemeProvider
-│   │   ├── tools/          # Tool-specific components
-│   │   └── ui/             # shadcn/ui primitives
-│   ├── hooks/              # Custom React hooks
-│   └── lib/                # Utilities, tool definitions, helpers
-├── content/                # Blog MDX content
-├── mini-services/          # Companion micro-services
-├── .env                    # Environment variables (gitignored)
-├── next.config.ts          # Next.js configuration
-├── tailwind.config.ts      # Tailwind CSS configuration
-├── tsconfig.json           # TypeScript configuration
-└── package.json
-```
-
-## Deployment
-
-### Standalone Build (Docker / VPS)
-
-```bash
-npm run build
-# Output in .next/standalone/ — run with:
-NODE_ENV=production node .next/standalone/server.js
-```
-
-### Caddy (Reverse Proxy)
-
-A `Caddyfile` is included for HTTPS reverse proxy:
-
-```bash
-caddy run
-```
-
-## SEO
-
-Convaudit includes comprehensive SEO out of the box:
-- **JSON-LD** structured data (Organization, WebSite, HowTo, FAQPage per tool)
-- **OpenGraph** and **Twitter Card** meta tags on every page
-- **Dynamic sitemap** at `/sitemap.xml`
-- **RSS feed** at `/rss.xml`
-- **Robots.txt** with crawl directives
-- **Dynamic OG images** generated at build time
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-tool`)
-3. **Commit** your changes (`git commit -m 'Add amazing new tool'`)
-4. **Push** to the branch (`git push origin feature/amazing-tool`)
-5. **Open** a Pull Request
-
-Please make sure your code passes linting (`npm run lint`) before submitting.
+Bug reports and focused improvements are welcome. Before opening a pull request, run `npm run lint`, `npx tsc --noEmit`, and `npm run build`. Include relevant test coverage when changing application behavior.
 
 ## License
 
-This project is proprietary. All rights reserved. See the [Terms of Service](https://convaudit.com/terms) for usage details.
-
----
-
-<p align="center">
-  Built with ❤️ by the <a href="https://convaudit.com">Convaudit</a> team
-</p>
+This repository does not grant an open-source license. See the [Terms of Service](https://convaudit.com/terms) for the terms that apply to use of the hosted service.

@@ -3,7 +3,7 @@ import { ToolsOrganizer } from "@/components/tools/ToolsOrganizer";
 import { buildStaticPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildStaticPageMetadata({
-  title: "Free browser-based image, PDF and YouTube tools",
+  title: "Browser-Based Image, PDF & YouTube Tools for Everyone",
   description:
     "Convert files, compress images, merge PDFs, and use creator tools in your browser — no uploads, no sign-up, no watermarks.",
   path: "/",
@@ -36,7 +36,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ToolsOrganizer />
+      <section aria-labelledby="tools-heading">
+        <h2 id="tools-heading" className="mb-5 text-2xl font-semibold tracking-tight">
+          Browse image, PDF, and YouTube tools
+        </h2>
+        <ToolsOrganizer />
+      </section>
     </main>
   );
 }
