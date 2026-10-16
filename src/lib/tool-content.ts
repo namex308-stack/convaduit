@@ -62,26 +62,25 @@ Convert to JPG when:
 
 For web publishing, consider converting further to [WebP](/tools/jpg-to-webp) for smaller file sizes.`,
 
-  "merge-pdf": `## Combining PDF files without uploading them
+  "merge-pdf": `## Free online PDF merger for combining files
 
-Merging PDFs is one of the most common document operations — combining signed contracts, assembling a portfolio, or joining scanned pages into a single file. Most free online merge tools require uploading your documents to a server you don't control, which is a non-starter for anything sensitive.
+Use the [free PDF merger](/tools/merge-pdf) to combine two or more PDF files into one document in your browser. If you want to merge PDF files online for free or combine PDF documents without installing software, add your files, choose their order, and download the merged PDF. There is no charge to use the tool.
 
-Our [Merge PDF tool](/tools/merge-pdf) uses the \`pdf-lib\` library to combine PDFs entirely in your browser. The library reads each PDF into memory, copies its pages into a new combined document, and offers the result as a download. Your files never touch a server.
+The merge runs locally in your browser; the PDF file contents are not uploaded to our server for processing. The website itself needs an internet connection to load. Very large files or many PDFs may be limited by available browser memory.
 
-## How to order pages
+## Put the PDFs in the right order
 
-After uploading two or more PDFs, you'll see them listed with up/down arrows. Drag them into the order you want — the first file becomes the first pages of the merged PDF, the second file appends after that, and so on. You can also remove individual files before merging if you change your mind.
+Add the PDFs, then use the up and down controls beside each file to set the sequence. The first file supplies the opening pages, followed by each file in the displayed order. You can remove a file before merging if you change your mind.
 
-The merge preserves all original content: text, images, form fields, and embedded fonts. Page size and orientation stay exactly as they were in the source files.
+This tool combines whole files, not selected pages. To change the order of pages within a document or include only certain pages, first use [Split PDF](/tools/split-pdf) to extract the pages you need.
 
-## When merging is useful
+## What to check in the merged PDF
 
-- **Contract assembly**: combine a signed NDA, statement of work, and appendices into one PDF
-- **Portfolio creation**: join design samples, case studies, and a cover letter
-- **Scanned documents**: merge multi-page scans from a sheet-fed scanner
-- **Classroom materials**: assemble lecture slides, handouts, and reading lists
+The tool copies pages into a new PDF without converting them to images. Do not assume that every document-level feature—such as forms, bookmarks, attachments, metadata, or digital signatures—will be preserved. In particular, a source digital signature does not validate the newly merged document. Open the result and check its content and features before sharing or relying on it.
 
-If you need to go the other direction, our [Split PDF tool](/tools/split-pdf) extracts specific page ranges from a PDF.`,
+Combining PDFs is useful for assembling contracts and appendices, putting a portfolio in one file, or joining document scans. For best results, make sure each source PDF opens correctly and that you have permission to combine its contents.
+
+For a reverse workflow, see [how to split a PDF](/blog/how-to-split-pdf-pages).`,
 
   "split-pdf": `## Extracting pages from a PDF
 

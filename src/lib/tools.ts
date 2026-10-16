@@ -120,38 +120,48 @@ export const TOOLS: Tool[] = [
     slug: "merge-pdf",
     name: "Merge PDF",
     description:
-      "Combine multiple PDF files into a single document in seconds. Drag to reorder, all in your browser, no upload required.",
+      "Free online PDF merger: combine multiple PDF files into one in your browser. Reorder documents and download the result; files are not uploaded for processing.",
     category: "PDF",
     keywords: [
-      "merge pdf",
-      "combine pdf",
-      "pdf merger",
-      "join pdf files",
-      "combine pdfs online",
+      "pdf merger free",
+      "combine pdf files free",
+      "merge pdf files free",
+      "pdf combine free",
+      "merge pdf documents for free",
+      "merge pdf docs for free",
+      "combine pdf online free",
+      "merge pdf files online free",
+      "merge pdf documents free online",
+      "merge multiple pdf online free",
+      "combine pdf files free online",
     ],
     longDescription:
-      "Our Merge PDF tool lets you combine two or more PDF files into one document in seconds. Reorder pages by dragging, remove files you don't need, then export a single merged PDF. Everything happens locally with the pdf-lib library, so your documents never leave your device.",
+      "Combine two or more PDF files into one document with this free online PDF merger. Reorder files with the up and down controls, remove files you don't need, and download the merged PDF. Processing happens locally in your browser; your documents are not uploaded for merging.",
     faqs: [
       {
-        q: "Is there a limit on the number of PDFs I can merge?",
-        a: "There is no fixed limit, but very large numbers of files or very large PDFs may be constrained by your device's memory.",
+        q: "Can I merge PDF documents online for free?",
+        a: "Yes. Add two or more PDF files, arrange them in the order you want, and download one combined PDF at no charge. Processing happens in your browser.",
       },
       {
-        q: "Can I reorder pages before merging?",
-        a: "Yes, you can drag files to reorder them in the list before clicking Merge.",
+        q: "Is there a limit on the number of PDFs I can merge?",
+        a: "There is no fixed file-count limit, but large PDFs or many files can be constrained by your browser's available memory.",
+      },
+      {
+        q: "Can I change the order of the PDFs before combining them?",
+        a: "Yes. Use the up and down controls beside each file to set the order. The tool combines whole files; it does not reorder individual pages within a file.",
       },
       {
         q: "Are my PDFs uploaded to a server?",
-        a: "No. Merging uses the pdf-lib library entirely in your browser. Your documents stay private.",
+        a: "No. The merge runs locally in your browser, and the PDF file contents are not uploaded to our server for processing.",
       },
       {
-        q: "Does merging reduce quality?",
-        a: "No. pdf-lib copies pages without re-encoding, so the merged PDF keeps the same quality as the originals.",
+        q: "Will the merged PDF keep every feature from the originals?",
+        a: "The tool copies pages into a new PDF without rasterizing them, but interactive forms, bookmarks, attachments, metadata, and digital signatures may not be retained as in the source files. Review the result before relying on it.",
       },
     ],
     howToSteps: [
       "Add two or more PDF files using drag-and-drop or the file picker.",
-      "Reorder files by dragging them in the list.",
+      "Use the up and down controls to put the files in the desired order.",
       "Click Merge PDFs to combine them.",
       "Download the resulting single PDF file.",
     ],
@@ -954,4 +964,3 @@ export const SITE_CONFIG = {
 export function getToolBySlug(slug: string): Tool | undefined {
   return TOOLS.find((t) => t.slug === slug);
 }
-
