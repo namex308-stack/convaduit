@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { localStorageService, getAllPrefs, STORAGE_KEYS } from "@/lib/localStorage";
+import { localStorageService, getAllPrefs, parseRecentTools, STORAGE_KEYS } from "@/lib/localStorage";
 
 export function LocalStoragePanel() {
   const [open, setOpen] = useState(false);
@@ -65,14 +65,9 @@ export function LocalStoragePanel() {
   };
 
   const prefs = getAllPrefs();
-  const recentTools = (() => {
-    try {
-      const raw = items.find((item) => item.key === STORAGE_KEYS.recentTools)?.value ?? "[]";
-      return JSON.parse(raw) as string[];
-    } catch {
-      return [] as string[];
-    }
-  })();
+  const recentToolsData = parseRecentTools(
+    items.find((item) => item.key === STORAGE_KEYS.recentTools)?.value ?? null,
+  );
 
   const stats = {
     count: items.length,
@@ -148,11 +143,16 @@ export function LocalStoragePanel() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {recentTools.length === 0 ? (
+                  {recentToolsData.error && (
+                    <p className="w-full text-xs text-destructive" role="status">
+                      {recentToolsData.error}
+                    </p>
+                  )}
+                  {recentToolsData.tools.length === 0 && !recentToolsData.error ? (
                     <p className="text-xs text-muted-foreground">No recent tools yet.</p>
                   ) : (
-                    recentTools.slice(0, 5).map((slug: string) => (
-                      <Badge key={slug} variant="outline" className="capitalize text-xs">
+                    recentToolsData.tools.slice(0, 5).map((slug, index) => (
+                      <Badge key={`${slug}-${index}`} variant="outline" className="capitalize text-xs">
                         {slug.replace("youtube-", "YouTube ")}
                       </Badge>
                     ))

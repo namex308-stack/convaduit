@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { AdPreferencesProvider } from "@/components/ads/AdPreferences";
 import { AdBlockDetector } from "@/components/ads/AdBlockDetector";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { SITE_CONFIG } from "@/lib/tools";
 
 const geistSans = Geist({
@@ -130,19 +131,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <head>
-        {/* AdSense script — loaded after the page is interactive.
-            Replace ca-pub-XXXXXXXXXXXXXXXX with your real publisher ID. */}
-        <Script
-          id="adsbygoogle-init"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE_CONFIG.adsenseClient}`}
-        />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <AdSenseScript />
         {/* Google Analytics 4 — measurement ID G-MDR2NP5CJ3.
             Loaded with afterInteractive strategy so it doesn't block
             first paint. */}

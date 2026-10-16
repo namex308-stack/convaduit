@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://convaudit.com">Website</a> ·
-  <a href="https://convaudit.com/tools">Tools</a> ·
+  <a href="https://convaudit.com/#tools">Tools</a> ·
   <a href="https://convaudit.com/blog">Guides</a>
 </p>
 
@@ -31,7 +31,7 @@ Processing behavior depends on the tool and its selected mode. Many image and PD
 - **YouTube:** Download available thumbnails, resize and preview artwork, inspect video tags, and use channel, title, description, hashtag, money, and timestamp utilities.
 - **Guides:** Read practical articles about image formats and compression, photo metadata, PDF workflows, and thumbnail requirements.
 
-See the complete collection at [convaudit.com/tools](https://convaudit.com/tools).
+Browse the complete collection on the [Convaudit homepage](https://convaudit.com/#tools).
 
 ## Technology
 

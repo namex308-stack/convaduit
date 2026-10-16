@@ -18,6 +18,41 @@ export const STORAGE_KEYS = {
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
 
+export type RecentToolsData = {
+  tools: string[];
+  error: string | null;
+};
+
+export function parseRecentTools(raw: string | null): RecentToolsData {
+  if (raw === null) return { tools: [], error: null };
+
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    return {
+      tools: [],
+      error: "Saved recent tools data is invalid and could not be read.",
+    };
+  }
+
+  if (!Array.isArray(value)) {
+    return {
+      tools: [],
+      error: "Saved recent tools data is invalid; expected a list.",
+    };
+  }
+
+  const tools = value.filter((entry): entry is string => typeof entry === "string");
+  return {
+    tools,
+    error:
+      tools.length === value.length
+        ? null
+        : "Some saved recent tools were invalid and have been skipped.",
+  };
+}
+
 const DEFAULT_VALUES: Record<StorageKey, unknown> = {
   [STORAGE_KEYS.privacyTrackingEnabled]: false,
   [STORAGE_KEYS.privacyShowStatus]: true,
@@ -166,8 +201,15 @@ export function trackToolVisit(slug: string): void {
 }
 
 export function getCurrentRecentTools(): string[] {
-  const recent = getItem<string[]>(STORAGE_KEYS.recentTools);
-  return Array.isArray(recent) ? recent : [];
+  const recent = getItem<unknown>(STORAGE_KEYS.recentTools);
+  if (recent === null) return [];
+
+  const raw = typeof recent === "string" ? recent : JSON.stringify(recent);
+  const result = parseRecentTools(raw);
+  if (result.error) {
+    console.warn(`[localStorage] ${result.error}`);
+  }
+  return result.tools;
 }
 
 const LIST_ALL_KEYS: StorageKey[] = Object.values(STORAGE_KEYS) as StorageKey[];
