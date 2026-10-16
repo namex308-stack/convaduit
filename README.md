@@ -1,62 +1,66 @@
 <p align="center">
-  <img src="public/logo.svg" alt="Convaudit" width="48" height="48" />
+  <img src="public/logo.svg" alt="Convaudit logo" width="64" height="64" />
 </p>
 
 <h1 align="center">Convaudit</h1>
 
 <p align="center">
-  Free online tools for images, PDFs, and YouTube workflows.
+  Private-by-default tools for image, PDF, and creator workflows.
   <br />
-  Browser-based file processing is available for supported tools and modes.
+  Convert, organize, and prepare files with a growing collection of browser-based tools.
 </p>
 
 <p align="center">
-  <a href="https://convaudit.com">Website</a> ·
-  <a href="https://convaudit.com/#tools">Tools</a> ·
-  <a href="https://convaudit.com/blog">Guides</a>
+  <a href="https://convaudit.com">Visit Convaudit</a> ·
+  <a href="https://convaudit.com/#tools">Explore tools</a> ·
+  <a href="https://convaudit.com/blog">Read the guides</a> ·
+  <a href="https://convaudit.com/privacy">Privacy</a>
 </p>
 
 ---
 
-## About
+## Overview
 
-Convaudit is a web application with image converters, PDF utilities, creator tools, and practical guides. The site is built with Next.js and is designed to make common file and creator workflows straightforward.
+Convaudit brings practical image converters, PDF utilities, YouTube creator tools, and step-by-step guides together in one web application. The interface is designed to make everyday file workflows clear and accessible without requiring an account.
 
-Processing behavior depends on the tool and its selected mode. Many image and PDF operations run locally in the browser. The image compressor also offers a Python mode that uploads the selected image to the configured backend. Some creator features contact third-party services. Check the relevant tool and the [privacy policy](https://convaudit.com/privacy) before using sensitive data.
+### What you can do
 
-## Tools
+| Image tools | PDF tools | Creator tools |
+| --- | --- | --- |
+| Compress images and remove metadata | Merge, split, and compress PDFs | Download and resize YouTube thumbnails |
+| Convert HEIC, JPG, PNG, and WebP | Convert PDFs to images or Word documents | Inspect tags and generate titles, descriptions, and hashtags |
+| Create PDFs from images | Work with PDF pages in your browser | Calculate channel metrics and create timestamp links |
 
-- **Images:** Compress images, remove image metadata, convert HEIC to JPG, and convert between JPG, PNG, and WebP.
-- **PDFs:** Merge and split documents, compress PDFs, convert PDFs to images or Word documents, and create PDFs from images.
-- **YouTube:** Download available thumbnails, resize and preview artwork, inspect video tags, and use channel, title, description, hashtag, money, and timestamp utilities.
-- **Guides:** Read practical articles about image formats and compression, photo metadata, PDF workflows, and thumbnail requirements.
+Browse the full collection on the [Convaudit homepage](https://convaudit.com/#tools).
 
-Browse the complete collection on the [Convaudit homepage](https://convaudit.com/#tools).
+## Privacy and processing
+
+Processing depends on the tool and the selected mode. Many image and PDF operations run locally in your browser. The image compressor also offers a Python mode that sends the selected image to the configured backend, and some creator features contact third-party services. Review the details for each tool and the [privacy policy](https://convaudit.com/privacy) before using sensitive data.
 
 ## Technology
 
-- Next.js App Router, React, and TypeScript
-- Tailwind CSS and Radix UI
-- `pdf-lib` and Mozilla PDF.js for PDF workflows
-- Canvas and browser image-processing libraries for image workflows
-- Prisma with SQLite for database-backed features
+- **Application:** Next.js App Router, React, and TypeScript
+- **Interface:** Tailwind CSS, Radix UI, and Lucide icons
+- **PDF workflows:** `pdf-lib` and Mozilla PDF.js
+- **Image workflows:** Canvas APIs and browser image-processing libraries
+- **Database-backed features:** Prisma with SQLite
 
-## Development
+## Run locally
 
 ### Requirements
 
 - Node.js 20.9 or newer
 - npm
 
-### Set up
+### Setup
 
 ```bash
 git clone https://github.com/namex308-stack/convaduit.git
 cd convaduit
-npm install
+npm ci
 ```
 
-Create a local `.env` from `.env.example` and set values appropriate for your environment. Do not commit secrets. For local database-backed features, configure `DATABASE_URL` to a SQLite database file, then run:
+Create a local `.env` file from `.env.example` and configure the values for your environment. Do not commit secrets. For database-backed features, set `DATABASE_URL` to a SQLite database file, then generate the Prisma client and apply the schema:
 
 ```bash
 npx prisma generate
@@ -64,37 +68,37 @@ npx prisma db push
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to use the development server.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Useful commands
+### Project commands
 
-| Command | Purpose |
+| Command | Description |
 | --- | --- |
-| `npm run dev` | Start the local development server |
+| `npm run dev` | Start the development server |
 | `npm run lint` | Run ESLint |
 | `npx tsc --noEmit` | Check TypeScript types |
-| `npm run build` | Create the production standalone build |
+| `npm run build` | Build the production application |
 | `npm run start` | Start the standalone production server |
 | `npx prisma generate` | Generate the Prisma client |
 | `npx prisma db push` | Apply the Prisma schema to the configured database |
 
-## Repository layout
+## Project structure
 
 ```text
-content/blog/       Markdown articles
+content/blog/       Blog articles
+mini-services/      Supporting services
 prisma/             Prisma schema and migrations
 public/             Static assets
-src/app/            App Router pages and route handlers
-src/components/     Shared UI and tool components
-src/lib/             Tool definitions and application helpers
+src/app/            App Router pages and API routes
+src/components/     Shared interface and tool components
+src/lib/             Application helpers and tool definitions
 tests/              Runtime build integration scripts
-mini-services/      Supporting services
 ```
 
 ## Contributing
 
-Bug reports and focused improvements are welcome. Before opening a pull request, run `npm run lint`, `npx tsc --noEmit`, and `npm run build`. Include relevant test coverage when changing application behavior.
+Focused bug reports and improvements are welcome. Before opening a pull request, run `npm run lint`, `npx tsc --noEmit`, and `npm run build`. Include relevant test coverage when changing application behavior, and never include credentials or other secrets.
 
 ## License
 
-This repository does not grant an open-source license. See the [Terms of Service](https://convaudit.com/terms) for the terms that apply to use of the hosted service.
+This repository does not grant an open-source license. The hosted service is subject to the [Convaudit Terms of Service](https://convaudit.com/terms).
